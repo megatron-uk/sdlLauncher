@@ -1,0 +1,16 @@
+# Names of the compiler and friends
+CC = gcc
+STRIP = strip
+
+# SDL libraries and paths
+SDL_LIB = -lSDL
+SDL_INCLUDE = 
+
+# Compiler flags
+CFLAGS = -Wall -O3 $(SDL_INCLUDE) -DPOSIX
+SDL_LDFLAGS = $(SDL_LIB)
+
+# What our application is named
+EXE = menu
+
+include Makefile.common
