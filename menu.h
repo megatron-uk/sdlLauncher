@@ -76,9 +76,9 @@ static struct COORDS GAMECOVER_COORDS(){
 // Text reader window coordinates
 static struct COORDS READER_COORDS(){
 	COORDS coords;
-	coords.x = 40;
+	coords.x = 20;
 	coords.y = 20;
-	coords.w = (SCREEN_W - 80);
+	coords.w = (SCREEN_W - 40);
 	coords.h = (SCREEN_H - 40);
 	return coords;
 }
@@ -114,6 +114,7 @@ typedef struct TEXT_WINDOW_DATA {
 	int max_lines;		// Maximum height of text display
 	int max_chars;		// Maximum width of text display
 	FILE *readme; 		// Open file pointer
+	int f_pos;			// Position in open file
 	char buffer[1024];	// Text file buffer
 } TEXT_WINDOW_DATA;
 

@@ -323,8 +323,11 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		window_state->text_window.readme = fopen(window_state->text_window.buffer, "r");
 		memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 		if (window_state->text_window.readme != NULL){
+			fprintf(log, "menu_textreader_file: Opened\n");
+			window_state->text_window.f_pos = 0;
 			return 0;
 		} else {
+			fprintf(log, "menu_textreader_file: Error, file not open\n");
 			return -1;
 		}
 	} else {
@@ -332,6 +335,7 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		if (window_state->text_window.readme != NULL){
 			fclose(window_state->text_window.readme);
 			memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
+			window_state->text_window.f_pos = 0;
 			fprintf(log, "menu_textreader_file: Closed file\n");
 			return 0;
 		} else {
@@ -347,40 +351,129 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 	int game_id = window_state->browser_window.select_pos;				// Current game_id
 	struct GAME_DATA_ITEM game = game_data->game_data_items[game_id];	// Current game data
 	struct COORDS coords = READER_COORDS();								// Geometry of reader window
-	int total_max_chars;
-	int i;
-	int f_size;
-	char c;
+	int total_max_chars;// Total number of printable chars (chars per line * lines)
+	int last_i,i;				// Loop counter
+	int f_size = 0;		// Size of the text file
+	char c;				// Hold each char from the text buffer
+	int total_printed_chars = 0;	// Total count of all chars printed so far. Must be < total_max_chars
+	int printed_chars = 0;	// Count of chars printed so far for this line. Must be < window_state->text_window.max_chars
+	int printed_lines = 0;	// Count of lines printed so far. Must be < window_state->text_window.max_lines
+	char token_cr = '\n';	// Carriage return
+	char token_lf = '\r';	// Carriage return + linefeed
 	
-	window_state->text_window.max_lines = (coords.h / FONT_H) - 1;
-	window_state->text_window.max_chars = (coords.w / FONT_W) - 1;
+	window_state->text_window.max_lines = (coords.h / FONT_H) - 2;
+	window_state->text_window.max_chars = (coords.w / FONT_W) - 2;
 	total_max_chars = window_state->text_window.max_lines * window_state->text_window.max_chars;
 		
+	fprintf(log, "menu_textreader_populate: Max chars %d\n", window_state->text_window.max_chars);
+	fprintf(log, "menu_textreader_populate: Max lines %d\n", window_state->text_window.max_lines);
+	
 	fprintf(log, "menu_textreader_populate: Reading file\n");
 	fseek(window_state->text_window.readme, 0L, SEEK_END);
 	f_size = ftell(window_state->text_window.readme);
+	fseek(window_state->text_window.readme, 0L, SEEK_SET);
 	fprintf(log, "menu_textreader_populate: File is %d bytes\n", f_size);
-	fflush(log);
+	//fflush(log);
+	
 	if (f_size < sizeof(window_state->text_window.buffer)){
-		fprintf(log, "menu_textreader_populate: Read entire file\n");
-		fflush(log);
-		fread(*window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
-		printf("%s", window_state->text_window.buffer);
+		// File is smaller than the available buffer, so read it all
+		fprintf(log, "menu_textreader_populate: Reading entire file\n");
+		//fflush(log);
+		i = fread(window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
+		fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
+		//printf("%s", window_state->text_window.buffer);
 	} else {
+		// File is larger than the available buffer, so read a maximum of total_max_chars
+		fprintf(log, "menu_textreader_populate: Reading partial file\n");
+		//fflush(log);
 		for (i = 0; i < total_max_chars; i++){
 			c = fgetc(window_state->text_window.readme);
-			printf("%c", c);
+			window_state->text_window.f_pos++;
+			//printf("%c", c);
 			if (c == EOF){
-				fprintf(log, "menu_textreader_populate: %d bytes read\n", i);
-				fflush(log);
+				fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
+				//fflush(log);
 				break;
 			} else {
-				strcat(window_state->text_window.buffer, c);
+				window_state->text_window.buffer[i] = c;
 			}
 		}
 	}
-	//printf(window_state->text_window.buffer);
+	fprintf(log, "menu_textreader_populate: Data is %ul bytes\n", strlen(window_state->text_window.buffer));
 	
+	// If we're here, we either have the entire file in the buffer, or we've read, at most, total_max_chars.
+	// We now need to split the buffer by end-of-line characters and ensure that we don't have more than
+	// window_state->text_window.max_lines.
+	
+	// For up to max_chars in a line...
+	printed_lines = 0;
+	printed_chars = 0;
+	last_i = 0;
+	memset(text_buffer, '\0', 256);
+	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
+	while (printed_lines <= window_state->text_window.max_lines){
+		fprintf(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
+		for (i = 0; i <= window_state->text_window.max_chars; i++){
+			last_i ++;
+			// Read next char
+			c = window_state->text_window.buffer[last_i];
+			if (c == token_cr){
+				// newline
+				// Print buffer and start new line
+				//fprintf(log, "%d %d %d NEWLINE\n", printed_lines, i, last_i);
+				//fprintf(log, "menu_textreader_populate: Printing line %d\n", printed_lines);
+				//fprintf(log, "menu_textreader_populate: [%s]\n", text_buffer);
+				//fflush(log);
+				// Print line buffer up to this point
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
+				memset(text_buffer, '\0', 256);
+				printed_lines++;
+				break;
+			} else if (c == token_lf){
+				// linefeed - always comes after newline, so ignore
+				//fprintf(log, "%d %d %d LINEFEED\n", printed_lines, i, last_i);
+			} else {
+				// plain character, add to buffer
+				//fprintf(log, "%d %d %d [%c]\n", printed_lines, i, last_i, c);
+				//fflush(log);
+				printed_chars++;
+				total_printed_chars++;
+				text_buffer[i] = c;
+			}
+			
+			// Total number of visible lines reached - break inner loop
+			if (printed_lines == window_state->text_window.max_lines){
+				//fprintf(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
+				// Save position and exit
+				break;
+			}
+		}
+		
+		// Total number of visible lines reached - break outer loop
+		if (printed_lines >= window_state->text_window.max_lines){
+			//fprintf(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			// Save position and exit
+			break;
+		} else if (printed_lines < window_state->text_window.max_lines){
+			//fprintf(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
+			if (strlen(text_buffer) > 0){
+				//fprintf(log, "menu_textreader_populate: %d characters left to print on line %d\n", strlen(text_buffer), printed_lines);
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
+				memset(text_buffer, '\0', 256);
+				printed_lines++;
+			}
+		}
+		
+		// Total number of visible lines reached - break outer loop
+		if (printed_lines == window_state->text_window.max_lines){
+			fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			// Save position and exit
+			break;
+		}
+	}
+	fprintf(log, "menu_textreader_populate: Final position %d\n", last_i);
+	// Save state of file pointer so we know where to load next time around
+	window_state->text_window.f_pos = last_i;
 	return 0;
 }
 
