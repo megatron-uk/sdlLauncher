@@ -365,26 +365,28 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 	window_state->text_window.max_chars = (coords.w / FONT_W) - 2;
 	total_max_chars = window_state->text_window.max_lines * window_state->text_window.max_chars;
 		
-	fprintf(log, "menu_textreader_populate: Max chars %d\n", window_state->text_window.max_chars);
-	fprintf(log, "menu_textreader_populate: Max lines %d\n", window_state->text_window.max_lines);
+	//fprintf(log, "menu_textreader_populate: Max chars %d\n", window_state->text_window.max_chars);
+	//fprintf(log, "menu_textreader_populate: Max lines %d\n", window_state->text_window.max_lines);
 	
-	fprintf(log, "menu_textreader_populate: Reading file\n");
+	//fprintf(log, "menu_textreader_populate: Reading file\n");
 	fseek(window_state->text_window.readme, 0L, SEEK_END);
 	f_size = ftell(window_state->text_window.readme);
 	fseek(window_state->text_window.readme, 0L, SEEK_SET);
+	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
 	fprintf(log, "menu_textreader_populate: File is %d bytes\n", f_size);
+	fprintf(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
 	//fflush(log);
 	
 	if (f_size < sizeof(window_state->text_window.buffer)){
 		// File is smaller than the available buffer, so read it all
-		fprintf(log, "menu_textreader_populate: Reading entire file\n");
+		//fprintf(log, "menu_textreader_populate: Reading entire file\n");
 		//fflush(log);
 		i = fread(window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
-		fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
+		//fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
 		//printf("%s", window_state->text_window.buffer);
 	} else {
 		// File is larger than the available buffer, so read a maximum of total_max_chars
-		fprintf(log, "menu_textreader_populate: Reading partial file\n");
+		//fprintf(log, "menu_textreader_populate: Reading partial file\n");
 		//fflush(log);
 		for (i = 0; i < total_max_chars; i++){
 			c = fgetc(window_state->text_window.readme);
@@ -399,7 +401,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			}
 		}
 	}
-	fprintf(log, "menu_textreader_populate: Data is %ul bytes\n", strlen(window_state->text_window.buffer));
+	fprintf(log, "menu_textreader_populate: Data is %u bytes\n", strlen(window_state->text_window.buffer));
 	
 	// If we're here, we either have the entire file in the buffer, or we've read, at most, total_max_chars.
 	// We now need to split the buffer by end-of-line characters and ensure that we don't have more than
@@ -410,9 +412,9 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 	printed_chars = 0;
 	last_i = 0;
 	memset(text_buffer, '\0', 256);
-	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
+	
 	while (printed_lines <= window_state->text_window.max_lines){
-		fprintf(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
+		//fprintf(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
 		for (i = 0; i <= window_state->text_window.max_chars; i++){
 			last_i ++;
 			// Read next char
@@ -471,7 +473,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			break;
 		}
 	}
-	fprintf(log, "menu_textreader_populate: Final position %d\n", last_i);
+	fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
 	// Save state of file pointer so we know where to load next time around
 	window_state->text_window.f_pos = last_i;
 	return 0;
