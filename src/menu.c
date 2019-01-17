@@ -257,11 +257,11 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	// Blank and redraw window borders
 	menu_browser_init(display, log);
 	
-	fprintf(log, "menu_browser_populate: max lines: %d\n", window_state->browser_window.max_lines);
-	fprintf(log, "menu_browser_populate: start_pos: %d\n", window_state->browser_window.start_pos);
-	fprintf(log, "menu_browser_populate: end_pos: %d\n", window_state->browser_window.end_pos);
-	fprintf(log, "menu_browser_populate: select_pos: %d\n", window_state->browser_window.select_pos);
-	fprintf(log, "menu_browser_populate: last_pos: %d\n", window_state->browser_window.last_pos);
+	//fprintf(log, "menu_browser_populate: max lines: %d\n", window_state->browser_window.max_lines);
+	//fprintf(log, "menu_browser_populate: start_pos: %d\n", window_state->browser_window.start_pos);
+	//fprintf(log, "menu_browser_populate: end_pos: %d\n", window_state->browser_window.end_pos);
+	//fprintf(log, "menu_browser_populate: select_pos: %d\n", window_state->browser_window.select_pos);
+	//fprintf(log, "menu_browser_populate: last_pos: %d\n", window_state->browser_window.last_pos);
 	
 	// Any games?
 	if (game_data->items > 0){
@@ -270,14 +270,14 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 			// More games than lines available - we can only show some of them
 			
 			if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
-				fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
+				//fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
 				select_i = window_state->browser_window.start_pos;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
 					if (select_i == window_state->browser_window.select_pos){
-						fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+						//fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
 						selected = 1;
 					} else {
-						fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+						//fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 						selected = 0;	
 					}
 					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].directory, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
@@ -286,16 +286,16 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				
 				// Is select position > end of visible list?
 				if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
-					fprintf(log, "hit end of visible lines\n");
+					//fprintf(log, "hit end of visible lines\n");
 					window_state->browser_window.start_pos++;
 					window_state->browser_window.end_pos = window_state->browser_window.start_pos + window_state->browser_window.max_lines;
 				} else if (window_state->browser_window.select_pos < window_state->browser_window.start_pos){
-					fprintf(log, "hit start of visible lines\n");
+					//fprintf(log, "hit start of visible lines\n");
 					window_state->browser_window.start_pos--;
 					window_state->browser_window.end_pos--;
 				}
 			} else {
-				fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+				//fprintf(log, "all selected lines can be shown - we're starting at 0\n");
 				window_state->browser_window.start_pos = 0;
 				window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -349,7 +349,7 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		window_state->text_window.readme = fopen(window_state->text_window.buffer, "r");
 		memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 		if (window_state->text_window.readme != NULL){
-			fprintf(log, "menu_textreader_file: Opened\n");
+			//fprintf(log, "menu_textreader_file: Opened\n");
 			window_state->text_window.f_pos = 0;
 			return 0;
 		} else {
@@ -362,7 +362,7 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 			fclose(window_state->text_window.readme);
 			memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 			window_state->text_window.f_pos = 0;
-			fprintf(log, "menu_textreader_file: Closed file\n");
+			//fprintf(log, "menu_textreader_file: Closed file\n");
 			return 0;
 		} else {
 			fprintf(log, "menu_textreader_file: Attempt to close a file not already open!\n");
@@ -419,7 +419,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			window_state->text_window.f_pos++;
 			//printf("%c", c);
 			if (c == EOF){
-				fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
+				//fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
 				//fflush(log);
 				break;
 			} else {
@@ -427,7 +427,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			}
 		}
 	}
-	fprintf(log, "menu_textreader_populate: Data is %u bytes\n", strlen(window_state->text_window.buffer));
+	//fprintf(log, "menu_textreader_populate: Data is %u bytes\n", strlen(window_state->text_window.buffer));
 	
 	// If we're here, we either have the entire file in the buffer, or we've read, at most, total_max_chars.
 	// We now need to split the buffer by end-of-line characters and ensure that we don't have more than
@@ -494,12 +494,12 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines == window_state->text_window.max_lines){
-			fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			//fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
 			// Save position and exit
 			break;
 		}
 	}
-	fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
+	//fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
 	// Save state of file pointer so we know where to load next time around
 	window_state->text_window.f_pos = last_i;
 	return 0;
@@ -891,6 +891,10 @@ int main(int argc, char* argv[]){
 						}
 						quit = 1;
 						break;
+					case SDLK_F1:
+						// Open config window
+						
+						break;
                     case SDLK_UP: 
                     	if (window_state.selected_window == W_BROWSER){
                     		// scroll up through browser list
@@ -941,10 +945,12 @@ int main(int argc, char* argv[]){
                     	break;
                     case SDLK_TAB:
                     	// Swap between browser and info windows
-                    	menu_toggle_window(log, &window_state);
+                    	if ((window_state.selected_window == W_INFO) || (window_state.selected_window == W_BROWSER)){
+                    		menu_toggle_window(log, &window_state);
+                    	}
                     	break;
                     case SDLK_RETURN:
-                    	// Choose highlighted option
+                    	// Choose highlighted option of info window
                     	if (window_state.selected_window == W_INFO){
                     		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
                     	}
@@ -957,6 +963,14 @@ int main(int argc, char* argv[]){
                     		menu_info_populate(display, log, &game_data, &window_state);
                     		menu_gamecover_populate(display, log, &game_data, &window_state);
                     		window_state.selected_window = W_INFO;
+                    	}
+                    	
+                    	// Close config window
+                    	if (window_state.selected_window == W_CONFIG){
+                    		menu_browser_populate(display, log, &game_data, &window_state);
+                    		menu_info_populate(display, log, &game_data, &window_state);
+                    		menu_gamecover_populate(display, log, &game_data, &window_state);
+                    		window_state.selected_window = W_BROWSER;
                     	}
                     	break;
                     default:

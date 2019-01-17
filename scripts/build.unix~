@@ -1,0 +1,5 @@
+#!/bin/bash
+
+> MENU.LOG
+make -f Makefile.unix clean 
+make -f Makefile.unix all GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' && ./menu

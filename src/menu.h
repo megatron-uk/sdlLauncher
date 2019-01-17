@@ -106,7 +106,7 @@ typedef struct INFO_WINDOW_DATA {
 } INFO_WINDOW_DATA;
 
 // Windows which can be selected
-enum WINDOW_NAME{W_BROWSER, W_INFO, W_TEXT};
+enum WINDOW_NAME{W_BROWSER, W_INFO, W_TEXT, W_CONFIG};
 
 // Structure which holds state information for
 // the text reader window.
