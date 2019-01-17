@@ -4,10 +4,10 @@ STRIP = strip
 
 # SDL libraries and paths
 SDL_LIB = -lSDL
-SDL_INCLUDE = 
+SDL_INCLUDE =
 
 # Compiler flags
-CFLAGS = -Wall -O3 $(SDL_INCLUDE) -DPOSIX
+CFLAGS = -Wall -O3 $(SDL_INCLUDE) -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR)
 SDL_LDFLAGS = $(SDL_LIB)
 
 # What our application is named

@@ -1,18 +1,18 @@
-OBJFILES = bmp2text.o gamedata.o menu.o
+OBJFILES = src/bmp2text.o src/gamedata.o src/menu.o
 all: $(EXE)
 
 $(EXE):  $(OBJFILES)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJFILES) $(SDL_LDFLAGS)
 	$(STRIP) -s $(EXE)
 	
-menu.o: menu.c
-	$(CC) -c $(CFLAGS) -DGAMEDIR=$(GAMEDIR) -DDIR_SEP=$(DIR_SEP) $< -o $@
+menu.o: src/menu.c
+	$(CC) -c $(CFLAGS) $< -o src/$@
 	
-bmp2text.o: bmp2text.c
-	$(CC) -c $(CFLAGS) -DGAMEDIR=$(GAMEDIR) -DDIR_SEP=$(DIR_SEP) $< -o $@
+bmp2text.o: src/bmp2text.c
+	$(CC) -c $(CFLAGS) $< -o src/$@
 
-gamedata.o: gamedata.c
-	$(CC) -c $(CFLAGS) -DGAMEDIR=$(GAMEDIR) -DDIR_SEP=$(DIR_SEP) $< -o $@
+gamedata.o: src/gamedata.c
+	$(CC) -c $(CFLAGS) $< -o src/$@
 	
 clean:
-	rm -f *.o *.a $(EXE) core
+	rm -f src/*.o src/*.a $(EXE) core
