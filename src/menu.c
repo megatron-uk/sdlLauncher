@@ -266,17 +266,18 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	// Any games?
 	if (game_data->items > 0){
 		// Is our game list longer than max number of rows?
-		if (game_data->items >= window_state->browser_window.max_lines){
+		if (game_data->items >= (window_state->browser_window.max_lines - 1)){
 			// More games than lines available - we can only show some of them
 			
-			if (window_state->browser_window.select_pos >= (window_state->browser_window.start_pos + window_state->browser_window.max_lines)){
+			if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
 				fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
 				select_i = window_state->browser_window.start_pos;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
-					fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
-					if (i == window_state->browser_window.max_lines){
+					if (select_i == window_state->browser_window.select_pos){
+						fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
 						selected = 1;
 					} else {
+						fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 						selected = 0;	
 					}
 					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].directory, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
@@ -295,6 +296,8 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				}
 			} else {
 				fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+				window_state->browser_window.start_pos = 0;
+				window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
 					if (i == window_state->browser_window.select_pos){
 						selected = 1;
