@@ -85,6 +85,16 @@ static struct COORDS READER_COORDS(){
 	return coords;
 }
 
+// Config menu window coordinates
+static struct COORDS CONFIG_COORDS(){
+	COORDS coords;
+	coords.x = 80;
+	coords.y = 20;
+	coords.w = (SCREEN_W - 160);
+	coords.h = (SCREEN_H - 40);
+	return coords;
+}
+
 // Structure which holds data on what games are visible in the scrolling window
 // which game is currently highlighted, etc.
 typedef struct BROWSER_WINDOW_DATA {
@@ -120,6 +130,12 @@ typedef struct TEXT_WINDOW_DATA {
 	char buffer[1024];	// Text file buffer
 } TEXT_WINDOW_DATA;
 
+enum WINDOW_CONFIG_OPTION{ OPTION_NONE, OPTION_CSV_EXPORT, OPTION_CSV_IMPORT};
+
+typedef struct CONFIG_WINDOW_DATA {
+	enum WINDOW_CONFIG_OPTION config_option_selected;	
+} WINDOW_CONFIG_OPTION;
+
 // Structure which holds state information for
 // all of the windows on screen.
 typedef struct WINDOW_STATE {	
@@ -127,6 +143,7 @@ typedef struct WINDOW_STATE {
 	struct BROWSER_WINDOW_DATA browser_window;	// Track state of the browser window
 	struct INFO_WINDOW_DATA info_window;		// Track state of the info window
 	struct TEXT_WINDOW_DATA text_window;		// Track state of the text reader window
+	struct CONFIG_WINDOW_DATA config_window;	// Track state of the config window
 	SDL_Surface *font_normal;
 	SDL_Surface *font_reverse;
 } WINDOW_STATE;

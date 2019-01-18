@@ -8,6 +8,10 @@ core
 *.obj
 *.elf
 
+#Backup files
+*.c~
+*.h~
+
 # Linker output
 *.ilk
 *.map

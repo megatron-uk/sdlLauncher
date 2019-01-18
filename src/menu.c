@@ -9,6 +9,7 @@
 #include "menu.h"
 #include "bmp2text.h"
 #include "gamedata.h"
+#include "csvlib.h"
 
 // Global variable to hold SDL events
 SDL_Event event;
@@ -41,10 +42,30 @@ int menu_sdl_init(FILE *log){
 }
 
 // Draw a bordered box at pos x,y, of height h and width w, and of border px thickness
-int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, int px){
+int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, int px, int shadow_px){
 	
 	SDL_Rect box;	// A bounding box for the borders we want to draw
 	int r;		// return codes
+	
+	box.x = x + shadow_px;
+	box.y = y + shadow_px;
+	box.w = w;
+	box.h = h;
+	// Shadow in grey
+	if (shadow_px > 0){
+		// Outer box in white
+		r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 128, 128, 128));
+		if ( r != 0){
+			fprintf(log, "menu_borders: Shadow SDL Fill Error: %s\n", SDL_GetError());
+			SDL_Quit();
+			fclose(log);
+			sleep(2);
+			exit(-1);
+		} else {
+			//fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
+			//fflush(log);
+		}
+	}
 	
 	box.x = x;
 	box.y = y;
@@ -53,7 +74,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	// Outer box in white
 	r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 255, 255, 255));
 	if ( r != 0){
-		fprintf(log, "menu_borders Outer SDL Fill Error: %s\n", SDL_GetError());
+		fprintf(log, "menu_borders: Outer SDL Fill Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
@@ -70,7 +91,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	// Inner box in black
 	r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 0, 0, 0));
 	if ( r != 0){
-		fprintf(log, "menu_borders Inner SDL Fill Error: %s\n", SDL_GetError());
+		fprintf(log, "menu_borders: Inner SDL Fill Error: %s\n", SDL_GetError());
 		fflush(log);
 		SDL_Quit();
 		fclose(log);
@@ -135,7 +156,7 @@ int menu_gamecover_init(SDL_Surface *display, FILE *log){
 	
 	// redraw our box borders and blank any previous bitmap
 	COORDS coords = GAMECOVER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1);	
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);	
 	return 0;
 }
 
@@ -144,7 +165,7 @@ int menu_browser_init(SDL_Surface *display, FILE *log){
 
 	// Draw an outlined box at 0,137 that is 320x63 pixels for our game list window
 	COORDS coords = BROWSER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1);
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
 }
 
@@ -153,7 +174,7 @@ int menu_info_init(SDL_Surface *display, FILE *log){
 
 	// Draw an outlined box at 0,0 that is 138x137 pixels for our info window
 	COORDS coords = INFO_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1);
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
 }
 
@@ -161,7 +182,15 @@ int menu_info_init(SDL_Surface *display, FILE *log){
 int menu_textreader_init(SDL_Surface *display, FILE *log){
 	
 	COORDS coords = READER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1);
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 2, 4);
+	return 0;
+}
+
+// Draw the config menu window
+int menu_config_init(SDL_Surface *display, FILE *log){
+	
+	COORDS coords = CONFIG_COORDS();
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 2, 4);
 	return 0;
 }
 
@@ -216,6 +245,85 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 	}
 	SDL_FreeSurface(bmp);
 	return r;
+}
+
+int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+	
+	COORDS coords = CONFIG_COORDS();	// Coordinates of SDL window
+	FILE *csv;							// File handler for csv import/export
+	int r;								// return codes
+	
+	fprintf(log, "menu_config_populate: Running\n");
+	fflush(log);
+	// Blank and redraw window borders
+	menu_config_init(display, log);
+		
+	// List config options
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Config Menu", 			(coords.x + 45), (coords.y + 3), 1);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Esc - Close menu", 		(coords.x + 2), (coords.y + 3 + (2 * FONT_H)), 0);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F1  - Export CSV", 		(coords.x + 2), (coords.y + 3 + (3 * FONT_H)), 0);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F2  - Import CSV", 		(coords.x + 2), (coords.y + 3 + (4 * FONT_H)), 0);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F3  - Rescan folders", 	(coords.x + 2), (coords.y + 3 + (5 * FONT_H)), 0);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
+	
+	// Run anything that is currently selected
+	if (window_state->config_window.config_option_selected == OPTION_CSV_EXPORT){
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Export data to CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		fflush(log);
+		// Export current game data
+		// Open file
+		csv = fopen(CSVFILE, "w");
+		if (csv != NULL){
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			fflush(log);
+			r = csv_writer(game_data, log, csv);
+			if (r > 0){
+				sprintf(text_buffer, " - %d records written", r);
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			} else {
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error writing records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			}
+			// Close file
+			fclose(csv);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+		} else {
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+		}
+		// If successful or not, cancel export option
+		window_state->config_window.config_option_selected == OPTION_NONE;
+	}
+	
+	if (window_state->config_window.config_option_selected == OPTION_CSV_IMPORT){
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Import data from CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		fflush(log);
+		// Import game data
+		// Open file
+		csv = fopen(CSVFILE, "r");
+		if (csv != NULL){
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			fflush(log);
+			r = csv_reader(game_data, log, csv);
+			if (r > 0){
+				sprintf(text_buffer, " - %d records read", r);
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			} else {
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			}
+			// Close file
+			fclose(csv);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+		} else {
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+		}		
+		// If successful or not, cancel import option
+		window_state->config_window.config_option_selected == OPTION_NONE;
+	}	
+	return 0;
 }
 
 int menu_gamecover_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
@@ -640,6 +748,26 @@ int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 	}
 }
 
+// Send events to the config window
+int menu_toggle_config_window_mode(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+	
+	if (event.key.keysym.sym == SDLK_F1){
+		// Export gamedata to CSV
+		fprintf(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
+		window_state->config_window.config_option_selected = OPTION_CSV_EXPORT;
+		return 0;	
+	} else if (event.key.keysym.sym == SDLK_F2){
+		// Import gamedata from CSV
+		fprintf(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
+		window_state->config_window.config_option_selected = OPTION_CSV_IMPORT;
+		return 0;	
+	} else {
+		fprintf(log, "menu_toggle_config_window_mode: Default to no option selected\n");
+		window_state->config_window.config_option_selected = OPTION_NONE;
+		return 0;
+	}
+}
+
 // Toggle rows and selected item in info window
 int menu_toggle_info_window_mode(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
 	
@@ -794,6 +922,9 @@ int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
 	window_state->info_window.binary_selected = 0;
 	window_state->info_window.readme_selected = 0;
 	
+	// Set config option window choices
+	window_state->config_window.config_option_selected = OPTION_NONE;
+	
 	// Maximum number of lines we can show in text reader
 	// Maximum number of characters in width we can show in text reader
 	
@@ -853,7 +984,9 @@ int main(int argc, char* argv[]){
 	SDL_Flip(display);
 	
 	// Get initial list of games in a directory
+	r = 0;
 	r = scangames(log, GAMEDIR, &game_data);
+	
 	if (r < 0){
 		menu_infobox_print(display, &window_state, log, ERROR_GAMEDIR_OPEN);	
 	} else {
@@ -891,9 +1024,48 @@ int main(int argc, char* argv[]){
 						}
 						quit = 1;
 						break;
+					case SDLK_c:
+						if (window_state.selected_window != W_CONFIG){
+							// Open config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+							window_state.selected_window = W_CONFIG;
+						}
+						break;
 					case SDLK_F1:
-						// Open config window
-						
+						if (window_state.selected_window == W_CONFIG){
+							// Send F1 to config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_F2:
+						if (window_state.selected_window == W_CONFIG){
+							// Send F2 to config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_F3:
+						if (window_state.selected_window == W_CONFIG){
+							// Send F3 to config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_F4:
+						if (window_state.selected_window == W_CONFIG){
+							// Send F4 to config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_F5:
+						if (window_state.selected_window == W_CONFIG){
+							// Send F5 to config window
+							menu_toggle_config_window_mode(display, log, &game_data, &window_state, event);
+							menu_config_populate(display, log, &game_data, &window_state);
+						}
 						break;
                     case SDLK_UP: 
                     	if (window_state.selected_window == W_BROWSER){
@@ -967,6 +1139,8 @@ int main(int argc, char* argv[]){
                     	
                     	// Close config window
                     	if (window_state.selected_window == W_CONFIG){
+                    		// Disable any config mode
+                    		window_state.config_window.config_option_selected == OPTION_NONE;
                     		menu_browser_populate(display, log, &game_data, &window_state);
                     		menu_info_populate(display, log, &game_data, &window_state);
                     		menu_gamecover_populate(display, log, &game_data, &window_state);
