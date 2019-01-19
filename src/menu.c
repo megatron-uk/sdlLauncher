@@ -35,8 +35,9 @@ int menu_sdl_init(FILE *log){
 		exit(-1);
 	} else {
 		SDL_VERSION(&sdl_compiled);
-		fprintf(log, "menu_sdl_init: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
-		//fflush(log);
+		if (LOGGING){
+			fprintf(log, "menu_sdl_init: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
+		}
 		return r;
 	}
 }
@@ -62,8 +63,9 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 			sleep(2);
 			exit(-1);
 		} else {
-			//fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-			//fflush(log);
+			if (LOGGING){
+				fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
+			}
 		}
 	}
 	
@@ -80,8 +82,9 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 		sleep(2);
 		exit(-1);
 	} else {
-		//fprintf(log, "menu_borders: Outer border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-		//fflush(log);
+		if (LOGGING){
+			fprintf(log, "menu_borders: Outer border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
+		}
 	}
 	
 	box.x = x + px;
@@ -92,14 +95,14 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 0, 0, 0));
 	if ( r != 0){
 		fprintf(log, "menu_borders: Inner SDL Fill Error: %s\n", SDL_GetError());
-		fflush(log);
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
 		exit(-1);
 	} else {
-		//fprintf(log, "menu_borders: Inner border at (%d,%d) w:%d x h:%d\n", box.x, box.y, box.w, box.h);
-		//fflush(log);	
+		if (LOGGING){
+			fprintf(log, "menu_borders: Inner border at (%d,%d) w:%d x h:%d\n", box.x, box.y, box.w, box.h);
+		}	
 	}
 	return r;
 	
@@ -110,12 +113,11 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 	
 	// Iterate over the string, printing each line seperated by \n on a
 	COORDS coords = INFO_COORDS();
-	int max_chars = (coords.w / FONT_W) - 1;			// NUmber of characters on a row
-	char *text_line = malloc(max_chars * sizeof(char));	// Allocate a buffer of the size of characters we can print on a row
+	int max_chars = (coords.w / FONT_W) - 1;	// NUmber of characters on a row
+	char text_line[max_chars];					// Allocate a buffer of the size of characters we can print on a row
 	int src_pos = 0;
 	int dest_pos = 0;
 	int line_number = 0;
-	int i;
 	int x;
 	int y;
 	
@@ -128,26 +130,20 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 		}
 			
 		// We reach a carriage return or end of string
-		if ((text[src_pos] == '\n') | ((src_pos + 1) == strlen(text))){
+		if ((text[src_pos] == '\n') || ((src_pos + 1) == strlen(text))){
 			// Bitmap position
 			x = coords.x + 2;
 			y = coords.y + 2 + (line_number * 8);
 			
 			// Carriage return, print line buffer
-			//fprintf(log, "Displaying text at line %d (x:%d,y:%d) [%s]\n", line_number, x, y, text_line);
-			
-			// Inset by 2px from left hand border and 4px + (font height * line number) from top border
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
 			
 			// Reset line buffer for next pass
-			for (i = 0; i < max_chars; i++){
-				text_line[i] =  '\0';
-			}
+			memset(text_line, '\0', max_chars);
 			dest_pos = 0;
 			line_number++;
 		}
 	}
-	free(text_line);
 	return 0;
 }
 
@@ -200,7 +196,7 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 	COORDS coords = GAMECOVER_COORDS();
 	SDL_Surface *bmp = NULL;	// Raw bitmap as loaded from disk
 	SDL_Rect src, dest;			// Cropping surfaces for displaying bitmaps
-	int r;						// return codes
+	int r = 0;						// return codes
 
 	//fprintf(log, "menu_gamecover_load: Loading [%s]\n", fname);
 	// Load splash bitmap
@@ -253,8 +249,8 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	FILE *csv;							// File handler for csv import/export
 	int r;								// return codes
 	
-	fprintf(log, "menu_config_populate: Running\n");
-	fflush(log);
+	//fprintf(log, "menu_config_populate: Running\n");
+	//fflush(log);
 	// Blank and redraw window borders
 	menu_config_init(display, log);
 		
@@ -266,17 +262,24 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F3  - Rescan folders", 	(coords.x + 2), (coords.y + 3 + (5 * FONT_H)), 0);
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
+
+	//==========================================
+	// rescan folders
+	if (window_state->config_window.config_option_selected == OPTION_RESCAN){
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Rescan all folders...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		// If successful or not, cancel export option
+		window_state->config_window.config_option_selected = OPTION_NONE;
+	}
 	
-	// Run anything that is currently selected
+	//==========================================
+	// CSV export
 	if (window_state->config_window.config_option_selected == OPTION_CSV_EXPORT){
 		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Export data to CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
-		fflush(log);
 		// Export current game data
 		// Open file
 		csv = fopen(CSVFILE, "w");
 		if (csv != NULL){
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			fflush(log);
 			r = csv_writer(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records written", r);
@@ -288,23 +291,25 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 			fclose(csv);
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			
 		} else {
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " CSV file may be corrupt", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		}
 		// If successful or not, cancel export option
-		window_state->config_window.config_option_selected == OPTION_NONE;
+		window_state->config_window.config_option_selected = OPTION_NONE;
 	}
 	
+	//==========================================
+	// CSV import
 	if (window_state->config_window.config_option_selected == OPTION_CSV_IMPORT){
 		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Import data from CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
-		fflush(log);
 		// Import game data
 		// Open file
 		csv = fopen(CSVFILE, "r");
 		if (csv != NULL){
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			fflush(log);
 			r = csv_reader(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records read", r);
@@ -316,12 +321,15 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 			fclose(csv);
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
+		
 		} else {
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Game list NOT updated", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		}		
 		// If successful or not, cancel import option
-		window_state->config_window.config_option_selected == OPTION_NONE;
+		window_state->config_window.config_option_selected = OPTION_NONE;
 	}	
 	return 0;
 }
@@ -354,22 +362,10 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	COORDS coords = BROWSER_COORDS();
 	int i;
 	int select_i;
-	int new_start_pos;
 	bool selected = 0;
 	
-	// Maximum number of rows we can show
-	
-	// Current start pos
-	// Current end pos
-
 	// Blank and redraw window borders
 	menu_browser_init(display, log);
-	
-	//fprintf(log, "menu_browser_populate: max lines: %d\n", window_state->browser_window.max_lines);
-	//fprintf(log, "menu_browser_populate: start_pos: %d\n", window_state->browser_window.start_pos);
-	//fprintf(log, "menu_browser_populate: end_pos: %d\n", window_state->browser_window.end_pos);
-	//fprintf(log, "menu_browser_populate: select_pos: %d\n", window_state->browser_window.select_pos);
-	//fprintf(log, "menu_browser_populate: last_pos: %d\n", window_state->browser_window.last_pos);
 	
 	// Any games?
 	if (game_data->items > 0){
@@ -388,7 +384,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 						//fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 						selected = 0;	
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].directory, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
 					select_i++;
 				}
 				
@@ -412,7 +408,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 					} else {
 						selected = 0;	
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].directory, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
 				}
 			}
 			
@@ -424,7 +420,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				} else {
 					selected = 0;	
 				}
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].directory, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
 			}
 		}
 	} else {
@@ -453,7 +449,9 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		if (window_state->info_window.readme_selected == 3){
 			strcat(window_state->text_window.buffer, game_data->game_data_items[pos].readme_3);
 		}
-		fprintf(log, "menu_textreader_file: Open file [%s]\n", window_state->text_window.buffer);
+		if (LOGGING){
+			fprintf(log, "menu_textreader_file: Open file [%s]\n", window_state->text_window.buffer);
+		}
 		window_state->text_window.readme = fopen(window_state->text_window.buffer, "r");
 		memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 		if (window_state->text_window.readme != NULL){
@@ -482,60 +480,60 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 // Update the text reader window
 int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
-	int game_id = window_state->browser_window.select_pos;				// Current game_id
-	struct GAME_DATA_ITEM game = game_data->game_data_items[game_id];	// Current game data
 	struct COORDS coords = READER_COORDS();								// Geometry of reader window
-	int total_max_chars;// Total number of printable chars (chars per line * lines)
+	int total_max_chars;		// Total number of printable chars (chars per line * lines)
 	int last_i,i;				// Loop counter
-	int f_size = 0;		// Size of the text file
-	char c;				// Hold each char from the text buffer
+	int f_size = 0;				// Size of the text file
+	char c;						// Hold each char from the text buffer
 	int total_printed_chars = 0;	// Total count of all chars printed so far. Must be < total_max_chars
-	int printed_chars = 0;	// Count of chars printed so far for this line. Must be < window_state->text_window.max_chars
-	int printed_lines = 0;	// Count of lines printed so far. Must be < window_state->text_window.max_lines
-	char token_cr = '\n';	// Carriage return
-	char token_lf = '\r';	// Carriage return + linefeed
+	int printed_chars = 0;		// Count of chars printed so far for this line. Must be < window_state->text_window.max_chars
+	int printed_lines = 0;		// Count of lines printed so far. Must be < window_state->text_window.max_lines
+	char token_cr = '\n';		// Carriage return
+	char token_lf = '\r';		// Carriage return + linefeed
 	
 	window_state->text_window.max_lines = (coords.h / FONT_H) - 2;
 	window_state->text_window.max_chars = (coords.w / FONT_W) - 2;
 	total_max_chars = window_state->text_window.max_lines * window_state->text_window.max_chars;
-		
-	//fprintf(log, "menu_textreader_populate: Max chars %d\n", window_state->text_window.max_chars);
-	//fprintf(log, "menu_textreader_populate: Max lines %d\n", window_state->text_window.max_lines);
 	
-	//fprintf(log, "menu_textreader_populate: Reading file\n");
+	if (LOGGING){
+		fprintf(log, "menu_textreader_populate: Reading file\n");
+	}
 	fseek(window_state->text_window.readme, 0L, SEEK_END);
 	f_size = ftell(window_state->text_window.readme);
 	fseek(window_state->text_window.readme, 0L, SEEK_SET);
 	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
-	fprintf(log, "menu_textreader_populate: File is %d bytes\n", f_size);
-	fprintf(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
-	//fflush(log);
+	if (LOGGING){
+		fprintf(log, "menu_textreader_populate: File is %d bytes\n", f_size);
+		fprintf(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
+	}
 	
 	if (f_size < sizeof(window_state->text_window.buffer)){
 		// File is smaller than the available buffer, so read it all
-		//fprintf(log, "menu_textreader_populate: Reading entire file\n");
-		//fflush(log);
+		if (LOGGING){
+			fprintf(log, "menu_textreader_populate: Reading entire file\n");
+		}
 		i = fread(window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
-		//fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
-		//printf("%s", window_state->text_window.buffer);
+		if (LOGGING){
+			fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
+		}
 	} else {
 		// File is larger than the available buffer, so read a maximum of total_max_chars
-		//fprintf(log, "menu_textreader_populate: Reading partial file\n");
-		//fflush(log);
+		if (LOGGING){
+			fprintf(log, "menu_textreader_populate: Reading partial file\n");
+		}
 		for (i = 0; i < total_max_chars; i++){
 			c = fgetc(window_state->text_window.readme);
 			window_state->text_window.f_pos++;
-			//printf("%c", c);
 			if (c == EOF){
-				//fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
-				//fflush(log);
+				if (LOGGING){
+					fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
+				}
 				break;
 			} else {
 				window_state->text_window.buffer[i] = c;
 			}
 		}
 	}
-	//fprintf(log, "menu_textreader_populate: Data is %u bytes\n", strlen(window_state->text_window.buffer));
 	
 	// If we're here, we either have the entire file in the buffer, or we've read, at most, total_max_chars.
 	// We now need to split the buffer by end-of-line characters and ensure that we don't have more than
@@ -556,10 +554,6 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			if (c == token_cr){
 				// newline
 				// Print buffer and start new line
-				//fprintf(log, "%d %d %d NEWLINE\n", printed_lines, i, last_i);
-				//fprintf(log, "menu_textreader_populate: Printing line %d\n", printed_lines);
-				//fprintf(log, "menu_textreader_populate: [%s]\n", text_buffer);
-				//fflush(log);
 				// Print line buffer up to this point
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
@@ -567,11 +561,8 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 				break;
 			} else if (c == token_lf){
 				// linefeed - always comes after newline, so ignore
-				//fprintf(log, "%d %d %d LINEFEED\n", printed_lines, i, last_i);
 			} else {
 				// plain character, add to buffer
-				//fprintf(log, "%d %d %d [%c]\n", printed_lines, i, last_i, c);
-				//fflush(log);
 				printed_chars++;
 				total_printed_chars++;
 				text_buffer[i] = c;
@@ -579,7 +570,9 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			
 			// Total number of visible lines reached - break inner loop
 			if (printed_lines == window_state->text_window.max_lines){
-				//fprintf(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
+				if (LOGGING){
+					fprintf(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
+				}
 				// Save position and exit
 				break;
 			}
@@ -587,13 +580,17 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines >= window_state->text_window.max_lines){
-			//fprintf(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			if (LOGGING){
+				fprintf(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			}
 			// Save position and exit
 			break;
 		} else if (printed_lines < window_state->text_window.max_lines){
 			//fprintf(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
 			if (strlen(text_buffer) > 0){
-				//fprintf(log, "menu_textreader_populate: %d characters left to print on line %d\n", strlen(text_buffer), printed_lines);
+				if (LOGGING){
+					fprintf(log, "menu_textreader_populate: %d characters left to print on line %d\n", strlen(text_buffer), printed_lines);
+				}
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
 				printed_lines++;
@@ -602,12 +599,16 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines == window_state->text_window.max_lines){
-			//fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			if (LOGGING){
+				fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			}
 			// Save position and exit
 			break;
 		}
 	}
-	//fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
+	if (LOGGING){
+		fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
+	}
 	// Save state of file pointer so we know where to load next time around
 	window_state->text_window.f_pos = last_i;
 	return 0;
@@ -626,9 +627,6 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 	int readme_y_pos = coords.y + 2 + (2 * FONT_H);
 	int gamedata_y_pos = coords.y + 2 + (4 * FONT_H);
 	int gamedata_y_pos2 = coords.y + 2 + (6 * FONT_H);
-	
-	//fprintf(log, "game_id: %d\n", game_id);
-	//fprintf(log, "last_game_id: %d\n", last_game_id);
 	
 	// Blank and redraw window borders
 	menu_info_init(display, log);
@@ -736,14 +734,20 @@ int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 	
 	if (window_state->selected_window == W_BROWSER){
 		window_state->selected_window = W_INFO;
-		//fprintf(log, "menu_toggle_window: Info panel now selected\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_window: Info panel now selected\n");
+		}
 		return 0;
 	} else if (window_state->selected_window == W_INFO){
 		window_state->selected_window = W_BROWSER;
-		//fprintf(log, "menu_toggle_window: Browser now selected\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_window: Browser now selected\n");
+		}
 		return 0;
 	} else {
-		//fprintf(log, "menu_toggle_window: Error unknown window mode\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_window: Error unknown window mode\n");
+		}
 		return -1;
 	}
 }
@@ -753,16 +757,28 @@ int menu_toggle_config_window_mode(SDL_Surface *display, FILE *log, struct GAME_
 	
 	if (event.key.keysym.sym == SDLK_F1){
 		// Export gamedata to CSV
-		fprintf(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
+		}
 		window_state->config_window.config_option_selected = OPTION_CSV_EXPORT;
 		return 0;	
 	} else if (event.key.keysym.sym == SDLK_F2){
 		// Import gamedata from CSV
-		fprintf(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
+		}
 		window_state->config_window.config_option_selected = OPTION_CSV_IMPORT;
 		return 0;	
+	} else if (event.key.keysym.sym == SDLK_F3){
+		if (LOGGING){
+			fprintf(log, "menu_toggle_config_window_mode: Rescan all game folders\n");
+		}
+		window_state->config_window.config_option_selected = OPTION_RESCAN;
+		return 0;
 	} else {
-		fprintf(log, "menu_toggle_config_window_mode: Default to no option selected\n");
+		if (LOGGING){
+			fprintf(log, "menu_toggle_config_window_mode: Default to no option selected\n");
+		}
 		window_state->config_window.config_option_selected = OPTION_NONE;
 		return 0;
 	}
@@ -849,8 +865,10 @@ int menu_toggle_info_window_mode(SDL_Surface *display, FILE *log, struct GAME_DA
 			// View a readme file
 			if (window_state->info_window.readme_selected > 0){
 				window_state->selected_window = W_TEXT;
-				fprintf(log, "menu_toggle_info_window_mode: Open document %d\n", window_state->info_window.readme_selected);
-				fflush(log);
+				if (LOGGING){
+					fprintf(log, "menu_toggle_info_window_mode: Open document %d\n", window_state->info_window.readme_selected);
+					fflush(log);
+				}
 				// Open reader window
 				menu_textreader_init(display, log);
 				// Open file handler
@@ -950,7 +968,6 @@ int main(int argc, char* argv[]){
 
 	fprintf(log, "Menu tool running\n");
 	fprintf(log, "-----------------\n");
-	fflush(log);
 
 	// Init game data
 	menu_init_gamedata(log, &game_data);
@@ -962,7 +979,7 @@ int main(int argc, char* argv[]){
 	menu_sdl_init(log);
 	
 	// Set display mode for the SDL screen
-	display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, SCREEN_BPP, SDL_HWSURFACE);
+	display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, SCREEN_BPP, SDL_SWSURFACE);
 	if (display == NULL){
 		fprintf(log, "SDL Driver Error: %s\n", SDL_GetError());
 		SDL_Quit();
@@ -970,10 +987,12 @@ int main(int argc, char* argv[]){
 		sleep(2);
 		exit(-1);
 	} else {
-		fprintf(log, "SDL Driver %s\n", SDL_VideoDriverName(vdriver, 32));
-		fprintf(log, "SDL Driver mode %dx%dx%dbpp\n", display->w, display->h, display->format->BitsPerPixel);
-		fprintf(log, "SDL Driver has HW Surfaces? (%d)\n", SDL_GetVideoSurface()->flags & SDL_HWSURFACE);
-		fflush(log);
+		if (LOGGING){
+			fprintf(log, "SDL Driver %s\n", SDL_VideoDriverName(vdriver, 32));
+			fprintf(log, "SDL Driver mode %dx%dx%dbpp\n", display->w, display->h, display->format->BitsPerPixel);
+			fprintf(log, "SDL Driver has HW Surfaces? (%d)\n", SDL_GetVideoSurface()->flags & SDL_HWSURFACE);
+			fflush(log);
+		}
 	}
 	
 	// Init all windows
@@ -985,7 +1004,7 @@ int main(int argc, char* argv[]){
 	
 	// Get initial list of games in a directory
 	r = 0;
-	r = scangames(log, GAMEDIR, &game_data);
+	//r = scangames(log, GAMEDIR, &game_data);
 	
 	if (r < 0){
 		menu_infobox_print(display, &window_state, log, ERROR_GAMEDIR_OPEN);	
@@ -999,9 +1018,7 @@ int main(int argc, char* argv[]){
 	menu_gamecover_populate(display, log, &game_data, &window_state);
 	menu_info_populate(display, log, &game_data, &window_state);
 	SDL_Flip(display);
-	
-	fflush(log);
-	
+		
 	// Main loop looking for user input
     while ( quit == false ){
 		//While there's an event to handle
@@ -1009,15 +1026,15 @@ int main(int argc, char* argv[]){
 			//If the user has Xed out the window
             if (event.type == SDL_QUIT){
 				//Quit the program
-				fprintf(log, "Quit selected\n");
-				fflush(log);
+				if (LOGGING){
+					fprintf(log, "Quit selected\n");
+					fflush(log);
+				}
 			} 
 			// Check for keypresses
 			if (event.type == SDL_KEYDOWN){
 				switch(event.key.keysym.sym){
 					case SDLK_q:
-						fprintf(log, "Quit selected\n");
-						fflush(log);
 						// Close textreader if open
 						if (window_state.selected_window == W_TEXT){
 							menu_textreader_file(log, &window_state, &game_data, 0);
@@ -1140,7 +1157,7 @@ int main(int argc, char* argv[]){
                     	// Close config window
                     	if (window_state.selected_window == W_CONFIG){
                     		// Disable any config mode
-                    		window_state.config_window.config_option_selected == OPTION_NONE;
+                    		window_state.config_window.config_option_selected = OPTION_NONE;
                     		menu_browser_populate(display, log, &game_data, &window_state);
                     		menu_info_populate(display, log, &game_data, &window_state);
                     		menu_gamecover_populate(display, log, &game_data, &window_state);
@@ -1150,23 +1167,25 @@ int main(int argc, char* argv[]){
                     default:
                     	break;
                 }
-                // Refresh all windows
-				
-				
+                // Refresh all windows				
 				SDL_Flip(display);
 				
 				// Flush any log message
-				fflush(log);
+				if (LOGGING){
+					fflush(log);
+				}
 			}
 		}
 		//SDL_Delay(100);
     }	
 	// Tidy up SDL before closing
-	SDL_Delay(1500);
+	SDL_Delay(500);
 	SDL_FreeSurface(display);
 	SDL_Quit();
 	
-	fprintf(log, "Exiting\n");
+	if (LOGGING){
+		fprintf(log, "Exiting\n");
+	}
 	fclose(log);
 	return 0;
 }

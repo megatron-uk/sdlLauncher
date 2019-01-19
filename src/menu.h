@@ -1,5 +1,12 @@
 #include <SDL/SDL.h>
 
+#ifdef LOGGING
+#define LOGGING 1
+#endif
+#ifndef LOGGING
+#define LOGGING 0
+#endif
+
 // Default names of useful files
 #define EXE_SUFFIX ".tos"
 #define EXE_SUFFIX_U ".TOS"
@@ -130,7 +137,7 @@ typedef struct TEXT_WINDOW_DATA {
 	char buffer[1024];	// Text file buffer
 } TEXT_WINDOW_DATA;
 
-enum WINDOW_CONFIG_OPTION{ OPTION_NONE, OPTION_CSV_EXPORT, OPTION_CSV_IMPORT};
+enum WINDOW_CONFIG_OPTION{ OPTION_NONE, OPTION_CSV_EXPORT, OPTION_CSV_IMPORT, OPTION_RESCAN};
 
 typedef struct CONFIG_WINDOW_DATA {
 	enum WINDOW_CONFIG_OPTION config_option_selected;	

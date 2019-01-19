@@ -22,7 +22,9 @@ SDL_Surface* loadfont(FILE *log, bool inverse){
 		fprintf(log, "loadfont: Error loading bitmap - %s\n", SDL_GetError());
 		return NULL;
 	} else {
-		fprintf(log, "loadfont: Loaded %dx%dx%dbpp\n", font_surface->w, font_surface->h, font_surface->format->BitsPerPixel);
+		if (LOGGING){
+			fprintf(log, "loadfont: Loaded %dx%dx%dbpp\n", font_surface->w, font_surface->h, font_surface->format->BitsPerPixel);
+		}
 	}
 	return font_surface;
 }
@@ -41,10 +43,8 @@ int text2surface(SDL_Surface *display, SDL_Surface *font_normal, SDL_Surface *fo
 	char c;
 	
 	if (inverse == 1){
-		//fprintf(log, "text2surface: Reverse font selected\n");
 		font = font_reverse;
 	} else {
-		//fprintf(log, "text2surface: Normal font selected\n");
 		font = font_normal;
 	}
 

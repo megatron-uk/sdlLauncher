@@ -25,8 +25,9 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	int pos = game_data->pos;
 	char *substring;
 		
-	fprintf(log, "set_gamedata: Setting gamedata[%d] object for [%s]\n", game_data->pos, gamename);
-	//fflush(log);
+	if (LOGGING){
+		fprintf(log, "set_gamedata: Setting gamedata[%d] object for [%s]\n", game_data->pos, gamename);
+	};
 	
 	// Blank everything first
 	memset(game_data->game_data_items[pos].name, '\0', GAME_NAME_LEN);
@@ -53,7 +54,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	strcpy(fullpath, gamepath);
 	strcat(fullpath, DIRSEP);
 	strcat(fullpath, gamename);
-	strncpy(game_data->game_data_items[pos].path, fullpath, strlen(fullpath));
+	strcpy(game_data->game_data_items[pos].path, fullpath);
 	//fprintf(log, "set_gamedata: Full path set [%s]\n", game_data->game_data_items[pos].path);
 	//fflush(log);
 	
@@ -82,29 +83,32 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 #endif
 					// A readme file
 					if ((strcmp(ep->d_name, DEFAULT_README_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_README_NAME_U) == 0)){
-						fprintf(log, "set_gamedata: Default readme [%s]\n", ep->d_name);
-						//fflush(log);
+						if (LOGGING){
+							fprintf(log, "set_gamedata: Default readme [%s]\n", ep->d_name);
+						}
 						game_data->game_data_items[pos].has_readme = 1;
 						memset(game_data->game_data_items[pos].readme_1, '\0', sizeof(game_data->game_data_items[pos].readme_1));
-						strncpy(game_data->game_data_items[pos].readme_1, ep->d_name, strlen(ep->d_name));
+						strcpy(game_data->game_data_items[pos].readme_1, ep->d_name);
 					}
 					
 					// A folder bitmap
 					if ((strcmp(ep->d_name, DEFAULT_BMP_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_BMP_NAME_U) == 0)){
-						fprintf(log, "set_gamedata: Folder bitmap [%s]\n", ep->d_name);
-						//fflush(log);
+						if (LOGGING){
+							fprintf(log, "set_gamedata: Folder bitmap [%s]\n", ep->d_name);
+						}
 						game_data->game_data_items[pos].has_bitmap = 1;
 						memset(game_data->game_data_items[pos].bitmap, '\0', sizeof(game_data->game_data_items[pos].bitmap));
-						strncpy(game_data->game_data_items[pos].bitmap, ep->d_name, strlen(ep->d_name));
+						strcpy(game_data->game_data_items[pos].bitmap, ep->d_name);
 					}
 					
 					// An exe file
 					if ((strcmp(ep->d_name, DEFAULT_EXE_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_EXE_NAME_U) == 0)){
-						fprintf(log, "set_gamedata: Default exe [%s]\n", ep->d_name);
-						//fflush(log);
+						if (LOGGING){
+							fprintf(log, "set_gamedata: Default exe [%s]\n", ep->d_name);
+						}
 						game_data->game_data_items[pos].has_binary = 1;
 						memset(game_data->game_data_items[pos].binary_1, '\0', sizeof(game_data->game_data_items[pos].binary_1));
-						strncpy(game_data->game_data_items[pos].binary_1, ep->d_name, strlen(ep->d_name));
+						strcpy(game_data->game_data_items[pos].binary_1, ep->d_name);
 					}
 					
 					// Something else... maybe another exe?
@@ -120,17 +124,20 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 								// Its's an additional exe
 								if (game_data->game_data_items[pos].binary_2[0] == '\0'){
 									// Additional binary slot 1 free
-									fprintf(log, "set_gamedata: Additional exe 1 [%s]\n", ep->d_name);
-									//fflush(log);
-									strncpy(game_data->game_data_items[pos].binary_2, ep->d_name, strlen(ep->d_name));
+									if (LOGGING){
+										fprintf(log, "set_gamedata: Additional exe 1 [%s]\n", ep->d_name);
+									}
+									strcpy(game_data->game_data_items[pos].binary_2, ep->d_name);
 								} else if (game_data->game_data_items[pos].binary_3[0] == '\0'){
 									// Additional binary slot 2 free
-									fprintf(log, "set_gamedata: Additional exe 2 [%s]\n", ep->d_name);
-									//fflush(log);
-									strncpy(game_data->game_data_items[pos].binary_3, ep->d_name, strlen(ep->d_name));
+									if (LOGGING){
+										fprintf(log, "set_gamedata: Additional exe 2 [%s]\n", ep->d_name);
+									}
+									strcpy(game_data->game_data_items[pos].binary_3, ep->d_name);
 								} else {
-									fprintf(log, "set_gamedata: All additional binaries set\n");
-									//fflush(log);
+									if (LOGGING){
+										fprintf(log, "set_gamedata: All additional binaries set\n");
+									}
 								}
 							} 
 						} else if ((strcmp(substring, README_SUFFIX) == 0) || (strcmp(substring, README_SUFFIX_U) == 0)){
@@ -139,26 +146,33 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 								// Its's an additional readme
 								if (game_data->game_data_items[pos].readme_2[0] == '\0'){
 									// Additional readme slot 1 free
-									fprintf(log, "set_gamedata: Additional readme 1 [%s]\n", ep->d_name);
-									//fflush(log);
-									strncpy(game_data->game_data_items[pos].readme_2, ep->d_name, strlen(ep->d_name));
+									if (LOGGING){
+										fprintf(log, "set_gamedata: Additional readme 1 [%s]\n", ep->d_name);
+									}
+									strcpy(game_data->game_data_items[pos].readme_2, ep->d_name);
 								} else if (game_data->game_data_items[pos].readme_3[0] == '\0'){
 									// Additional readme slot 2 free
-									fprintf(log, "set_gamedata: Additional readme 2 [%s]\n", ep->d_name);
-									//fflush(log);
-									strncpy(game_data->game_data_items[pos].readme_3, ep->d_name, strlen(ep->d_name));
+									if (LOGGING){
+										fprintf(log, "set_gamedata: Additional readme 2 [%s]\n", ep->d_name);
+									}
+									strcpy(game_data->game_data_items[pos].readme_3, ep->d_name);
 								} else {
-									fprintf(log, "set_gamedata: All additional readme's set\n");
-									//fflush(log);
+									if (LOGGING){
+										fprintf(log, "set_gamedata: All additional readme's set\n");
+									}
 								}
 							} 
 						} else {
-							//fprintf(log, "set_gamedata: Not a matching filetype [%s]\n", substring);
+							if (LOGGING){
+								//fprintf(log, "set_gamedata: Not a matching filetype [%s]\n", substring);
+							}
 						}
 					}
 					
 				} else {
-					//fprintf(log, "set_gamedata: Skip subdir [%s]\n", ep->d_name);	
+					if (LOGGING){
+						//fprintf(log, "set_gamedata: Skip subdir [%s]\n", ep->d_name);	
+					}
 				}
 			}
 		}
@@ -167,23 +181,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 		fprintf(log, "set_gamedata: Error - Unable to open directory [%s]\n", fullpath);
 	}
 	
-	/*
-	fprintf(log, ": name [%s]\n", game_data->game_data_items[pos].name);
-	fprintf(log, ": dir [%s]\n", game_data->game_data_items[pos].directory);
-	fprintf(log, ": path [%s]\n", game_data->game_data_items[pos].path);
-	fprintf(log, ": has_readme [%d]\n", game_data->game_data_items[pos].has_readme);
-	fprintf(log, ": has_bitmap [%d]\n", game_data->game_data_items[pos].has_bitmap);
-	fprintf(log, ": has_binary [%d]\n", game_data->game_data_items[pos].has_binary);
-	fprintf(log, ": binary_1 [%s]\n", game_data->game_data_items[pos].binary_1);
-	fprintf(log, ": binary_2 [%s]\n", game_data->game_data_items[pos].binary_2);
-	fprintf(log, ": binary_3 [%s]\n", game_data->game_data_items[pos].binary_3);
-	fprintf(log, ": readme_1 [%s]\n", game_data->game_data_items[pos].readme_1);
-	fprintf(log, ": readme_2 [%s]\n", game_data->game_data_items[pos].readme_2);
-	fprintf(log, ": readme_3 [%s]\n", game_data->game_data_items[pos].readme_3);
-	fflush(log);
-	
-	fprintf(log, "\n");
-	fflush(log);*/
+	//fflush(log);
 	return 0;
 }
 
@@ -209,8 +207,9 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 	memset( &stat_buf, 0, sizeof(struct stat) );
 #endif
 	
-	fprintf(log, "scangames: Scanning for folders: [%s]\n", gamepath);
-	
+	if (LOGGING){
+		fprintf(log, "scangames: Scanning for folders: [%s]\n", gamepath);
+	}
 	dir = opendir(gamepath);
 	
 	if (dir != NULL){
@@ -225,8 +224,9 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 				stat(gamepath, &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif
-					fprintf(log, "scangames: Adding dir: [%s]\n", ep->d_name);
-					//fflush(log);
+					if (LOGGING){
+						fprintf(log, "scangames: Adding dir: [%s]\n", ep->d_name);
+					}
 					set_gamedata(log, gamepath, ep->d_name, game_data);
 					game_data->pos++;
 					game_data->items++;

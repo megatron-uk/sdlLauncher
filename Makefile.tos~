@@ -1,0 +1,16 @@
+# Names of the compiler and friends
+CC = m68k-atari-mint-gcc
+STRIP = m68k-atari-mint-strip
+
+# SDL libraries and paths
+SDL_LIB = -lSDL -lgem
+SDL_INCLUDE = -I/usr/m68k-atari-mint/include
+
+# Compiler flags
+CFLAGS = -Wall -Os $(SDL_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
+SDL_LDFLAGS = $(SDL_LIB)
+
+# What our application is named
+EXE = menu.tos
+
+include Makefile.common  

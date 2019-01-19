@@ -3,7 +3,7 @@
 
 // Define the lookup table for the characters in a 6x8 bitmap font
 const char *FONT_BITMAP = "ASSETS/white.bmp"; // Standard font bitmap
-const char *FONT_BITMAP_REV = "ASSETS/black.bmp"; // Inverted bitmap
+const char *FONT_BITMAP_REV = "ASSETS/black2.bmp"; // Inverted bitmap
 
 typedef struct CHAR_SYM {
 	char sym;			// The alphanumeric symbol that this bitmap represents
