@@ -273,6 +273,7 @@ int comparegames(const void *s1, const void *s2){
 		return 1;;
 	}
 	
+	return 0;
 }
 
 // Sorts the list of games in alphabetical order
