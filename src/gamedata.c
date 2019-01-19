@@ -180,16 +180,17 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	} else {
 		fprintf(log, "set_gamedata: Error - Unable to open directory [%s]\n", fullpath);
 	}
-	
-	//fflush(log);
+	if (LOGGING){
+		fflush(log);
+	}
 	return 0;
 }
 
-// Return data on a single game; bitmap, exe name etc.
-int get_gamedata(char *gamename, struct GAME_DATA *game_data){
+// Return index position of a single game given its name
+int get_gamedata(FILE *log, char *gamename, struct GAME_DATA *game_data){
 	
 	int i;
-	for (i = 0; i<GAME_DATA_MAX; i++){
+	for (i = 0; i<game_data->items; i++){
 		if (strcmp(game_data->game_data_items[i].name, gamename) == 0){
 			return i;
 		}
@@ -204,16 +205,18 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 	struct dirent *ep;
 #ifdef TOS
 	struct stat stat_buf;
-	memset( &stat_buf, 0, sizeof(struct stat) );
+	memset(&stat_buf, 0, sizeof(struct stat));
 #endif
 	
 	if (LOGGING){
 		fprintf(log, "scangames: Scanning for folders: [%s]\n", gamepath);
+		fflush(log);
 	}
 	dir = opendir(gamepath);
 	
 	if (dir != NULL){
-		while ((ep = readdir (dir)) != NULL){
+		while (((ep = readdir (dir)) != NULL) && (game_data->items < GAME_DATA_MAX)){
+			
 			// Strip out "." and ".." on Posix type systems
 			if (strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..") != 0){
 				// Only add directory entries, not plain files
@@ -225,7 +228,8 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 				if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif
 					if (LOGGING){
-						fprintf(log, "scangames: Adding dir: [%s]\n", ep->d_name);
+						fprintf(log, "scangames: Adding dir: [%s @ game_id %d]\n", ep->d_name, game_data->items);
+						fflush(log);
 					}
 					set_gamedata(log, gamepath, ep->d_name, game_data);
 					game_data->pos++;
@@ -238,6 +242,42 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 		fprintf(log, "scangames: Error - Unable to open directory\n");
 		return -1;
 	}
-	//fflush(log);
+	if (LOGGING){
+		fflush(log);
+	}
 	return game_data->items;
+}
+
+// Compare two game data items and return the id
+// of the game which has the name first in the alphabetic sequence.
+// Used in the sorting function.
+int comparegames(const void *s1, const void *s2){
+
+	struct GAME_DATA_ITEM *game_a = (struct GAME_DATA_ITEM *)s1;
+	struct GAME_DATA_ITEM *game_b = (struct GAME_DATA_ITEM *)s2;
+	int r = 0;
+	r = strcmp(game_a->name, game_b->name);
+	
+	// Game b comes first in character sequence
+	if (r < 0){
+		return -1;
+	}
+	
+	// Game a and b are equal in character sequence
+	if (r == 0){
+		return 0;
+	}
+	
+	// Game a comes first in character sequence
+	if (r > 0){
+		return 1;;
+	}
+	
+}
+
+// Sorts the list of games in alphabetical order
+int sortgames(struct GAME_DATA *game_data){
+	
+	qsort(game_data->game_data_items, game_data->items, sizeof (game_data->game_data_items[0]), comparegames);
+	return 0;
 }

@@ -114,13 +114,19 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 	// Iterate over the string, printing each line seperated by \n on a
 	COORDS coords = INFO_COORDS();
 	int max_chars = (coords.w / FONT_W) - 1;	// NUmber of characters on a row
-	char text_line[max_chars];					// Allocate a buffer of the size of characters we can print on a row
+	char text_line[max_chars + 1];				// Allocate a buffer of the size of characters we can print on a row
 	int src_pos = 0;
 	int dest_pos = 0;
 	int line_number = 0;
 	int x;
 	int y;
-	
+
+	// This is a generic error/warning/info function to use
+	// the info window, so blank anything that was there previously.
+	menu_info_init(display, log);
+
+	// Blank the local text buffer
+	memset(text_line, '\0', sizeof(text_line));
 	for (src_pos = 0; src_pos < strlen(text); src_pos++){		
 		// We read a normal character
 		if (text[src_pos] != '\n'){
@@ -139,7 +145,7 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
 			
 			// Reset line buffer for next pass
-			memset(text_line, '\0', max_chars);
+			memset(text_line, '\0', sizeof(text_line));
 			dest_pos = 0;
 			line_number++;
 		}
@@ -178,7 +184,7 @@ int menu_info_init(SDL_Surface *display, FILE *log){
 int menu_textreader_init(SDL_Surface *display, FILE *log){
 	
 	COORDS coords = READER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 2, 4);
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
 }
 
@@ -186,7 +192,7 @@ int menu_textreader_init(SDL_Surface *display, FILE *log){
 int menu_config_init(SDL_Surface *display, FILE *log){
 	
 	COORDS coords = CONFIG_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 2, 4);
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
 }
 
@@ -260,13 +266,29 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F1  - Export CSV", 		(coords.x + 2), (coords.y + 3 + (3 * FONT_H)), 0);
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F2  - Import CSV", 		(coords.x + 2), (coords.y + 3 + (4 * FONT_H)), 0);
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F3  - Rescan folders", 	(coords.x + 2), (coords.y + 3 + (5 * FONT_H)), 0);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
+	//text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
+	//text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
 
 	//==========================================
 	// rescan folders
-	if (window_state->config_window.config_option_selected == OPTION_RESCAN){
+	if (window_state->config_window.config_option_selected == OPTION_RESCAN){		
 		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Rescan all folders...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Scanning, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+		SDL_Flip(display);
+		r = scangames(log, GAMEDIR, game_data);
+		if (r > 0){
+			sprintf(text_buffer, " - %d games found", r);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			SDL_Flip(display);
+			sortgames(game_data);
+			// Select game list item 0
+			window_state->browser_window.select_pos = 0;
+		} else {
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - No games found" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+		}
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		// If successful or not, cancel export option
 		window_state->config_window.config_option_selected = OPTION_NONE;
 	}
@@ -279,7 +301,8 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 		// Open file
 		csv = fopen(CSVFILE, "w");
 		if (csv != NULL){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Writing, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			SDL_Flip(display);
 			r = csv_writer(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records written", r);
@@ -309,11 +332,14 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 		// Open file
 		csv = fopen(CSVFILE, "r");
 		if (csv != NULL){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Opened CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Reading, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			SDL_Flip(display);
 			r = csv_reader(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records read", r);
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				// Select game list item 0
+				window_state->browser_window.select_pos = 0;
 			} else {
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 			}
@@ -631,100 +657,105 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 	// Blank and redraw window borders
 	menu_info_init(display, log);
 	
-	// Is this the same game chosen as the last time?
-	if (game_id != last_game_id){
-		// Different game to last time, reset all choices
-		window_state->info_window.binary_selected = 0;
-		window_state->info_window.readme_selected = 0;
-		window_state->info_window.info_mode_selected = M_BINARY;
-	}
+	if (game_id >= 0){
 	
-	//==========================================================
-	// Draw all possible binaries
-	// Is the 'choose binary' row currently selected?
-	if (window_state->info_window.info_mode_selected == M_BINARY){
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, binary_y_pos, 0);
-	}
-	// binary_1
-	if (game_data->game_data_items[game_id].binary_1[0] != '\0'){
-		if (window_state->info_window.binary_selected == 1){
-			rev = 1;
-		} else {
-			rev = 0;	
+		// Is this the same game chosen as the last time?
+		if (game_id != last_game_id){
+			// Different game to last time, reset all choices
+			window_state->info_window.binary_selected = 0;
+			window_state->info_window.readme_selected = 0;
+			window_state->info_window.info_mode_selected = M_BINARY;
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_1, x_offset, binary_y_pos, rev);
-	}
-	// binary_2
-	if (game_data->game_data_items[game_id].binary_2[0] != '\0'){
-		if (window_state->info_window.binary_selected == 2){
-			rev = 1;
-		} else {
-			rev = 0;	
+		
+		//==========================================================
+		// Draw all possible binaries
+		// Is the 'choose binary' row currently selected?
+		if (window_state->info_window.info_mode_selected == M_BINARY){
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, binary_y_pos, 0);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_2, (x_offset + ((16 * FONT_W) * 1)), binary_y_pos, rev);
-	}
-	// binary_3
-	if (game_data->game_data_items[game_id].binary_3[0] != '\0'){
-		if (window_state->info_window.binary_selected == 3){
-			rev = 1;
-		} else {
-			rev = 0;	
+		// binary_1
+		if (game_data->game_data_items[game_id].binary_1[0] != '\0'){
+			if (window_state->info_window.binary_selected == 1){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_1, x_offset, binary_y_pos, rev);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_3, (x_offset + ((16 * FONT_W) * 2)), binary_y_pos, rev);
-	}
-	
-	//==========================================================
-	// Draw all possible readme files
-	// Is the 'choose binary' row currently selected?
-	if (window_state->info_window.info_mode_selected == M_README){
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, readme_y_pos, 0);
-	}
-	// readme_1
-	if (game_data->game_data_items[game_id].readme_1[0] != '\0'){
-		if (window_state->info_window.readme_selected == 1){
-			rev = 1;
-		} else {
-			rev = 0;	
+		// binary_2
+		if (game_data->game_data_items[game_id].binary_2[0] != '\0'){
+			if (window_state->info_window.binary_selected == 2){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_2, (x_offset + ((16 * FONT_W) * 1)), binary_y_pos, rev);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_1, x_offset, readme_y_pos, rev);
-	}
-	// readme_2
-	if (game_data->game_data_items[game_id].readme_2[0] != '\0'){
-		if (window_state->info_window.readme_selected == 2){
-			rev = 1;
-		} else {
-			rev = 0;	
+		// binary_3
+		if (game_data->game_data_items[game_id].binary_3[0] != '\0'){
+			if (window_state->info_window.binary_selected == 3){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_3, (x_offset + ((16 * FONT_W) * 2)), binary_y_pos, rev);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_2, (x_offset + ((16 * FONT_W) * 1)), readme_y_pos, rev);
-	}
-	// readme_3
-	if (game_data->game_data_items[game_id].readme_3[0] != '\0'){
-		if (window_state->info_window.readme_selected == 3){
-			rev = 1;
-		} else {
-			rev = 0;	
+		
+		//==========================================================
+		// Draw all possible readme files
+		// Is the 'choose binary' row currently selected?
+		if (window_state->info_window.info_mode_selected == M_README){
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, readme_y_pos, 0);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_3, (x_offset + ((16 * FONT_W) * 2)), readme_y_pos, rev);
+		// readme_1
+		if (game_data->game_data_items[game_id].readme_1[0] != '\0'){
+			if (window_state->info_window.readme_selected == 1){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_1, x_offset, readme_y_pos, rev);
+		}
+		// readme_2
+		if (game_data->game_data_items[game_id].readme_2[0] != '\0'){
+			if (window_state->info_window.readme_selected == 2){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_2, (x_offset + ((16 * FONT_W) * 1)), readme_y_pos, rev);
+		}
+		// readme_3
+		if (game_data->game_data_items[game_id].readme_3[0] != '\0'){
+			if (window_state->info_window.readme_selected == 3){
+				rev = 1;
+			} else {
+				rev = 0;	
+			}
+			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_3, (x_offset + ((16 * FONT_W) * 2)), readme_y_pos, rev);
+		}
+		
+		//====================================
+		// game data - show the path to the game
+		strcpy(text_buffer, "Path: ");
+		strcat(text_buffer, game_data->game_data_items[game_id].path);
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos, 0);
+		
+		// Display counter of game_id selected from total number available
+		// e.g. 13/254
+		strcpy(text_buffer, "Game: ");
+		sprintf(text_buffer_alt, "%d", (window_state->browser_window.select_pos + 1));
+		strcat(text_buffer, text_buffer_alt);
+		strcat(text_buffer, "/");
+		sprintf(text_buffer_alt, "%d", game_data->items);
+		strcat(text_buffer, text_buffer_alt);
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos2, 0);
+		
+		// Update last selected game to this one
+		window_state->browser_window.last_pos = game_id;
+	} else {
+		menu_infobox_print(display, window_state, log, INFO_GAME_LIST_EMPTY);	
 	}
-	
-	//====================================
-	// game data - show the path to the game
-	strcpy(text_buffer, "Path: ");
-	strcat(text_buffer, game_data->game_data_items[game_id].path);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos, 0);
-	
-	// Display counter of game_id selected from total number available
-	// e.g. 13/254
-	strcpy(text_buffer, "Game: ");
-	sprintf(text_buffer_alt, "%d", (window_state->browser_window.select_pos + 1));
-	strcat(text_buffer, text_buffer_alt);
-	strcat(text_buffer, "/");
-	sprintf(text_buffer_alt, "%d", game_data->items);
-	strcat(text_buffer, text_buffer_alt);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos2, 0);
-	
-	// Update last selected game to this one
-	window_state->browser_window.last_pos = game_id;
 	
 	return 0;
 }
@@ -915,8 +946,12 @@ int menu_save_last_game(struct WINDOW_STATE *window_state){
 int menu_init_gamedata(FILE *log, struct GAME_DATA *game_data){
 	
 	// Set initial list position and number of items to zero
+	fprintf(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
+	fprintf(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
 	game_data->pos = 0;
 	game_data->items = 0;
+	fprintf(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
+	fprintf(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
 	
 	return 0;
 }
@@ -979,7 +1014,7 @@ int main(int argc, char* argv[]){
 	menu_sdl_init(log);
 	
 	// Set display mode for the SDL screen
-	display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, SCREEN_BPP, SDL_SWSURFACE);
+	display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, SCREEN_BPP, SDL_HWSURFACE);
 	if (display == NULL){
 		fprintf(log, "SDL Driver Error: %s\n", SDL_GetError());
 		SDL_Quit();
@@ -1002,9 +1037,23 @@ int main(int argc, char* argv[]){
 	menu_infobox_print(display, &window_state, log, INFO_GAMEDIR_WAIT);
 	SDL_Flip(display);
 	
-	// Get initial list of games in a directory
-	r = 0;
+	// This is where we need to decide if we are going to
+	// scan the games directory, load in a pre-built CSV file
+	// or just allow the user to select those options themselves.
+	
+	// Option 1. Get initial list of games in a directory (slow)
 	//r = scangames(log, GAMEDIR, &game_data);
+	//window_state.browser_window.select_pos = 0;
+	
+	// Option 2. Load CSV data
+	// csv = fopen();
+	//r = csv_reader(&game_data, log, csv);
+	//window_state.browser_window.select_pos
+	// fclose(csv);
+	
+	// Option 3. Do nothing
+	window_state.browser_window.select_pos = -1;
+	r = 0;
 	
 	if (r < 0){
 		menu_infobox_print(display, &window_state, log, ERROR_GAMEDIR_OPEN);	
@@ -1020,11 +1069,11 @@ int main(int argc, char* argv[]){
 	SDL_Flip(display);
 		
 	// Main loop looking for user input
-    while ( quit == false ){
+	while ( quit == false ){
 		//While there's an event to handle
 		while (SDL_PollEvent(&event)){
 			//If the user has Xed out the window
-            if (event.type == SDL_QUIT){
+			if (event.type == SDL_QUIT){
 				//Quit the program
 				if (LOGGING){
 					fprintf(log, "Quit selected\n");
@@ -1084,90 +1133,90 @@ int main(int argc, char* argv[]){
 							menu_config_populate(display, log, &game_data, &window_state);
 						}
 						break;
-                    case SDLK_UP: 
-                    	if (window_state.selected_window == W_BROWSER){
-                    		// scroll up through browser list
-                    		menu_toggle_browser_window(log, &game_data, &window_state, event);
-                    		menu_browser_populate(display, log, &game_data, &window_state);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                   			menu_gamecover_populate(display, log, &game_data, &window_state);
-                    	} else if (window_state.selected_window == W_INFO){
-                    		// scroll up between binary/readme lines
-                    		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    	} else if (window_state.selected_window == W_TEXT){
-                    		// scroll up text window
-                    	} else {
-                    		// no-nop	
-                    	}
-                    	break;
-                    case SDLK_DOWN: 
-                    	if (window_state.selected_window == W_BROWSER){
-                    		// scroll down through browser list
-                    		menu_toggle_browser_window(log, &game_data, &window_state, event);
-                    		menu_browser_populate(display, log, &game_data, &window_state);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    		menu_gamecover_populate(display, log, &game_data, &window_state); 
-                    	} else if (window_state.selected_window == W_INFO){
-                    		// scroll down between binary/readme lines
-                    		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    	} else if (window_state.selected_window == W_TEXT){
-                    		// scroll down text window
-                    	} else {
-                    		// no-nop	
-                    	}
-                    	break;
-                    case SDLK_LEFT: 
-                    	// Scroll left between binary/readme lines
-                    	if (window_state.selected_window == W_INFO){
-                    		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    	}
-                    	break;
-                    case SDLK_RIGHT:
-                    	// Scroll right between binary/readme lines
-                    	if (window_state.selected_window == W_INFO){
-                    		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    	}
-                    	break;
-                    case SDLK_TAB:
-                    	// Swap between browser and info windows
-                    	if ((window_state.selected_window == W_INFO) || (window_state.selected_window == W_BROWSER)){
-                    		menu_toggle_window(log, &window_state);
-                    	}
-                    	break;
-                    case SDLK_RETURN:
-                    	// Choose highlighted option of info window
-                    	if (window_state.selected_window == W_INFO){
-                    		menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
-                    	}
-                    	break;
-                    case SDLK_ESCAPE:
-                    	// Close text reader from info window
-                    	if (window_state.selected_window == W_TEXT){
-                    		menu_textreader_file(log, &window_state, &game_data, 0);
-                    		menu_browser_populate(display, log, &game_data, &window_state);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    		menu_gamecover_populate(display, log, &game_data, &window_state);
-                    		window_state.selected_window = W_INFO;
-                    	}
-                    	
-                    	// Close config window
-                    	if (window_state.selected_window == W_CONFIG){
-                    		// Disable any config mode
-                    		window_state.config_window.config_option_selected = OPTION_NONE;
-                    		menu_browser_populate(display, log, &game_data, &window_state);
-                    		menu_info_populate(display, log, &game_data, &window_state);
-                    		menu_gamecover_populate(display, log, &game_data, &window_state);
-                    		window_state.selected_window = W_BROWSER;
-                    	}
-                    	break;
-                    default:
-                    	break;
-                }
-                // Refresh all windows				
+					case SDLK_UP: 
+						if (window_state.selected_window == W_BROWSER){
+							// scroll up through browser list
+							menu_toggle_browser_window(log, &game_data, &window_state, event);
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state);
+						} else if (window_state.selected_window == W_INFO){
+							// scroll up between binary/readme lines
+							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
+							menu_info_populate(display, log, &game_data, &window_state);
+						} else if (window_state.selected_window == W_TEXT){
+							// scroll up text window
+						} else {
+							// no-nop	
+						}
+						break;
+					case SDLK_DOWN: 
+						if (window_state.selected_window == W_BROWSER){
+							// scroll down through browser list
+							menu_toggle_browser_window(log, &game_data, &window_state, event);
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state); 
+						} else if (window_state.selected_window == W_INFO){
+							// scroll down between binary/readme lines
+							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
+							menu_info_populate(display, log, &game_data, &window_state);
+						} else if (window_state.selected_window == W_TEXT){
+							// scroll down text window
+						} else {
+							// no-nop	
+						}
+						break;
+					case SDLK_LEFT: 
+						// Scroll left between binary/readme lines
+						if (window_state.selected_window == W_INFO){
+							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
+							menu_info_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_RIGHT:
+						// Scroll right between binary/readme lines
+						if (window_state.selected_window == W_INFO){
+							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
+							menu_info_populate(display, log, &game_data, &window_state);
+						}
+						break;
+					case SDLK_TAB:
+						// Swap between browser and info windows
+						if ((window_state.selected_window == W_INFO) || (window_state.selected_window == W_BROWSER)){
+							menu_toggle_window(log, &window_state);
+						}
+						break;
+					case SDLK_RETURN:
+						// Choose highlighted option of info window
+						if (window_state.selected_window == W_INFO){
+							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
+						}
+						break;
+					case SDLK_ESCAPE:
+						// Close text reader from info window
+						if (window_state.selected_window == W_TEXT){
+							menu_textreader_file(log, &window_state, &game_data, 0);
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state);
+							window_state.selected_window = W_INFO;
+						}
+						
+						// Close config window
+						if (window_state.selected_window == W_CONFIG){
+							// Disable any config mode
+							window_state.config_window.config_option_selected = OPTION_NONE;
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state);
+							window_state.selected_window = W_BROWSER;
+						}
+						break;
+					default:
+						break;
+				}
+				// Refresh all windows				
 				SDL_Flip(display);
 				
 				// Flush any log message
@@ -1177,7 +1226,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		//SDL_Delay(100);
-    }	
+	}	
 	// Tidy up SDL before closing
 	SDL_Delay(500);
 	SDL_FreeSurface(display);

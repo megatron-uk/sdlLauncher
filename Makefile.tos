@@ -4,8 +4,8 @@ STRIP = m68k-atari-mint-strip
 STACK = /usr/m68k-atari-mint/bin/stack
 
 # SDL libraries and paths
-SDL_LIB = -L/usr/m68k-atari-mint/lib -lSDLmain -lSDL -lgem
-SDL_INCLUDE = -I/usr/m68k-atari-mint/include
+SDL_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
+SDL_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 
 # Compiler flags
 CFLAGS = -Wall -Wno-unused-function -Os $(SDL_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
@@ -17,4 +17,4 @@ EXE = menu.tos
 # Bigger TOS files need a larger stack
 STACKMOD = $(STACK) -S 78K $(EXE)
 
-include Makefile.common  
+include Makefile.common 

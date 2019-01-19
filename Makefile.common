@@ -3,7 +3,7 @@ all: $(EXE)
 
 $(EXE):  $(OBJFILES)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJFILES) $(SDL_LDFLAGS)
-	$(STRIP) -s $(EXE)
+	#$(STRIP) --strip-all $(EXE)
 	$(STACKMOD)
 	
 menu.o: src/menu.c

@@ -1,9 +1,8 @@
 #include <SDL/SDL.h>
 
-#ifdef LOGGING
+#ifdef USE_LOGGING
 #define LOGGING 1
-#endif
-#ifndef LOGGING
+#else
 #define LOGGING 0
 #endif
 
@@ -30,6 +29,9 @@
 #define GAME_NAME_LEN 32
 #define GAME_PATH_LEN 128
 #define GAME_FILE_LEN 13 // 8.3 naming scheme
+
+// Max number of games
+#define GAME_DATA_MAX 250
 
 // Screen geometry
 static unsigned const int SCREEN_W = 320;
@@ -177,11 +179,10 @@ typedef struct GAME_DATA_ITEM {
 // - array of game_data_items
 // - current position in game_data_items array (e.g. for when adding new items)
 typedef struct GAME_DATA {
-	struct GAME_DATA_ITEM game_data_items[250];
+	struct GAME_DATA_ITEM game_data_items[GAME_DATA_MAX];
 	int pos;
 	int items;
 } GAME_DATA;
 
 // Number of games that can be listed
 // This creates an array of N * game_data structs.
-static const int GAME_DATA_MAX = 250;
