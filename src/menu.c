@@ -60,6 +60,7 @@ int main(int argc, char* argv[]){
 	
 	// Init all windows
 	menu_info_init(display, log);
+	menu_alphabet_init(display, log);
 	menu_gamecover_init(display, log);
 	menu_browser_init(display, log);
 	menu_infobox_print(display, &window_state, log, INFO_GAMEDIR_WAIT);
