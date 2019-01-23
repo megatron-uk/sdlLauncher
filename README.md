@@ -24,9 +24,10 @@ This is ideal for *the armchair gamer* who does not want to browse the desktop f
 
 sdlLauncher was developed on x86 Linux, and is intended to be run on the following platforms:
 
- * Linux *- testing/development only*
- * Atari ST / STE / Mega ST
- * Risc OS *- not yet implemented*
+ * Linux: - *testing/development only*
+ * Atari TOS: *ST / STE / Mega ST etc* (TOS >=1.04)
+ * Amiga OS: 500/600/1200 (*Kickstart >=1.3 & OS 3.x*)
+ * Risc OS: A7000,A7000+,Risc PC (*Risc OS 3.6 minimum*) - *not yet implemented*
 
 ## Pre-requisites ##
 

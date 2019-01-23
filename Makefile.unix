@@ -3,12 +3,13 @@ CC = gcc
 STRIP = strip
 
 # SDL libraries and paths
-SDL_LIB = -lSDL
-SDL_INCLUDE =
+APP_LIB = -lSDL
+APP_INCLUDE =
 
 # Compiler flags
 CFLAGS = -Wall -Wno-unused-function -O3 $(SDL_INCLUDE) -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
-SDL_LDFLAGS = $(SDL_LIB)
+LINK_CFLAGS = -Wall -Wno-unused-function -O3
+APP_LDFLAGS = $(APP_LIB)
 
 # What our application is named
 EXE = menu

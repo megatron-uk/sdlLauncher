@@ -3,13 +3,14 @@ CC = m68k-atari-mint-gcc
 STRIP = m68k-atari-mint-strip
 STACK = /usr/m68k-atari-mint/bin/stack
 
-# SDL libraries and paths
-SDL_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
-SDL_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
+# libraries and paths
+APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
+APP_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 
 # Compiler flags
 CFLAGS = -Wall -Wno-unused-function -Os $(SDL_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
-SDL_LDFLAGS = $(SDL_LIB)
+LINK_CFLAGS = -Wall -Wno-unused-function -Os
+APP_LDFLAGS = $(APP_LIB)
 
 # What our application is named
 EXE = menu.tos
