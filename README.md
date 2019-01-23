@@ -26,7 +26,7 @@ sdlLauncher was developed on x86 Linux, and is intended to be run on the followi
 
  * Linux: - *testing/development only*
  * Atari TOS: *ST / STE / Mega ST etc* (TOS >=1.04)
- * Amiga OS: 500/600/1200 (*Kickstart >=1.3 & OS 3.x*)
+ * Amiga OS: 1200/4000 (*SDL for Amiga only works on machines with AGA chipset, not OCS or ECS*)
  * Risc OS: A7000,A7000+,Risc PC (*Risc OS 3.6 minimum*) - *not yet implemented*
 
 ## Pre-requisites ##
@@ -46,6 +46,9 @@ Linux platforms can run the shell script `scripts/build.unix` to compile the app
 
 If you need to adjust any library or include paths, please edit the file `Makefile.unix`.
 
+### Amiga OS
+
+To be documented
 
 ### Atari ST / TOS
 
