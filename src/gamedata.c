@@ -4,6 +4,12 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#ifdef AMIGAOS
+#include <glob.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 #ifdef TOS
 #include <unistd.h>
 #include <sys/stat.h>
@@ -18,6 +24,11 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	DIR *dir;
 	struct dirent *ep;
 #ifdef TOS
+	char filename[GAME_PATH_LEN];
+	struct stat stat_buf;
+	memset( &stat_buf, 0, sizeof(struct stat) );
+#endif
+#ifdef AMIGAOS
 	char filename[GAME_PATH_LEN];
 	struct stat stat_buf;
 	memset( &stat_buf, 0, sizeof(struct stat) );
@@ -75,6 +86,13 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 					//printf("Regular file %s\n", ep->d_name);
 #endif
 #ifdef TOS
+				strcpy(filename, fullpath);
+				strcat(fullpath, DIRSEP);
+				strcat(filename, ep->d_name);
+				stat(filename, &stat_buf);
+				if (S_ISREG(stat_buf.st_mode) != 0){
+#endif
+#ifdef AMIGAOS
 				strcpy(filename, fullpath);
 				strcat(fullpath, DIRSEP);
 				strcat(filename, ep->d_name);
@@ -207,6 +225,10 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 	struct stat stat_buf;
 	memset(&stat_buf, 0, sizeof(struct stat));
 #endif
+#ifdef AMIGAOS
+	struct stat stat_buf;
+	memset(&stat_buf, 0, sizeof(struct stat));
+#endif
 	
 	if (LOGGING){
 		fprintf(log, "scangames: Scanning for folders: [%s]\n", gamepath);
@@ -224,6 +246,10 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 				if (ep->d_type == DT_DIR){
 #endif
 #ifdef TOS
+				stat(gamepath, &stat_buf);
+				if (S_ISDIR(stat_buf.st_mode) != 0){
+#endif
+#ifdef AMIGAOS
 				stat(gamepath, &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif

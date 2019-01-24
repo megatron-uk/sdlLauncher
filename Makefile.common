@@ -2,7 +2,7 @@ OBJFILES = src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 all: $(EXE)
 
 $(EXE):  $(OBJFILES)
-	$(CC) $(CFLAGS) -o $(EXE) $(OBJFILES) $(SDL_LDFLAGS)
+	$(CC) $(LINK_CFLAGS) -o $(EXE) $(OBJFILES) $(APP_LDFLAGS)
 	$(STRIP) --strip-all $(EXE)
 	$(STACKMOD)
 	
