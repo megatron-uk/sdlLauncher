@@ -112,6 +112,14 @@ int menu_browser_init(SDL_Surface *display, FILE *log){
 	return 0;
 }
 
+// Draw the alphabet menu window
+int menu_alphabet_init(SDL_Surface *display, FILE *log){
+	
+	COORDS coords = ALPHABET_COORDS();
+	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
+	return 0;
+}
+
 // Draw the blank info window
 int menu_info_init(SDL_Surface *display, FILE *log){
 
@@ -371,12 +379,14 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	
 	COORDS coords = BROWSER_COORDS();
 	int i;
+	int i_offset = 1;
 	int select_i;
 	bool selected = 0;
 	
 	// Blank and redraw window borders
 	menu_browser_init(display, log);
 	
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
 	if (game_data->items > 0){
 		// Is our game list longer than max number of rows?
@@ -394,7 +404,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 						//fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 						selected = 0;	
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 					select_i++;
 				}
 				
@@ -418,7 +428,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 					} else {
 						selected = 0;	
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 				}
 			}
 			
@@ -430,12 +440,12 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				} else {
 					selected = 0;	
 				}
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + (i * FONT_H)), selected);
+				text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 			}
 		}
 	} else {
 		// No games found :(
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3), 0);
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);
 	}
 	//fflush(log);
 	return 0;
@@ -953,7 +963,7 @@ int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
 	window_state->browser_window.last_pos = -1;
 	
 	// Maximum number of lines we can show in browser
-	window_state->browser_window.max_lines = ((BMP_H - 3) / FONT_H);
+	window_state->browser_window.max_lines = ((BMP_H - 3) / FONT_H) - 1;
 	
 	// Unselect all info window choices
 	window_state->info_window.binary_selected = 0;

@@ -64,13 +64,23 @@ static struct COORDS BROWSER_COORDS(){
 	return coords;
 }
 
+// Letter browser window coordinates
+static struct COORDS ALPHABET_COORDS(){
+	COORDS coords;
+	coords.x = 0;
+	coords.y = BMP_H + 1;
+	coords.w = SCREEN_W;
+	coords.h = FONT_H + 2;
+	return coords;
+}
+
 // Info window coordinates
 static struct COORDS INFO_COORDS(){
 	COORDS coords;
 	coords.x = 0;
-	coords.y = (BMP_H + 2);
+	coords.y = (BMP_H + FONT_H + 2);
 	coords.w = SCREEN_W;
-	coords.h = (SCREEN_H - (BMP_H + 2));
+	coords.h = (SCREEN_H - (BMP_H + 2) - (FONT_H));
 	return coords;
 }
 
