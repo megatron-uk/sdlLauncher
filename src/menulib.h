@@ -243,13 +243,79 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 	return r;
 }
 
+// Draw the category chooser (e.g. all, favourite, 0-9, a, b, c, d etc.)
+// and highlight the current chosen category
+int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+	
+	COORDS coords = ALPHABET_COORDS();	// Coordinates of SDL window
+	char *cats[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+	//int r = 0;							// return codes
+	int i;								// loop counter
+	int rev = 0;							// reverse video selector
+	
+	// X-offset of each category element
+	int cat_all_x_offset = (FONT_W * 9) + 2;
+	int cat_fav_x_offset = cat_all_x_offset + (FONT_W * 3) + 6;
+	int cat_num_x_offset = cat_fav_x_offset + (FONT_W * 3) + 6;
+	int cat_alpha_x_offset = cat_num_x_offset + (FONT_W * 3) + 6;
+	
+	if (LOGGING){
+		fprintf(log, "menu_alphabet_populate: Elements at %d, %d, %d, %d\n", cat_all_x_offset, cat_fav_x_offset, cat_num_x_offset, cat_alpha_x_offset);	
+	}
+	
+	// Blank and redraw window
+	menu_alphabet_init(display, log);
+	
+	// Category text
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), (coords.y + 1), 1);
+
+	// Game category ALL
+	if (window_state->category_window.cat_selected == 26){
+		rev = 1;
+	} else {
+		rev = 0;
+	}
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "All", (coords.x + cat_all_x_offset), coords.y + 2, rev);
+
+	// Game category Favourites
+	if (window_state->category_window.cat_selected == 27){
+		rev = 1;
+	} else {
+		rev = 0;
+	}
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Fav", (coords.x + cat_fav_x_offset), coords.y + 2, rev);
+	
+	// Game category 0-9
+	if (window_state->category_window.cat_selected == 28){
+		rev = 1;
+	} else {
+		rev = 0;
+	}
+	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "0-9", (coords.x + cat_num_x_offset), coords.y + 2, rev);
+	
+	// Game category by first letter
+	for(i = 0; i < 26; i++){
+		if (i == window_state->category_window.cat_selected){
+			rev = 1;
+		} else {
+			rev = 0;
+		}
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, cats[i], (coords.x + cat_alpha_x_offset + (i * (FONT_W + 1))), coords.y + 2, rev);
+	}
+	
+	return 0;
+	
+}
+
+// Draw the contents of the config/options window and process any input
+// commands that were sent to it
 int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = CONFIG_COORDS();	// Coordinates of SDL window
 	FILE *csv;							// File handler for csv import/export
 	int r;								// return codes
 	
-	// Blank and redraw window borders
+	// Blank and redraw window
 	menu_config_init(display, log);
 		
 	// List config options
@@ -645,8 +711,8 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 	int x_offset = coords.x + 30;											// All text offset this min amount from lhs
 	int binary_y_pos = coords.y + 2;
 	int readme_y_pos = coords.y + 2 + (2 * FONT_H);
-	int gamedata_y_pos = coords.y + 2 + (4 * FONT_H);
-	int gamedata_y_pos2 = coords.y + 2 + (6 * FONT_H);
+	int gamedata_y_pos = coords.y + 2 + (3 * FONT_H);
+	int gamedata_y_pos2 = coords.y + 2 + (4 * FONT_H);
 	
 	// Blank and redraw window borders
 	menu_info_init(display, log);
@@ -971,6 +1037,11 @@ int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
 	
 	// Set config option window choices
 	window_state->config_window.config_option_selected = OPTION_NONE;
+	
+	// Category window 
+	window_state->category_window.cat_selected = CATEGORY_DEFAULT_CAT;
+	window_state->category_window.min_cat = CATEGORY_MIN_CAT;
+	window_state->category_window.max_cat = CATEGORY_MAX_CAT;
 	
 	// Maximum number of lines we can show in text reader
 	// Maximum number of characters in width we can show in text reader

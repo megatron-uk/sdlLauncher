@@ -2,7 +2,8 @@
 
 #ifdef USE_LOGGING
 #define LOGGING 1
-#else
+#endif
+#ifndef USE_LOGGING
 #define LOGGING 0
 #endif
 
@@ -70,7 +71,7 @@ static struct COORDS ALPHABET_COORDS(){
 	coords.x = 0;
 	coords.y = BMP_H + 1;
 	coords.w = SCREEN_W;
-	coords.h = FONT_H + 2;
+	coords.h = FONT_H + 3;
 	return coords;
 }
 
@@ -78,9 +79,9 @@ static struct COORDS ALPHABET_COORDS(){
 static struct COORDS INFO_COORDS(){
 	COORDS coords;
 	coords.x = 0;
-	coords.y = (BMP_H + FONT_H + 2);
+	coords.y = (BMP_H + FONT_H + 3);
 	coords.w = SCREEN_W;
-	coords.h = (SCREEN_H - (BMP_H + 2) - (FONT_H));
+	coords.h = (SCREEN_H - (BMP_H + 3) - (FONT_H));
 	return coords;
 }
 
@@ -113,6 +114,17 @@ static struct COORDS CONFIG_COORDS(){
 	coords.h = (SCREEN_H - 40);
 	return coords;
 }
+
+// Structure which holds data on the category chooser UI element
+typedef struct CATEGORY_WINDOW_DATA {
+	int cat_selected;	// Index to the category UI element selected
+	int min_cat;
+	int max_cat;   // 26 letters (0-25) + all (element 26) + fav (27) + numbers (28)
+} CATEGORY_WINDOW_DATA;
+
+#define CATEGORY_MIN_CAT 0
+#define CATEGORY_MAX_CAT 28
+#define CATEGORY_DEFAULT_CAT 26
 
 // Structure which holds data on what games are visible in the scrolling window
 // which game is currently highlighted, etc.
@@ -163,6 +175,7 @@ typedef struct WINDOW_STATE {
 	struct INFO_WINDOW_DATA info_window;		// Track state of the info window
 	struct TEXT_WINDOW_DATA text_window;		// Track state of the text reader window
 	struct CONFIG_WINDOW_DATA config_window;	// Track state of the config window
+	struct CATEGORY_WINDOW_DATA category_window;
 	SDL_Surface *font_normal;
 	SDL_Surface *font_reverse;
 } WINDOW_STATE;

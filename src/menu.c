@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
 	
 	// Init all windows
 	menu_info_init(display, log);
-//#	menu_alphabet_init(display, log);
+	menu_alphabet_init(display, log);
 	menu_gamecover_init(display, log);
 	menu_browser_init(display, log);
 	menu_infobox_print(display, &window_state, log, INFO_GAMEDIR_WAIT);
@@ -94,6 +94,7 @@ int main(int argc, char* argv[]){
 	// Fill the browser window once
 	menu_browser_populate(display, log, &game_data, &window_state);
 	menu_gamecover_populate(display, log, &game_data, &window_state);
+	menu_alphabet_populate(display, log, &game_data, &window_state);
 	menu_info_populate(display, log, &game_data, &window_state);
 	SDL_Flip(display);
 		
@@ -225,10 +226,10 @@ int main(int argc, char* argv[]){
 					case SDLK_ESCAPE:
 						// Close text reader from info window
 						if (window_state.selected_window == W_TEXT){
-							menu_textreader_file(log, &window_state, &game_data, 0);
 							menu_browser_populate(display, log, &game_data, &window_state);
-							menu_info_populate(display, log, &game_data, &window_state);
 							menu_gamecover_populate(display, log, &game_data, &window_state);
+							menu_alphabet_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
 							window_state.selected_window = W_INFO;
 						}
 						
@@ -237,8 +238,9 @@ int main(int argc, char* argv[]){
 							// Disable any config mode
 							window_state.config_window.config_option_selected = OPTION_NONE;
 							menu_browser_populate(display, log, &game_data, &window_state);
-							menu_info_populate(display, log, &game_data, &window_state);
 							menu_gamecover_populate(display, log, &game_data, &window_state);
+							menu_alphabet_populate(display, log, &game_data, &window_state);
+							menu_info_populate(display, log, &game_data, &window_state);
 							window_state.selected_window = W_BROWSER;
 						}
 						break;
@@ -254,7 +256,7 @@ int main(int argc, char* argv[]){
 				}
 			}
 		}
-		//SDL_Delay(100);
+		SDL_Delay(100);
 	}	
 	// Tidy up SDL before closing
 	SDL_Delay(500);

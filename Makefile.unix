@@ -4,11 +4,11 @@ STRIP = strip
 
 # SDL libraries and paths
 APP_LIB = -lSDL
-APP_INCLUDE =
+APP_INCLUDE =          
 
 # Compiler flags
-CFLAGS = -Wall -Wno-unused-function -O3 $(SDL_INCLUDE) -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
-LINK_CFLAGS = -Wall -Wno-unused-function -O3
+override CFLAGS += -Wall -Wno-unused-function -O3 $(APP_INCLUDE) -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
+LINK_CFLAGS = -Wall
 APP_LDFLAGS = $(APP_LIB)
 
 # What our application is named

@@ -7,7 +7,7 @@ APP_LIB = -L/opt/amiga/m68k-amigaos/lib -lSDL -ldebug
 APP_INCLUDE = 
 
 # Compiler flags
-CFLAGS = -Wall -Wno-unused-function -mcrt=nix13 -Os $(APP_INCLUDE) -DAMIGAOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
+override CFLAGS += -Wall -Wno-unused-function -mcrt=nix13 -Os $(APP_INCLUDE) -DAMIGAOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
 LINK_CFLAGS = -Wall -Wno-unused-function -mcrt=nix13 -Os
 APP_LDFLAGS = $(APP_LIB)
 

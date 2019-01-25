@@ -1,4 +1,9 @@
 OBJFILES = src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+
+ifeq ($(LOGGING), 1)
+override CFLAGS += -DUSE_LOGGING
+endif
+
 all: $(EXE)
 
 $(EXE):  $(OBJFILES)
@@ -7,16 +12,16 @@ $(EXE):  $(OBJFILES)
 	$(STACKMOD)
 	
 menu.o: src/menu.c
-	$(CC) -c $(CFLAGS) $< -o src/$@
+	$(CC) -c -o src/$@
 	
 bmp2text.o: src/bmp2text.c
-	$(CC) -c $(CFLAGS) $< -o src/$@
+	$(CC) -c -o src/$@
 
 gamedata.o: src/gamedata.c
-	$(CC) -c $(CFLAGS) $< -o src/$@
+	$(CC) -c -o src/$@
 
 csvlib.o: src/csvlib.c
-	$(CC) -c $(CFLAGS) $< -o src/$@
+	$(CC) -c -o src/$@
 	
 clean:
 	rm -f src/*.o src/*.a $(EXE) core
