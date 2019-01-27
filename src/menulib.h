@@ -9,8 +9,8 @@ char text_buffer_alt[256];
 int menu_sdl_init(FILE *log){
 	
 	SDL_version sdl_compiled;	// Show compiled-time version of SDL 
-								// (this will be the runtime version for a static binary)
-	int r;						// return codes
+							// (this will be the runtime version for a static binary)
+	int r;					// return codes
 	
 	// Load SDL display library
 	r = SDL_Init(SDL_INIT_VIDEO);
@@ -31,64 +31,65 @@ int menu_sdl_init(FILE *log){
 // Draw a bordered box at pos x,y, of height h and width w, and of border px thickness
 int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, int px, int shadow_px){
 	
-	SDL_Rect box;	// A bounding box for the borders we want to draw
-	int r;		// return codes
+	agnostic_window box;	// A bounding box for the borders we want to draw
+	agnostic_bitmap bmp;
+	agnostic_colours rgb;	// Colour spec
+	int r;				// return codes
 	
-	box.x = x + shadow_px;
-	box.y = y + shadow_px;
-	box.w = w;
-	box.h = h;
+	bmp.bmp = display;
+	
+	box.window.x = x + shadow_px;
+	box.window.y = y + shadow_px;
+	box.window.w = w;
+	box.window.h = h;
 	// Shadow in grey
 	if (shadow_px > 0){
-		// Outer box in white
-		r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 128, 128, 128));
+		rgb.r = 128;
+		rgb.g = 128;
+		rgb.b= 128;
+		r = drawBox(&bmp, &box, &rgb);
 		if ( r != 0){
-			fprintf(log, "menu_borders: Shadow SDL Fill Error: %s\n", SDL_GetError());
+			fprintf(log, "menu_borders: Shadow Fill Error: %s\n", SDL_GetError());
 			SDL_Quit();
 			fclose(log);
 			sleep(2);
 			exit(-1);
-		} else {
-			//if (LOGGING){
-			//	fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-			//}
 		}
 	}
 	
-	box.x = x;
-	box.y = y;
-	box.w = w;
-	box.h = h;
+	box.window.x = x;
+	box.window.y = y;
+	box.window.w = w;
+	box.window.h = h;
+	rgb.r = 255;
+	rgb.g = 255;
+	rgb.b= 255;
 	// Outer box in white
-	r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 255, 255, 255));
+	r = drawBox(&bmp, &box, &rgb);
 	if ( r != 0){
-		fprintf(log, "menu_borders: Outer SDL Fill Error: %s\n", SDL_GetError());
+		fprintf(log, "menu_borders: Border Fill Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
 		exit(-1);
-	} else {
-		//if (LOGGING){
-		//	fprintf(log, "menu_borders: Outer border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-		//}
 	}
 	
-	box.x = x + px;
-	box.y = y + px;
-	box.w = w - (px + 1);
-	box.h = h - (px + 1);
+	// Inner fill
+	box.window.x = x + px;
+	box.window.y = y + px;
+	box.window.w = w - (px + 1);
+	box.window.h = h - (px + 1);
+	rgb.r = 0;
+	rgb.g = 0;
+	rgb.b= 0;
 	// Inner box in black
-	r = SDL_FillRect(display, &box, SDL_MapRGB(display->format, 0, 0, 0));
+	r = drawBox(&bmp, &box, &rgb);
 	if ( r != 0){
-		fprintf(log, "menu_borders: Inner SDL Fill Error: %s\n", SDL_GetError());
+		fprintf(log, "menu_borders: Inner Fill Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
 		exit(-1);
-	} else {
-		//if (LOGGING){
-		//	fprintf(log, "menu_borders: Inner border at (%d,%d) w:%d x h:%d\n", box.x, box.y, box.w, box.h);
-		//}	
 	}
 	return r;
 	
@@ -194,8 +195,8 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	int i;
-	int new_start_pos = 0;
-	int new_end_pos = game_data->items;
+	int new_start_pos = -1;
+	int new_end_pos = -1;
 	char cat_letter;
 	
 	if (LOGGING){
@@ -208,7 +209,10 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 		}
 		window_state->browser_window.select_pos = 0;
 		window_state->browser_window.start_pos = 0;
+		window_state->browser_window.start_pos_filtered = 0;		
 		window_state->browser_window.end_pos = game_data->items;
+		window_state->browser_window.end_pos_filtered = game_data->items;
+		
 	} else if (window_state->category_window.cat_selected == CATEGORY_FAV){
 		// Show only favourite items
 		if (LOGGING){
@@ -249,12 +253,13 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 				break;
 			}
 		}
+		// Update select position to be the start position
+		window_state->browser_window.select_pos = new_start_pos;
+		window_state->browser_window.start_pos = new_start_pos;
+		window_state->browser_window.start_pos_filtered = new_start_pos;
+		window_state->browser_window.end_pos = new_start_pos + window_state->browser_window.max_lines;
+		window_state->browser_window.end_pos_filtered = new_end_pos;
 	}
-	
-	// Update select position to be the start position
-	window_state->browser_window.select_pos = new_start_pos;
-	window_state->browser_window.start_pos = new_start_pos;
-	window_state->browser_window.end_pos = new_end_pos;
 	return 0;
 }
 
@@ -412,6 +417,7 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			SDL_Flip(display);
 			sortgames(game_data);
+			menu_refilter_browser(log, game_data, window_state);
 			// Select game list item 0
 			window_state->browser_window.select_pos = 0;
 		} else {
@@ -470,6 +476,7 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 				// Select game list item 0
 				window_state->browser_window.select_pos = 0;
+				menu_refilter_browser(log, game_data, window_state);
 			} else {
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 			}
@@ -517,6 +524,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	
 	COORDS coords = BROWSER_COORDS();
 	int i;
+	int row = 0;
 	int i_offset = 1;
 	int select_i;
 	int total_items;
@@ -528,54 +536,66 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
 	
-	fprintf(log, "start_pos %d\n", window_state->browser_window.start_pos);
+	fprintf(log, "============================\n");
 	fprintf(log, "select_pos %d\n", window_state->browser_window.select_pos);
+	fprintf(log, "start_pos %d\n", window_state->browser_window.start_pos);
 	fprintf(log, "end_pos %d\n", window_state->browser_window.end_pos);
+	fprintf(log, "start_pos_filtered %d\n", window_state->browser_window.start_pos_filtered);
+	fprintf(log, "end_pos_filtered %d\n", window_state->browser_window.end_pos_filtered);
 	
 	if (game_data->items > 0){
-		
-		// Are we looking at a filtered list or everything?
-		// Work out how many items we have to show		
+
 		if (window_state->category_window.cat_selected == CATEGORY_ALL){
-			total_items = game_data->items;
-		} else {
-			total_items = window_state->browser_window.end_pos - window_state->browser_window.start_pos;
-		}
-		
-		// Is our game list longer than max number of rows?
-		if (total_items >= (window_state->browser_window.max_lines - 1)){
-			// More games than lines available - we can only show some of them
+			// We're in the category 'ALL'
+			fprintf(log, "menu_browser_populate: Category All\n");
 			
-			if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
-				fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
-				select_i = window_state->browser_window.start_pos;
-				for (i = 0; i < window_state->browser_window.max_lines; i++){
-					if (select_i == window_state->browser_window.select_pos){
-						fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
-						selected = 1;
-					} else {
-						fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
-						selected = 0;	
+			total_items = game_data->items;
+			// Is our game list longer than max number of rows?
+			if (total_items >= (window_state->browser_window.max_lines - 1)){
+				// More games than lines available - we can only show some of them
+				
+				if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
+					fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
+					select_i = window_state->browser_window.start_pos;
+					for (i = 0; i < window_state->browser_window.max_lines; i++){
+						if (select_i == window_state->browser_window.select_pos){
+							fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							selected = 1;
+						} else {
+							fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							selected = 0;	
+						}
+						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+						select_i++;
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
-					select_i++;
+					
+					// Is select position > end of visible list?
+					if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
+						fprintf(log, "hit end of visible lines\n");
+						window_state->browser_window.start_pos++;
+						window_state->browser_window.end_pos = window_state->browser_window.start_pos + window_state->browser_window.max_lines;
+					} else if (window_state->browser_window.select_pos < window_state->browser_window.start_pos){
+						fprintf(log, "hit start of visible lines\n");
+						window_state->browser_window.start_pos--;
+						window_state->browser_window.end_pos--;
+					}
+				} else {
+					fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+					window_state->browser_window.start_pos = 0;
+					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
+					for (i = 0; i < window_state->browser_window.max_lines; i++){
+						if (i == window_state->browser_window.select_pos){
+							selected = 1;
+						} else {
+							selected = 0;	
+						}
+						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+					}
 				}
 				
-				// Is select position > end of visible list?
-				if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
-					fprintf(log, "hit end of visible lines\n");
-					window_state->browser_window.start_pos++;
-					window_state->browser_window.end_pos = window_state->browser_window.start_pos + window_state->browser_window.max_lines;
-				} else if (window_state->browser_window.select_pos < window_state->browser_window.start_pos){
-					fprintf(log, "hit start of visible lines\n");
-					window_state->browser_window.start_pos--;
-					window_state->browser_window.end_pos--;
-				}
 			} else {
-				fprintf(log, "all selected lines can be shown - we're starting at 0\n");
-				window_state->browser_window.start_pos = 0;
-				window_state->browser_window.end_pos = window_state->browser_window.max_lines;
-				for (i = 0; i < window_state->browser_window.max_lines; i++){
+				// Less games than lines available - print them all			
+				for (i = window_state->browser_window.start_pos; i <= window_state->browser_window.end_pos; i++){
 					if (i == window_state->browser_window.select_pos){
 						selected = 1;
 					} else {
@@ -584,16 +604,86 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 				}
 			}
-			
 		} else {
-			// Less games than lines available - print them all			
-			for (i = window_state->browser_window.start_pos; i <= window_state->browser_window.end_pos; i++){
-				if (i == window_state->browser_window.select_pos){
-					selected = 1;
+			// We're in a filtered category and not 'ALL'
+			fprintf(log, "menu_browser_populate: Filtered category\n");
+			total_items = window_state->browser_window.end_pos_filtered - window_state->browser_window.start_pos_filtered;
+			
+			if (total_items >= (window_state->browser_window.max_lines - 1)){
+				// We have more filtered items than can fit in the window
+				
+				if ((window_state->browser_window.end_pos_filtered  - window_state->browser_window.start_pos) >= (window_state->browser_window.max_lines - 1)){
+					fprintf(log, "menu_browser_populate: Filtered category only %d lines can be shown, starting from item %d\n", window_state->browser_window.max_lines, window_state->browser_window.start_pos);
+					select_i = window_state->browser_window.start_pos;
+					for (i = 0; i < window_state->browser_window.max_lines; i++){
+						if (select_i == window_state->browser_window.select_pos){
+							fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							selected = 1;
+						} else {
+							fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							selected = 0;	
+						}
+						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						select_i++;
+						row++;
+					}
+					fprintf(log, "menu_browser_populate: row %d\n", row);
+					
+					// Is select position > end of visible list?
+					if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
+						fprintf(log, "hit end of visible lines\n");
+						// Scroll down next time
+						if (window_state->browser_window.end_pos < window_state->browser_window.end_pos_filtered){
+							window_state->browser_window.start_pos++;
+							window_state->browser_window.end_pos++;
+							fprintf(log, "scroll down next time\n");
+						} else {
+							fprintf(log, "cannot scroll down\n");
+						}
+					} else if (window_state->browser_window.select_pos > window_state->browser_window.start_pos_filtered){
+						// Scroll up next time
+						fprintf(log, "hit start of visible lines\n");
+						if (window_state->browser_window.start_pos > window_state->browser_window.start_pos_filtered){
+							window_state->browser_window.start_pos--;
+							window_state->browser_window.end_pos--;
+							fprintf(log, "scroll up next time\n");
+						} else {
+							fprintf(log, "cannot scroll up\n");	
+						}
+					} else {
+						// wha?	
+					}
 				} else {
-					selected = 0;	
+					fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+					window_state->browser_window.start_pos = 0;
+					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
+					for (i = 0; i < window_state->browser_window.max_lines; i++){
+						if (i == window_state->browser_window.select_pos){
+							selected = 1;
+						} else {
+							selected = 0;	
+						}
+						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						row++;
+					}
 				}
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+				
+			} else {
+				// We can show all filtered items in the window
+				fprintf(log, "menu_browser_populate: Filtered category all lines can be shown\n");
+				if (window_state->browser_window.start_pos_filtered == -1){
+					text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);	
+				} else {
+					for (i = window_state->browser_window.start_pos_filtered; i <= window_state->browser_window.end_pos_filtered; i++){
+						if (i == window_state->browser_window.select_pos){
+							selected = 1;
+						} else {
+							selected = 0;	
+						}
+						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						row++;
+					}
+				}
 			}
 		}
 	} else {
@@ -1091,16 +1181,19 @@ int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_S
 int menu_toggle_browser_window(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
 
 	if (event.key.keysym.sym == SDLK_DOWN){
-		if (window_state->browser_window.select_pos < (game_data->items - 1)){
-			// Move up list
+		if ((window_state->browser_window.select_pos < (game_data->items - 1)) && (window_state->browser_window.select_pos < window_state->browser_window.end_pos_filtered)){
+			// Move down list
 			window_state->browser_window.select_pos++;
 		}
 	}
 	
 	if (event.key.keysym.sym == SDLK_UP){
-		if (window_state->browser_window.select_pos > 0){
-			// Move down list
+		if ((window_state->browser_window.select_pos > 0) && (window_state->browser_window.select_pos > window_state->browser_window.start_pos_filtered)){
+			// Move up list
 			window_state->browser_window.select_pos--;
+			if (window_state->browser_window.select_pos <= window_state->browser_window.start_pos){
+				window_state->browser_window.select_pos = window_state->browser_window.start_pos;	
+			}
 		}
 	}
 	return 0;

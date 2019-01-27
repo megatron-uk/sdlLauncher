@@ -8,25 +8,22 @@
 // Load the defined font bitmap into a SDL surface.
 SDL_Surface* loadfont(FILE *log, bool inverse){
 	
-	SDL_Surface *font_surface = NULL;
+	agnostic_bitmap bmp;
+	int r = 0;
 	
 	// Load splash bitmap
 	if (inverse == 1){
-		font_surface = SDL_LoadBMP(FONT_BITMAP_REV);
+		loadBMP(FONT_BITMAP_REV, &bmp);
 		fprintf(log, "loadfont: Loading reverse font [%s]\n", FONT_BITMAP_REV);
 	} else {
-		font_surface = SDL_LoadBMP(FONT_BITMAP); 
+		loadBMP(FONT_BITMAP, &bmp);
 		fprintf(log, "loadfont: Loading normal font [%s]\n", FONT_BITMAP);
 	}
-	if (font_surface == NULL){
-		fprintf(log, "loadfont: Error loading bitmap - %s\n", SDL_GetError());
+	if (bmp.bmp == NULL){
+		fprintf(log, "loadfont: Error loading bitmap - %s\n");
 		return NULL;
-	} else {
-		if (LOGGING){
-			fprintf(log, "loadfont: Loaded %dx%dx%dbpp\n", font_surface->w, font_surface->h, font_surface->format->BitsPerPixel);
-		}
 	}
-	return font_surface;
+	return bmp.bmp;
 }
 
 // Turn a string of text into bitmaps and blit them onto

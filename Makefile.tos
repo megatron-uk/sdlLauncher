@@ -8,7 +8,7 @@ APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
 APP_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -Os $(APP_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
+override CFLAGS += -Wall -Wno-unused-function -Os $(APP_INCLUDE) -DUSE_SDL -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
 LINK_CFLAGS = -Wall -Wno-unused-function -Os
 APP_LDFLAGS = $(APP_LIB)
 

@@ -1,4 +1,4 @@
-OBJFILES = src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = src/graphics.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 
 ifeq ($(LOGGING), 1)
 override CFLAGS += -DUSE_LOGGING
@@ -8,7 +8,7 @@ all: $(EXE)
 
 $(EXE):  $(OBJFILES)
 	$(CC) $(LINK_CFLAGS) -o $(EXE) $(OBJFILES) $(APP_LDFLAGS)
-	$(STRIP) --strip-all $(EXE)
+	#$(STRIP) --strip-all $(EXE)
 	$(STACKMOD)
 	
 menu.o: src/menu.c
@@ -21,6 +21,9 @@ gamedata.o: src/gamedata.c
 	$(CC) -c -o src/$@
 
 csvlib.o: src/csvlib.c
+	$(CC) -c -o src/$@
+	
+graphics.o: src/graphics.c
 	$(CC) -c -o src/$@
 	
 clean:

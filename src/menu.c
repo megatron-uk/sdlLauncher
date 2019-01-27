@@ -3,10 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <SDL/SDL.h>
 
-#include "errors.h"
+#ifdef USE_SDL
+#include <SDL/SDL.h>
+#endif
+
 #include "menu.h"
+
+// Standard application functions
+#include "errors.h"
 #include "bmp2text.h"
 #include "gamedata.h"
 #include "csvlib.h"

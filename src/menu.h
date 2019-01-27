@@ -1,5 +1,8 @@
 #include <SDL/SDL.h>
 
+// Graphics compatability layer
+#include "graphics.h"
+
 #ifdef USE_LOGGING
 #define LOGGING 1
 #endif
@@ -130,15 +133,24 @@ typedef struct CATEGORY_WINDOW_DATA {
 #define CATEGORY_NUM -1
 #define CATEGORY_ALPHA 0
 static char ALPHABET_CATS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static char ALPHABET_CATS_L[] = "abcdefghijklmnopqrstuvwxyz"; // Lower case version of the categories
+//static char ALPHABET_CATS_L[] = "abcdefghijklmnopqrstuvwxyz"; // Lower case version of the categories
 
 // Structure which holds data on what games are visible in the scrolling window
 // which game is currently highlighted, etc.
 typedef struct BROWSER_WINDOW_DATA {
+	
+	// THese controls used when browsing games by category - we are not allowed to scroll beyond them
+	int start_pos_filtered;
+	int end_pos_filtered;
+	
+	// Normal browser window controls
 	int start_pos;	// Index into the array of games indicating the top most item
 	int end_pos;	// Index into the array of games indicating the bottom most item
+	
+	// Which game is currently selected
 	int select_pos;	// Index into the array of games indicating the currently selected item
-	int last_pos;	// Which was last selected
+	int last_pos;		// Which was last selected
+	
 	int max_lines;	// Number of lines of games that can be shown in the browser window at current res.
 } BROWSER_WINDOW_DATA;
 
