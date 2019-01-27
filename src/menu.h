@@ -122,9 +122,15 @@ typedef struct CATEGORY_WINDOW_DATA {
 	int max_cat;   // 26 letters (0-25) + all (element 26) + fav (27) + numbers (28)
 } CATEGORY_WINDOW_DATA;
 
-#define CATEGORY_MIN_CAT 0
-#define CATEGORY_MAX_CAT 28
-#define CATEGORY_DEFAULT_CAT 26
+#define CATEGORY_MIN_CAT -3
+#define CATEGORY_MAX_CAT 25
+#define CATEGORY_DEFAULT_CAT -3
+#define CATEGORY_ALL -3
+#define CATEGORY_FAV -2
+#define CATEGORY_NUM -1
+#define CATEGORY_ALPHA 0
+static char ALPHABET_CATS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static char ALPHABET_CATS_L[] = "abcdefghijklmnopqrstuvwxyz"; // Lower case version of the categories
 
 // Structure which holds data on what games are visible in the scrolling window
 // which game is currently highlighted, etc.

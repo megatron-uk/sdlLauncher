@@ -49,9 +49,9 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 			sleep(2);
 			exit(-1);
 		} else {
-			if (LOGGING){
-				fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-			}
+			//if (LOGGING){
+			//	fprintf(log, "menu_borders: Shadow border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
+			//}
 		}
 	}
 	
@@ -68,9 +68,9 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 		sleep(2);
 		exit(-1);
 	} else {
-		if (LOGGING){
-			fprintf(log, "menu_borders: Outer border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
-		}
+		//if (LOGGING){
+		//	fprintf(log, "menu_borders: Outer border at (%d,%d) w:%d x h:%d %dpx border\n", x, y, w, h, px);
+		//}
 	}
 	
 	box.x = x + px;
@@ -86,9 +86,9 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 		sleep(2);
 		exit(-1);
 	} else {
-		if (LOGGING){
-			fprintf(log, "menu_borders: Inner border at (%d,%d) w:%d x h:%d\n", box.x, box.y, box.w, box.h);
-		}	
+		//if (LOGGING){
+		//	fprintf(log, "menu_borders: Inner border at (%d,%d) w:%d x h:%d\n", box.x, box.y, box.w, box.h);
+		//}	
 	}
 	return r;
 	
@@ -113,7 +113,7 @@ int menu_browser_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the alphabet menu window
-int menu_alphabet_init(SDL_Surface *display, FILE *log){
+int menu_category_init(SDL_Surface *display, FILE *log){
 	
 	COORDS coords = ALPHABET_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
@@ -190,6 +190,75 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 	return 0;
 }
 
+// Adjust start and end position in game list based on category selected
+int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+	
+	int i;
+	int new_start_pos = 0;
+	int new_end_pos = game_data->items;
+	char cat_letter;
+	
+	if (LOGGING){
+		fprintf(log, "menu_refilter_browser: Category ID [%d]\n", window_state->category_window.cat_selected);
+	}
+	if (window_state->category_window.cat_selected == CATEGORY_ALL){
+		// Show all items
+		if (LOGGING){
+			fprintf(log, "menu_alphabet_populate: Show all entries\n");	
+		}
+		window_state->browser_window.select_pos = 0;
+		window_state->browser_window.start_pos = 0;
+		window_state->browser_window.end_pos = game_data->items;
+	} else if (window_state->category_window.cat_selected == CATEGORY_FAV){
+		// Show only favourite items
+		if (LOGGING){
+			fprintf(log, "menu_alphabet_populate: Show favourites\n");	
+		}
+		
+	} else if (window_state->category_window.cat_selected == CATEGORY_NUM){
+		// Show games starting with 0-9
+		if (LOGGING){
+			fprintf(log, "menu_alphabet_populate: Show games with numeric titles\n");	
+		}
+		
+	} else if (window_state->category_window.cat_selected >= CATEGORY_ALPHA){
+		// Show games starting with A-Z, that letter only
+		cat_letter = ALPHABET_CATS[window_state->category_window.cat_selected];
+		if (LOGGING){
+			fprintf(log, "menu_refilter_browser: Show games with titles [%c]\n", cat_letter);
+		}
+		// Find the start position that matches our new selected category
+		for (i = 0; i<game_data->items; i++){
+			//fprintf(log, "[%c] %s\n", game_data->game_data_items[i].name[0], game_data->game_data_items[i].name);
+			if (game_data->game_data_items[i].name[0] == cat_letter){
+				new_start_pos = i;
+				if (LOGGING){
+					fprintf(log, "menu_refilter_browser: New start position [%d]\n", new_start_pos);	
+				}
+				break;
+			}
+		}
+		// Find the end position that matches our new selected category
+		for (i = game_data->items; i >= 0; i--){
+			//fprintf(log, "[%c] %s\n", game_data->game_data_items[i].name[0], game_data->game_data_items[i].name);
+			if (game_data->game_data_items[i].name[0] == cat_letter){
+				new_end_pos = i;
+				if (LOGGING){
+					fprintf(log, "menu_refilter_browser: New end position [%d]\n", new_end_pos);	
+				}
+				break;
+			}
+		}
+	}
+	
+	// Update select position to be the start position
+	window_state->browser_window.select_pos = new_start_pos;
+	window_state->browser_window.start_pos = new_start_pos;
+	window_state->browser_window.end_pos = new_end_pos;
+	return 0;
+}
+
+
 // Load and display the game cover for the currently selected game	
 int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state, FILE *log, char *fname){
 	
@@ -245,13 +314,14 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 
 // Draw the category chooser (e.g. all, favourite, 0-9, a, b, c, d etc.)
 // and highlight the current chosen category
-int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = ALPHABET_COORDS();	// Coordinates of SDL window
-	char *cats[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
 	//int r = 0;							// return codes
 	int i;								// loop counter
 	int rev = 0;							// reverse video selector
+	char c[2];
+	c[1] = '\0';
 	
 	// X-offset of each category element
 	int cat_all_x_offset = (FONT_W * 9) + 2;
@@ -264,13 +334,13 @@ int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	}
 	
 	// Blank and redraw window
-	menu_alphabet_init(display, log);
+	menu_category_init(display, log);
 	
 	// Category text
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), (coords.y + 1), 1);
 
 	// Game category ALL
-	if (window_state->category_window.cat_selected == 26){
+	if (window_state->category_window.cat_selected == -3){
 		rev = 1;
 	} else {
 		rev = 0;
@@ -278,7 +348,7 @@ int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "All", (coords.x + cat_all_x_offset), coords.y + 2, rev);
 
 	// Game category Favourites
-	if (window_state->category_window.cat_selected == 27){
+	if (window_state->category_window.cat_selected == -2){
 		rev = 1;
 	} else {
 		rev = 0;
@@ -286,7 +356,7 @@ int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Fav", (coords.x + cat_fav_x_offset), coords.y + 2, rev);
 	
 	// Game category 0-9
-	if (window_state->category_window.cat_selected == 28){
+	if (window_state->category_window.cat_selected == -1){
 		rev = 1;
 	} else {
 		rev = 0;
@@ -294,13 +364,15 @@ int menu_alphabet_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "0-9", (coords.x + cat_num_x_offset), coords.y + 2, rev);
 	
 	// Game category by first letter
-	for(i = 0; i < 26; i++){
+	for(i = 0; i <= CATEGORY_MAX_CAT; i++){
 		if (i == window_state->category_window.cat_selected){
 			rev = 1;
 		} else {
 			rev = 0;
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, cats[i], (coords.x + cat_alpha_x_offset + (i * (FONT_W + 1))), coords.y + 2, rev);
+		c[0] = ALPHABET_CATS[i];
+		c[1] = '\0';
+		text2surface(display, window_state->font_normal, window_state->font_reverse, log, c, (coords.x + cat_alpha_x_offset + (i * (FONT_W + 1))), coords.y + 2, rev);
 	}
 	
 	return 0;
@@ -447,6 +519,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	int i;
 	int i_offset = 1;
 	int select_i;
+	int total_items;
 	bool selected = 0;
 	
 	// Blank and redraw window borders
@@ -454,20 +527,34 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
+	
+	fprintf(log, "start_pos %d\n", window_state->browser_window.start_pos);
+	fprintf(log, "select_pos %d\n", window_state->browser_window.select_pos);
+	fprintf(log, "end_pos %d\n", window_state->browser_window.end_pos);
+	
 	if (game_data->items > 0){
+		
+		// Are we looking at a filtered list or everything?
+		// Work out how many items we have to show		
+		if (window_state->category_window.cat_selected == CATEGORY_ALL){
+			total_items = game_data->items;
+		} else {
+			total_items = window_state->browser_window.end_pos - window_state->browser_window.start_pos;
+		}
+		
 		// Is our game list longer than max number of rows?
-		if (game_data->items >= (window_state->browser_window.max_lines - 1)){
+		if (total_items >= (window_state->browser_window.max_lines - 1)){
 			// More games than lines available - we can only show some of them
 			
 			if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
-				//fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
+				fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
 				select_i = window_state->browser_window.start_pos;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
 					if (select_i == window_state->browser_window.select_pos){
-						//fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+						fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
 						selected = 1;
 					} else {
-						//fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+						fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 						selected = 0;	
 					}
 					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
@@ -476,16 +563,16 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				
 				// Is select position > end of visible list?
 				if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
-					//fprintf(log, "hit end of visible lines\n");
+					fprintf(log, "hit end of visible lines\n");
 					window_state->browser_window.start_pos++;
 					window_state->browser_window.end_pos = window_state->browser_window.start_pos + window_state->browser_window.max_lines;
 				} else if (window_state->browser_window.select_pos < window_state->browser_window.start_pos){
-					//fprintf(log, "hit start of visible lines\n");
+					fprintf(log, "hit start of visible lines\n");
 					window_state->browser_window.start_pos--;
 					window_state->browser_window.end_pos--;
 				}
 			} else {
-				//fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+				fprintf(log, "all selected lines can be shown - we're starting at 0\n");
 				window_state->browser_window.start_pos = 0;
 				window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 				for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -500,7 +587,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 			
 		} else {
 			// Less games than lines available - print them all			
-			for (i = 0; i < game_data->items; i++){
+			for (i = window_state->browser_window.start_pos; i <= window_state->browser_window.end_pos; i++){
 				if (i == window_state->browser_window.select_pos){
 					selected = 1;
 				} else {
@@ -971,6 +1058,32 @@ int menu_toggle_info_window_mode(SDL_Surface *display, FILE *log, struct GAME_DA
 	} 
 	
 	// No-op
+	return 0;
+}
+
+// Scroll through category window
+int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+
+	int changed;
+	changed = 0;
+	
+	if (event.key.keysym.sym == SDLK_RIGHT){
+		if (window_state->category_window.cat_selected < CATEGORY_MAX_CAT){
+			window_state->category_window.cat_selected++;
+			changed = 1;
+		}
+	}
+	
+	if (event.key.keysym.sym == SDLK_LEFT){
+		if (window_state->category_window.cat_selected > CATEGORY_MIN_CAT){
+			window_state->category_window.cat_selected--;
+			changed = 1;			
+		}
+	}
+	
+	if (changed == 1){
+		menu_refilter_browser(log, game_data, window_state);
+	}
 	return 0;
 }
 

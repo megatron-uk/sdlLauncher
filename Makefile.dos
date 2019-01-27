@@ -1,0 +1,17 @@
+# Names of the compiler and friends
+CC = /usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp-gcc
+STRIP = /usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp-strip
+
+# SDL libraries and paths
+APP_LIB = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/lib -lSDL
+APP_INCLUDE = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/sys-include 
+
+# Compiler flags
+override CFLAGS += -Wall -Wno-unused-function -mtune=i386 -mfpmath=387 -O3 $(APP_INCLUDE) -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
+LINK_CFLAGS = -Wall
+APP_LDFLAGS = $(APP_LIB)
+
+# What our application is named
+EXE = menu.exe
+
+include Makefile.common

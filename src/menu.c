@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
 	
 	// Init all windows
 	menu_info_init(display, log);
-	menu_alphabet_init(display, log);
+	menu_category_init(display, log);
 	menu_gamecover_init(display, log);
 	menu_browser_init(display, log);
 	menu_infobox_print(display, &window_state, log, INFO_GAMEDIR_WAIT);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]){
 	// Fill the browser window once
 	menu_browser_populate(display, log, &game_data, &window_state);
 	menu_gamecover_populate(display, log, &game_data, &window_state);
-	menu_alphabet_populate(display, log, &game_data, &window_state);
+	menu_category_populate(display, log, &game_data, &window_state);
 	menu_info_populate(display, log, &game_data, &window_state);
 	SDL_Flip(display);
 		
@@ -198,15 +198,29 @@ int main(int argc, char* argv[]){
 						}
 						break;
 					case SDLK_LEFT: 
-						// Scroll left between binary/readme lines
-						if (window_state.selected_window == W_INFO){
+						if (window_state.selected_window == W_BROWSER){
+							// Toggle between game categories
+							menu_toggle_category(log, &game_data, &window_state, event);
+							menu_category_populate(display, log, &game_data, &window_state);
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state);
+							
+						} else if (window_state.selected_window == W_INFO){
+							// Scroll left between binary/readme lines
 							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
 							menu_info_populate(display, log, &game_data, &window_state);
 						}
 						break;
 					case SDLK_RIGHT:
-						// Scroll right between binary/readme lines
-						if (window_state.selected_window == W_INFO){
+						if (window_state.selected_window == W_BROWSER){
+							// Toggle between game categories
+							menu_toggle_category(log, &game_data, &window_state, event);
+							menu_category_populate(display, log, &game_data, &window_state);
+							menu_browser_populate(display, log, &game_data, &window_state);
+							menu_gamecover_populate(display, log, &game_data, &window_state);
+							
+						} else if (window_state.selected_window == W_INFO){
+							// Scroll right between binary/readme lines
 							menu_toggle_info_window_mode(display, log, &game_data, &window_state, event);
 							menu_info_populate(display, log, &game_data, &window_state);
 						}
@@ -228,7 +242,7 @@ int main(int argc, char* argv[]){
 						if (window_state.selected_window == W_TEXT){
 							menu_browser_populate(display, log, &game_data, &window_state);
 							menu_gamecover_populate(display, log, &game_data, &window_state);
-							menu_alphabet_populate(display, log, &game_data, &window_state);
+							menu_category_populate(display, log, &game_data, &window_state);
 							menu_info_populate(display, log, &game_data, &window_state);
 							window_state.selected_window = W_INFO;
 						}
@@ -239,7 +253,7 @@ int main(int argc, char* argv[]){
 							window_state.config_window.config_option_selected = OPTION_NONE;
 							menu_browser_populate(display, log, &game_data, &window_state);
 							menu_gamecover_populate(display, log, &game_data, &window_state);
-							menu_alphabet_populate(display, log, &game_data, &window_state);
+							menu_category_populate(display, log, &game_data, &window_state);
 							menu_info_populate(display, log, &game_data, &window_state);
 							window_state.selected_window = W_BROWSER;
 						}
