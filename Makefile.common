@@ -8,7 +8,7 @@ all: $(EXE)
 
 $(EXE):  $(OBJFILES)
 	$(CC) $(LINK_CFLAGS) -o $(EXE) $(OBJFILES) $(APP_LDFLAGS)
-	#$(STRIP) --strip-all $(EXE)
+	$(STRIP) --strip-all $(EXE)
 	$(STACKMOD)
 	
 menu.o: src/menu.c

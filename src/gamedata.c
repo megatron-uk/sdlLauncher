@@ -122,7 +122,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 					// Something else... maybe another exe?
 					substring = strrchr(ep->d_name, '.');
 					
-					if (substring){// && (strlen(*substring) > 0)){
+					if (substring){
 						//log_debug(log, "set_gamedata: Additional file [%s, type %s]\n", ep->d_name, substring);
 						// Is it a binary?
 						if ((strcmp(substring, EXE_SUFFIX) == 0) || (strcmp(substring, EXE_SUFFIX_U) == 0)){

@@ -4,7 +4,7 @@
 
 #include "logging.h"
 
-#define LOG_FORMAT	"[%s]\t: %s"  // loglevel: message\n
+#define LOG_FORMAT	"[%s]\t\t: %s"  // loglevel: message\n
 
 // From: https://gist.github.com/rumpelsepp/3229275bbe9e3f41ba5f33a84643fe73
 static int __log(FILE *fp, const char *level, const char *format, va_list args) {
