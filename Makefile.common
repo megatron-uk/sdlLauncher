@@ -1,4 +1,4 @@
-OBJFILES = src/graphics.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = src/logging.o src/graphics.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 
 ifeq ($(LOGGING), 1)
 override CFLAGS += -DUSE_LOGGING
@@ -24,6 +24,9 @@ csvlib.o: src/csvlib.c
 	$(CC) -c -o src/$@
 	
 graphics.o: src/graphics.c
+	$(CC) -c -o src/$@
+
+logging.o: src/logging.c
 	$(CC) -c -o src/$@
 	
 clean:

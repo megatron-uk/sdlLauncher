@@ -11,7 +11,9 @@
 #include "menu.h"
 
 // Standard application functions
+#include "logging.h"
 #include "errors.h"
+#include "graphics.h"
 #include "bmp2text.h"
 #include "gamedata.h"
 #include "csvlib.h"
@@ -34,8 +36,8 @@ int main(int argc, char* argv[]){
 	
 	log = fopen("MENU.LOG","w");
 
-	fprintf(log, "Menu tool running\n");
-	fprintf(log, "-----------------\n");
+	log_info(log, "Menu tool running\n");
+	log_info(log, "-----------------\n");
 
 	// Init game data
 	menu_init_gamedata(log, &game_data);
@@ -49,18 +51,15 @@ int main(int argc, char* argv[]){
 	// Set display mode for the SDL screen
 	display = SDL_SetVideoMode(SCREEN_W, SCREEN_H, SCREEN_BPP, SDL_HWSURFACE);
 	if (display == NULL){
-		fprintf(log, "SDL Driver Error: %s\n", SDL_GetError());
+		log_error(log, "SDL Driver Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
 		exit(-1);
 	} else {
-		if (LOGGING){
-			fprintf(log, "SDL Driver %s\n", SDL_VideoDriverName(vdriver, 32));
-			fprintf(log, "SDL Driver mode %dx%dx%dbpp\n", display->w, display->h, display->format->BitsPerPixel);
-			fprintf(log, "SDL Driver has HW Surfaces? (%d)\n", SDL_GetVideoSurface()->flags & SDL_HWSURFACE);
-			fflush(log);
-		}
+		log_info(log, "SDL Driver %s\n", SDL_VideoDriverName(vdriver, 32));
+		log_info(log, "SDL Driver mode %dx%dx%dbpp\n", display->w, display->h, display->format->BitsPerPixel);
+		log_info(log, "SDL Driver has HW Surfaces? (%d)\n", SDL_GetVideoSurface()->flags & SDL_HWSURFACE);
 	}
 	
 	// Init all windows
@@ -110,10 +109,7 @@ int main(int argc, char* argv[]){
 			//If the user has Xed out the window
 			if (event.type == SDL_QUIT){
 				//Quit the program
-				if (LOGGING){
-					fprintf(log, "Quit selected\n");
-					fflush(log);
-				}
+				log_debug(log, "Quit selected\n");
 			} 
 			// Check for keypresses
 			if (event.type == SDL_KEYDOWN){
@@ -282,9 +278,7 @@ int main(int argc, char* argv[]){
 	SDL_FreeSurface(display);
 	SDL_Quit();
 	
-	if (LOGGING){
-		fprintf(log, "Exiting\n");
-	}
+	log_info(log, "Exiting\n");
 	fclose(log);
 	return 0;
 }

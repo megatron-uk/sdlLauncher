@@ -2,25 +2,26 @@
 #include <stdbool.h>
 #include <SDL/SDL.h>
 
-#include "font.h"
 #include "menu.h"
+#include "font.h"
+#include "graphics.h"
+#include "logging.h"
 
 // Load the defined font bitmap into a SDL surface.
 SDL_Surface* loadfont(FILE *log, bool inverse){
 	
 	agnostic_bitmap bmp;
-	int r = 0;
 	
 	// Load splash bitmap
 	if (inverse == 1){
 		loadBMP(FONT_BITMAP_REV, &bmp);
-		fprintf(log, "loadfont: Loading reverse font [%s]\n", FONT_BITMAP_REV);
+		log_info(log, "loadfont: Loading reverse font [%s]\n", FONT_BITMAP_REV);
 	} else {
 		loadBMP(FONT_BITMAP, &bmp);
-		fprintf(log, "loadfont: Loading normal font [%s]\n", FONT_BITMAP);
+		log_info(log, "loadfont: Loading normal font [%s]\n", FONT_BITMAP);
 	}
 	if (bmp.bmp == NULL){
-		fprintf(log, "loadfont: Error loading bitmap - %s\n");
+		log_error(log, "loadfont: Error loading bitmap\n");
 		return NULL;
 	}
 	return bmp.bmp;
@@ -69,14 +70,14 @@ int text2surface(SDL_Surface *display, SDL_Surface *font_normal, SDL_Surface *fo
 					//printf("%d : %c dest.x:%d dest.y:%d\n", i, c, dest.x, dest.y);				
 					r = SDL_BlitSurface(font, &src, display, &dest);
 					if ( r != 0){
-						fprintf(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
+						log_error(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
 						return r;
 					}
 					next_x += FONT_W;
 				}
 			}
 			if (found == 0){
-				fprintf(log, "text2surface: pos %d [%c] - No matching ASCII character found, blanking!\n", i, c);
+				log_warn(log, "text2surface: pos %d [%c] - No matching ASCII character found, blanking!\n", i, c);
 				// Copy a blank or some placeholder here
 				src.x = FONT_W * CHAR_LIST[FONT_PLACEHOLDER].x;
 				src.y = FONT_H * CHAR_LIST[FONT_PLACEHOLDER].y;
@@ -88,7 +89,7 @@ int text2surface(SDL_Surface *display, SDL_Surface *font_normal, SDL_Surface *fo
 				dest.h = FONT_H;
 				r = SDL_BlitSurface(font, &src, display, &dest);
 				if ( r != 0){
-					fprintf(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
+					log_error(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
 					return r;
 				}
 				next_x += FONT_W;

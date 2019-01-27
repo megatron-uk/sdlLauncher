@@ -1,8 +1,5 @@
 #include <SDL/SDL.h>
 
-// Graphics compatability layer
-#include "graphics.h"
-
 #ifdef USE_LOGGING
 #define LOGGING 1
 #endif

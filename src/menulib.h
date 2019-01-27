@@ -15,15 +15,13 @@ int menu_sdl_init(FILE *log){
 	// Load SDL display library
 	r = SDL_Init(SDL_INIT_VIDEO);
 	if (r != 0){
-		fprintf(log, "menu_sdl_init SDL Init Error: %s\n", SDL_GetError());
+		log_error(log, "menu_sdl_init SDL Init Error: %s\n", SDL_GetError());
 		fclose(log);
 		sleep(2);
 		exit(-1);
 	} else {
 		SDL_VERSION(&sdl_compiled);
-		if (LOGGING){
-			fprintf(log, "menu_sdl_init: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
-		}
+		log_info(log, "menu_sdl_init: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
 		return r;
 	}
 }
@@ -49,7 +47,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 		rgb.b= 128;
 		r = drawBox(&bmp, &box, &rgb);
 		if ( r != 0){
-			fprintf(log, "menu_borders: Shadow Fill Error: %s\n", SDL_GetError());
+			log_error(log, "menu_borders: Shadow Fill Error: %s\n", SDL_GetError());
 			SDL_Quit();
 			fclose(log);
 			sleep(2);
@@ -67,7 +65,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	// Outer box in white
 	r = drawBox(&bmp, &box, &rgb);
 	if ( r != 0){
-		fprintf(log, "menu_borders: Border Fill Error: %s\n", SDL_GetError());
+		log_error(log, "menu_borders: Border Fill Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
@@ -85,7 +83,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	// Inner box in black
 	r = drawBox(&bmp, &box, &rgb);
 	if ( r != 0){
-		fprintf(log, "menu_borders: Inner Fill Error: %s\n", SDL_GetError());
+		log_error(log, "menu_borders: Inner Fill Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
@@ -199,14 +197,11 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 	int new_end_pos = -1;
 	char cat_letter;
 	
-	if (LOGGING){
-		fprintf(log, "menu_refilter_browser: Category ID [%d]\n", window_state->category_window.cat_selected);
-	}
+	log_debug(log, "============================\n");
+	log_debug(log, "menu_refilter_browser: Category ID [%d]\n", window_state->category_window.cat_selected);
 	if (window_state->category_window.cat_selected == CATEGORY_ALL){
 		// Show all items
-		if (LOGGING){
-			fprintf(log, "menu_alphabet_populate: Show all entries\n");	
-		}
+		log_debug(log, "menu_refilter_browser: Show all entries\n");	
 		window_state->browser_window.select_pos = 0;
 		window_state->browser_window.start_pos = 0;
 		window_state->browser_window.start_pos_filtered = 0;		
@@ -215,41 +210,29 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 		
 	} else if (window_state->category_window.cat_selected == CATEGORY_FAV){
 		// Show only favourite items
-		if (LOGGING){
-			fprintf(log, "menu_alphabet_populate: Show favourites\n");	
-		}
+		log_debug(log, "menu_refilter_browser: Show favourites\n");	
 		
 	} else if (window_state->category_window.cat_selected == CATEGORY_NUM){
 		// Show games starting with 0-9
-		if (LOGGING){
-			fprintf(log, "menu_alphabet_populate: Show games with numeric titles\n");	
-		}
+		log_debug(log, "menu_refilter_browser: Show games with numeric titles\n");	
 		
 	} else if (window_state->category_window.cat_selected >= CATEGORY_ALPHA){
 		// Show games starting with A-Z, that letter only
 		cat_letter = ALPHABET_CATS[window_state->category_window.cat_selected];
-		if (LOGGING){
-			fprintf(log, "menu_refilter_browser: Show games with titles [%c]\n", cat_letter);
-		}
+		log_debug(log, "menu_refilter_browser: Show games with titles [%c]\n", cat_letter);
 		// Find the start position that matches our new selected category
 		for (i = 0; i<game_data->items; i++){
-			//fprintf(log, "[%c] %s\n", game_data->game_data_items[i].name[0], game_data->game_data_items[i].name);
 			if (game_data->game_data_items[i].name[0] == cat_letter){
 				new_start_pos = i;
-				if (LOGGING){
-					fprintf(log, "menu_refilter_browser: New start position [%d]\n", new_start_pos);	
-				}
+				log_debug(log, "menu_refilter_browser: New start position [%d]\n", new_start_pos);	
 				break;
 			}
 		}
 		// Find the end position that matches our new selected category
 		for (i = game_data->items; i >= 0; i--){
-			//fprintf(log, "[%c] %s\n", game_data->game_data_items[i].name[0], game_data->game_data_items[i].name);
 			if (game_data->game_data_items[i].name[0] == cat_letter){
 				new_end_pos = i;
-				if (LOGGING){
-					fprintf(log, "menu_refilter_browser: New end position [%d]\n", new_end_pos);	
-				}
+				log_debug(log, "menu_refilter_browser: New end position [%d]\n", new_end_pos);	
 				break;
 			}
 		}
@@ -272,12 +255,12 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 	SDL_Rect src, dest;			// Cropping surfaces for displaying bitmaps
 	int r = 0;						// return codes
 
-	//fprintf(log, "menu_gamecover_load: Loading [%s]\n", fname);
+	log_debug(log, "============================\n");
+	log_debug(log, "menu_gamecover_load: Loading [%s]\n", fname);
 	// Load splash bitmap
 	bmp = SDL_LoadBMP(fname); 
 	if (bmp == NULL){
-		fprintf(log, "menu_gamecover_load SDL Load Error: %s\n", SDL_GetError());
-		//fflush(log);
+		log_error(log, "menu_gamecover_load SDL Load Error: %s\n", SDL_GetError());
 		SDL_FreeSurface(bmp);
 		strcpy(text_buffer, ERROR_BITMAP_OPEN);
 		strcat(text_buffer, "\nFilename: ");
@@ -285,8 +268,7 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 		menu_infobox_print(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		//fprintf(log, "menu_gamecover_load: Loaded %dx%dx%dbpp\n", bmp->w, bmp->h, bmp->format->BitsPerPixel);
-		//fflush(log);
+		log_debug(log, "menu_gamecover_load: Loaded %dx%dx%dbpp\n", bmp->w, bmp->h, bmp->format->BitsPerPixel);
 		// Ensure bitmap is converted to colour mode of display
 		//image = SDL_DisplayFormat(bmp);
 	}
@@ -304,10 +286,9 @@ int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state,
 	dest.h = coords.h - 2;	// Crop to our sizes defined in menu.h
 	
 	// Write bitmap to display
-	//r = SDL_BlitSurface(image, &src, display, &dest);
 	r = SDL_BlitSurface(bmp, &src, display, &dest);
 	if ( r != 0){
-		fprintf(log, "menu_gamecover_load SDL Blit Error: %s\n", SDL_GetError());
+		log_error(log, "menu_gamecover_load SDL Blit Error: %s\n", SDL_GetError());
 		SDL_Quit();
 		fclose(log);
 		sleep(2);
@@ -334,9 +315,8 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	int cat_num_x_offset = cat_fav_x_offset + (FONT_W * 3) + 6;
 	int cat_alpha_x_offset = cat_num_x_offset + (FONT_W * 3) + 6;
 	
-	if (LOGGING){
-		fprintf(log, "menu_alphabet_populate: Elements at %d, %d, %d, %d\n", cat_all_x_offset, cat_fav_x_offset, cat_num_x_offset, cat_alpha_x_offset);	
-	}
+	log_debug(log, "============================\n");
+	log_debug(log, "menu_category_populate: Elements at %d, %d, %d, %d\n", cat_all_x_offset, cat_fav_x_offset, cat_num_x_offset, cat_alpha_x_offset);	
 	
 	// Blank and redraw window
 	menu_category_init(display, log);
@@ -536,18 +516,18 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
 	
-	fprintf(log, "============================\n");
-	fprintf(log, "select_pos %d\n", window_state->browser_window.select_pos);
-	fprintf(log, "start_pos %d\n", window_state->browser_window.start_pos);
-	fprintf(log, "end_pos %d\n", window_state->browser_window.end_pos);
-	fprintf(log, "start_pos_filtered %d\n", window_state->browser_window.start_pos_filtered);
-	fprintf(log, "end_pos_filtered %d\n", window_state->browser_window.end_pos_filtered);
+	log_debug(log, "============================\n");
+	log_debug(log, "menu_browser_populate: select_pos %d\n", window_state->browser_window.select_pos);
+	log_debug(log, "menu_browser_populate: start_pos %d\n", window_state->browser_window.start_pos);
+	log_debug(log, "menu_browser_populate: end_pos %d\n", window_state->browser_window.end_pos);
+	log_debug(log, "menu_browser_populate: start_pos_filtered %d\n", window_state->browser_window.start_pos_filtered);
+	log_debug(log, "menu_browser_populate: end_pos_filtered %d\n", window_state->browser_window.end_pos_filtered);
 	
 	if (game_data->items > 0){
 
 		if (window_state->category_window.cat_selected == CATEGORY_ALL){
 			// We're in the category 'ALL'
-			fprintf(log, "menu_browser_populate: Category All\n");
+			log_debug(log, "menu_browser_populate: Category All\n");
 			
 			total_items = game_data->items;
 			// Is our game list longer than max number of rows?
@@ -555,32 +535,32 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				// More games than lines available - we can only show some of them
 				
 				if (window_state->browser_window.select_pos >= (window_state->browser_window.max_lines - 1)){
-					fprintf(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
+					log_debug(log, "more lines than printable. we're startin at %d [0-indexed]\n", window_state->browser_window.start_pos);
 					select_i = window_state->browser_window.start_pos;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
 						if (select_i == window_state->browser_window.select_pos){
-							fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							log_debug(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
 							selected = 1;
 						} else {
-							fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
 						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 						select_i++;
 					}
 					
-					// Is select position > end of visible list?
+					// Is select position outside of visible list?
 					if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
-						fprintf(log, "hit end of visible lines\n");
+						// Scroll down
 						window_state->browser_window.start_pos++;
 						window_state->browser_window.end_pos = window_state->browser_window.start_pos + window_state->browser_window.max_lines;
 					} else if (window_state->browser_window.select_pos < window_state->browser_window.start_pos){
-						fprintf(log, "hit start of visible lines\n");
+						// Scroll up
 						window_state->browser_window.start_pos--;
 						window_state->browser_window.end_pos--;
 					}
 				} else {
-					fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+					log_debug(log, "menu_browser_populate: All selected lines can be shown - we're starting at 0\n");
 					window_state->browser_window.start_pos = 0;
 					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -606,55 +586,46 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 			}
 		} else {
 			// We're in a filtered category and not 'ALL'
-			fprintf(log, "menu_browser_populate: Filtered category\n");
+			log_debug(log, "menu_browser_populate: Filtered category\n");
 			total_items = window_state->browser_window.end_pos_filtered - window_state->browser_window.start_pos_filtered;
 			
 			if (total_items >= (window_state->browser_window.max_lines - 1)){
 				// We have more filtered items than can fit in the window
 				
 				if ((window_state->browser_window.end_pos_filtered  - window_state->browser_window.start_pos) >= (window_state->browser_window.max_lines - 1)){
-					fprintf(log, "menu_browser_populate: Filtered category only %d lines can be shown, starting from item %d\n", window_state->browser_window.max_lines, window_state->browser_window.start_pos);
+					log_debug(log, "menu_browser_populate: Filtered category only %d lines can be shown, starting from item %d\n", window_state->browser_window.max_lines, window_state->browser_window.start_pos);
 					select_i = window_state->browser_window.start_pos;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
 						if (select_i == window_state->browser_window.select_pos){
-							fprintf(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							log_debug(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
 							selected = 1;
 						} else {
-							fprintf(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
 						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
 						select_i++;
 						row++;
 					}
-					fprintf(log, "menu_browser_populate: row %d\n", row);
 					
-					// Is select position > end of visible list?
+					// Is select position now outside of end of visible list?
 					if (window_state->browser_window.select_pos >= (window_state->browser_window.end_pos - 1)){
-						fprintf(log, "hit end of visible lines\n");
 						// Scroll down next time
 						if (window_state->browser_window.end_pos < window_state->browser_window.end_pos_filtered){
 							window_state->browser_window.start_pos++;
 							window_state->browser_window.end_pos++;
-							fprintf(log, "scroll down next time\n");
-						} else {
-							fprintf(log, "cannot scroll down\n");
 						}
 					} else if (window_state->browser_window.select_pos > window_state->browser_window.start_pos_filtered){
 						// Scroll up next time
-						fprintf(log, "hit start of visible lines\n");
 						if (window_state->browser_window.start_pos > window_state->browser_window.start_pos_filtered){
 							window_state->browser_window.start_pos--;
 							window_state->browser_window.end_pos--;
-							fprintf(log, "scroll up next time\n");
-						} else {
-							fprintf(log, "cannot scroll up\n");	
 						}
 					} else {
 						// wha?	
 					}
 				} else {
-					fprintf(log, "all selected lines can be shown - we're starting at 0\n");
+					log_debug(log, "menu_browser_populate: All selected lines can be shown - we're starting at 0\n");
 					window_state->browser_window.start_pos = 0;
 					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -670,7 +641,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				
 			} else {
 				// We can show all filtered items in the window
-				fprintf(log, "menu_browser_populate: Filtered category all lines can be shown\n");
+				log_debug(log, "menu_browser_populate: Filtered category all lines can be shown\n");
 				if (window_state->browser_window.start_pos_filtered == -1){
 					text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);	
 				} else {
@@ -690,7 +661,6 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 		// No games found :(
 		text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);
 	}
-	//fflush(log);
 	return 0;
 }
 
@@ -699,6 +669,7 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 	
 	int pos = window_state->browser_window.select_pos;
 	
+	log_debug(log, "============================\n");
 	if (open_file == 1){
 		// Open file pointer
 		strcpy(window_state->text_window.buffer, game_data->game_data_items[pos].path);
@@ -712,17 +683,15 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		if (window_state->info_window.readme_selected == 3){
 			strcat(window_state->text_window.buffer, game_data->game_data_items[pos].readme_3);
 		}
-		if (LOGGING){
-			fprintf(log, "menu_textreader_file: Open file [%s]\n", window_state->text_window.buffer);
-		}
+		log_debug(log, "menu_textreader_file: Open file [%s]\n", window_state->text_window.buffer);
 		window_state->text_window.readme = fopen(window_state->text_window.buffer, "r");
 		memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 		if (window_state->text_window.readme != NULL){
-			//fprintf(log, "menu_textreader_file: Opened\n");
+			log_debug(log, "menu_textreader_file: Opened\n");
 			window_state->text_window.f_pos = 0;
 			return 0;
 		} else {
-			fprintf(log, "menu_textreader_file: Error, file not open\n");
+			log_debug(log, "menu_textreader_file: Error, file not open\n");
 			return -1;
 		}
 	} else {
@@ -731,10 +700,10 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 			fclose(window_state->text_window.readme);
 			memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 			window_state->text_window.f_pos = 0;
-			//fprintf(log, "menu_textreader_file: Closed file\n");
+			log_debug(log, "menu_textreader_file: Closed file\n");
 			return 0;
 		} else {
-			fprintf(log, "menu_textreader_file: Attempt to close a file not already open!\n");
+			log_debug(log, "menu_textreader_file: Attempt to close a file not already open!\n");
 			return 0;
 		}
 	}
@@ -754,43 +723,32 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 	char token_cr = '\n';		// Carriage return
 	char token_lf = '\r';		// Carriage return + linefeed
 	
+	log_debug(log, "============================\n");
 	window_state->text_window.max_lines = (coords.h / FONT_H) - 2;
 	window_state->text_window.max_chars = (coords.w / FONT_W) - 2;
 	total_max_chars = window_state->text_window.max_lines * window_state->text_window.max_chars;
 	
-	if (LOGGING){
-		fprintf(log, "menu_textreader_populate: Reading file\n");
-	}
+	log_debug(log, "menu_textreader_populate: Reading file\n");
 	fseek(window_state->text_window.readme, 0L, SEEK_END);
 	f_size = ftell(window_state->text_window.readme);
 	fseek(window_state->text_window.readme, 0L, SEEK_SET);
 	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
-	if (LOGGING){
-		fprintf(log, "menu_textreader_populate: File is %d bytes\n", f_size);
-		fprintf(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
-	}
+	log_debug(log, "menu_textreader_populate: File is %d bytes\n", f_size);
+	log_debug(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
 	
 	if (f_size < sizeof(window_state->text_window.buffer)){
 		// File is smaller than the available buffer, so read it all
-		if (LOGGING){
-			fprintf(log, "menu_textreader_populate: Reading entire file\n");
-		}
+		log_debug(log, "menu_textreader_populate: Reading entire file\n");
 		i = fread(window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
-		if (LOGGING){
-			fprintf(log, "menu_textreader_populate: Read %d bytes\n", i);
-		}
+		log_debug(log, "menu_textreader_populate: Read %d bytes\n", i);
 	} else {
 		// File is larger than the available buffer, so read a maximum of total_max_chars
-		if (LOGGING){
-			fprintf(log, "menu_textreader_populate: Reading partial file\n");
-		}
+		log_debug(log, "menu_textreader_populate: Reading partial file\n");
 		for (i = 0; i < total_max_chars; i++){
 			c = fgetc(window_state->text_window.readme);
 			window_state->text_window.f_pos++;
 			if (c == EOF){
-				if (LOGGING){
-					fprintf(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
-				}
+				log_debug(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
 				break;
 			} else {
 				window_state->text_window.buffer[i] = c;
@@ -809,7 +767,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 	memset(text_buffer, '\0', 256);
 	
 	while (printed_lines <= window_state->text_window.max_lines){
-		//fprintf(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
+		log_debug(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
 		for (i = 0; i <= window_state->text_window.max_chars; i++){
 			last_i ++;
 			// Read next char
@@ -833,9 +791,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			
 			// Total number of visible lines reached - break inner loop
 			if (printed_lines == window_state->text_window.max_lines){
-				if (LOGGING){
-					fprintf(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
-				}
+				log_debug(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
 				// Save position and exit
 				break;
 			}
@@ -843,17 +799,13 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines >= window_state->text_window.max_lines){
-			if (LOGGING){
-				fprintf(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
-			}
+			log_debug(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
 			// Save position and exit
 			break;
 		} else if (printed_lines < window_state->text_window.max_lines){
-			//fprintf(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
+			log_debug(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
 			if (strlen(text_buffer) > 0){
-				if (LOGGING){
-					fprintf(log, "menu_textreader_populate: %zu characters left to print on line %d\n", strlen(text_buffer), printed_lines);
-				}
+				log_debug(log, "menu_textreader_populate: %zu characters left to print on line %d\n", strlen(text_buffer), printed_lines);
 				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
 				printed_lines++;
@@ -862,16 +814,12 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines == window_state->text_window.max_lines){
-			if (LOGGING){
-				fprintf(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
-			}
+			log_debug(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
 			// Save position and exit
 			break;
 		}
 	}
-	if (LOGGING){
-		fprintf(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
-	}
+	log_debug(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
 	// Save state of file pointer so we know where to load next time around
 	window_state->text_window.f_pos = last_i;
 	return 0;
@@ -1000,22 +948,17 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 // Toggle between selected windows
 int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 	
+	log_debug(log, "============================\n");
 	if (window_state->selected_window == W_BROWSER){
 		window_state->selected_window = W_INFO;
-		if (LOGGING){
-			fprintf(log, "menu_toggle_window: Info panel now selected\n");
-		}
+		log_debug(log, "menu_toggle_window: Info panel now selected\n");
 		return 0;
 	} else if (window_state->selected_window == W_INFO){
 		window_state->selected_window = W_BROWSER;
-		if (LOGGING){
-			fprintf(log, "menu_toggle_window: Browser now selected\n");
-		}
+		log_debug(log, "menu_toggle_window: Browser now selected\n");
 		return 0;
 	} else {
-		if (LOGGING){
-			fprintf(log, "menu_toggle_window: Error unknown window mode\n");
-		}
+		log_debug(log, "menu_toggle_window: Error unknown window mode\n");
 		return -1;
 	}
 }
@@ -1023,30 +966,23 @@ int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 // Send events to the config window
 int menu_toggle_config_window_mode(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
 	
+	log_debug(log, "============================\n");
 	if (event.key.keysym.sym == SDLK_F1){
 		// Export gamedata to CSV
-		if (LOGGING){
-			fprintf(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
-		}
+		log_debug(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_EXPORT;
 		return 0;	
 	} else if (event.key.keysym.sym == SDLK_F2){
 		// Import gamedata from CSV
-		if (LOGGING){
-			fprintf(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
-		}
+		log_debug(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_IMPORT;
 		return 0;	
 	} else if (event.key.keysym.sym == SDLK_F3){
-		if (LOGGING){
-			fprintf(log, "menu_toggle_config_window_mode: Rescan all game folders\n");
-		}
+		log_debug(log, "menu_toggle_config_window_mode: Rescan all game folders\n");
 		window_state->config_window.config_option_selected = OPTION_RESCAN;
 		return 0;
 	} else {
-		if (LOGGING){
-			fprintf(log, "menu_toggle_config_window_mode: Default to no option selected\n");
-		}
+		log_debug(log, "menu_toggle_config_window_mode: Default to no option selected\n");
 		window_state->config_window.config_option_selected = OPTION_NONE;
 		return 0;
 	}
@@ -1133,10 +1069,7 @@ int menu_toggle_info_window_mode(SDL_Surface *display, FILE *log, struct GAME_DA
 			// View a readme file
 			if (window_state->info_window.readme_selected > 0){
 				window_state->selected_window = W_TEXT;
-				if (LOGGING){
-					fprintf(log, "menu_toggle_info_window_mode: Open document %d\n", window_state->info_window.readme_selected);
-					fflush(log);
-				}
+				log_debug(log, "menu_toggle_info_window_mode: Open document %d\n", window_state->info_window.readme_selected);
 				// Open reader window
 				menu_textreader_init(display, log);
 				// Open file handler
@@ -1212,12 +1145,13 @@ int menu_save_last_game(struct WINDOW_STATE *window_state){
 int menu_init_gamedata(FILE *log, struct GAME_DATA *game_data){
 	
 	// Set initial list position and number of items to zero
-	fprintf(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
-	fprintf(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
+	log_debug(log, "============================\n");
+	log_debug(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
+	log_debug(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
 	game_data->pos = 0;
 	game_data->items = 0;
-	fprintf(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
-	fprintf(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
+	log_debug(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
+	log_debug(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
 	
 	return 0;
 }
