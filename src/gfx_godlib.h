@@ -1,4 +1,8 @@
+// Include the Reservoir gods Atari ST godlib.a library
 #include <GODLIB/GODLIB.H>
+
+// Include our logging functions
+#include "logging.h"
 
 // Copies a bitmap (specified by a source window overlay), to a destination bitmap (with a destination window overlay) 
 int blitSurface(

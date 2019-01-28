@@ -54,12 +54,10 @@ int text2BMP(struct agnostic_bitmap *display, struct agnostic_bitmap *font_norma
 					src.window.y = FONT_H * CHAR_LIST[font_index].y;
 					src.window.w = FONT_W;
 					src.window.h = FONT_H;
-					//printf("%d : %c (x:%d,y:%d) at (%d,%d)px \n", i, c, CHAR_LIST[font_index].x, CHAR_LIST[font_index].y, src.window.x, src.window.y);
 					dest.window.x = next_x;
 					dest.window.y = y;
 					dest.window.w = FONT_W;
 					dest.window.h = FONT_H;
-					//printf("%d : %c dest.window.x:%d dest.window.y:%d\n", i, c, dest.window.x, dest.window.y);				
 					if (inverse){
 						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
 					} else {
