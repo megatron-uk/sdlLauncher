@@ -191,8 +191,8 @@ typedef struct WINDOW_STATE {
 	struct TEXT_WINDOW_DATA text_window;		// Track state of the text reader window
 	struct CONFIG_WINDOW_DATA config_window;	// Track state of the config window
 	struct CATEGORY_WINDOW_DATA category_window;
-	SDL_Surface *font_normal;
-	SDL_Surface *font_reverse;
+	struct agnostic_bitmap *font_normal;
+	struct agnostic_bitmap *font_reverse;
 } WINDOW_STATE;
 
 // Structures for holding data on the games that are found

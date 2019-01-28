@@ -5,36 +5,12 @@
 char text_buffer[256];
 char text_buffer_alt[256];
 
-// Load SDL library
-int menu_sdl_init(FILE *log){
-	
-	SDL_version sdl_compiled;	// Show compiled-time version of SDL 
-							// (this will be the runtime version for a static binary)
-	int r;					// return codes
-	
-	// Load SDL display library
-	r = SDL_Init(SDL_INIT_VIDEO);
-	if (r != 0){
-		log_error(log, "menu_sdl_init SDL Init Error: %s\n", SDL_GetError());
-		fclose(log);
-		sleep(2);
-		exit(-1);
-	} else {
-		SDL_VERSION(&sdl_compiled);
-		log_info(log, "menu_sdl_init: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
-		return r;
-	}
-}
-
 // Draw a bordered box at pos x,y, of height h and width w, and of border px thickness
-int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, int px, int shadow_px){
+int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h, int px, int shadow_px){
 	
 	agnostic_window box;	// A bounding box for the borders we want to draw
-	agnostic_bitmap bmp;
 	agnostic_colours rgb;	// Colour spec
 	int r;				// return codes
-	
-	bmp.bmp = display;
 	
 	box.window.x = x + shadow_px;
 	box.window.y = y + shadow_px;
@@ -45,12 +21,11 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 		rgb.r = 128;
 		rgb.g = 128;
 		rgb.b= 128;
-		r = drawBox(&bmp, &box, &rgb);
+		r = gfxDrawBox(log, display, &box, &rgb);
 		if ( r != 0){
-			log_error(log, "menu_borders: Shadow Fill Error: %s\n", SDL_GetError());
-			SDL_Quit();
+			log_error(log, "[menu_borders]\t: Shadow Fill Error\n");
+			gfxQuit(log);
 			fclose(log);
-			sleep(2);
 			exit(-1);
 		}
 	}
@@ -63,12 +38,11 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	rgb.g = 255;
 	rgb.b= 255;
 	// Outer box in white
-	r = drawBox(&bmp, &box, &rgb);
+	r = gfxDrawBox(log, display, &box, &rgb);
 	if ( r != 0){
-		log_error(log, "menu_borders: Border Fill Error: %s\n", SDL_GetError());
-		SDL_Quit();
+		log_error(log, "[menu_borders]\t: Border Fill Error\n");
+		gfxQuit(log);
 		fclose(log);
-		sleep(2);
 		exit(-1);
 	}
 	
@@ -81,12 +55,11 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 	rgb.g = 0;
 	rgb.b= 0;
 	// Inner box in black
-	r = drawBox(&bmp, &box, &rgb);
+	r = gfxDrawBox(log, display, &box, &rgb);
 	if ( r != 0){
-		log_error(log, "menu_borders: Inner Fill Error: %s\n", SDL_GetError());
-		SDL_Quit();
+		log_error(log, "[menu_borders]\t: Inner Fill Error\n");
+		gfxQuit(log);
 		fclose(log);
-		sleep(2);
 		exit(-1);
 	}
 	return r;
@@ -94,7 +67,7 @@ int menu_borders(SDL_Surface *display, FILE *log, int x, int y, int w, int h, in
 }
 
 // Draw the blank game cover/bitmap window
-int menu_gamecover_init(SDL_Surface *display, FILE *log){
+int menu_gamecover_init(agnostic_bitmap *display, FILE *log){
 	
 	// redraw our box borders and blank any previous bitmap
 	COORDS coords = GAMECOVER_COORDS();
@@ -103,7 +76,7 @@ int menu_gamecover_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the blank browser window
-int menu_browser_init(SDL_Surface *display, FILE *log){
+int menu_browser_init(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,137 that is 320x63 pixels for our game list window
 	COORDS coords = BROWSER_COORDS();
@@ -112,7 +85,7 @@ int menu_browser_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the alphabet menu window
-int menu_category_init(SDL_Surface *display, FILE *log){
+int menu_category_init(agnostic_bitmap *display, FILE *log){
 	
 	COORDS coords = ALPHABET_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
@@ -120,7 +93,7 @@ int menu_category_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the blank info window
-int menu_info_init(SDL_Surface *display, FILE *log){
+int menu_info_init(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,0 that is 138x137 pixels for our info window
 	COORDS coords = INFO_COORDS();
@@ -129,7 +102,7 @@ int menu_info_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the blank on-screen text reader box
-int menu_textreader_init(SDL_Surface *display, FILE *log){
+int menu_textreader_init(agnostic_bitmap *display, FILE *log){
 	
 	COORDS coords = READER_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
@@ -137,7 +110,7 @@ int menu_textreader_init(SDL_Surface *display, FILE *log){
 }
 
 // Draw the config menu window
-int menu_config_init(SDL_Surface *display, FILE *log){
+int menu_config_init(agnostic_bitmap *display, FILE *log){
 	
 	COORDS coords = CONFIG_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
@@ -145,7 +118,7 @@ int menu_config_init(SDL_Surface *display, FILE *log){
 }
 
 // Print a message from the menu programme in the bottom status box
-int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, FILE *log, char *text){
+int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *text){
 	
 	// Iterate over the string, printing each line seperated by \n on a
 	COORDS coords = INFO_COORDS();
@@ -178,7 +151,7 @@ int menu_infobox_print(SDL_Surface *display, struct WINDOW_STATE *window_state, 
 			y = coords.y + 2 + (line_number * 8);
 			
 			// Carriage return, print line buffer
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
 			
 			// Reset line buffer for next pass
 			memset(text_line, '\0', sizeof(text_line));
@@ -248,61 +221,59 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 
 
 // Load and display the game cover for the currently selected game	
-int menu_gamecover_load(SDL_Surface *display, struct WINDOW_STATE *window_state, FILE *log, char *fname){
+int menu_gamecover_load(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *fname){
 	
 	COORDS coords = GAMECOVER_COORDS();
-	SDL_Surface *bmp = NULL;	// Raw bitmap as loaded from disk
-	SDL_Rect src, dest;			// Cropping surfaces for displaying bitmaps
+	agnostic_bitmap bmp;			// Raw bitmap as loaded from disk
+	agnostic_window src, dest;		// Cropping surfaces for displaying bitmaps
 	int r = 0;						// return codes
 
 	log_debug(log, "============================\n");
 	log_debug(log, "menu_gamecover_load: Loading [%s]\n", fname);
 	// Load splash bitmap
-	bmp = SDL_LoadBMP(fname); 
-	if (bmp == NULL){
-		log_error(log, "menu_gamecover_load SDL Load Error: %s\n", SDL_GetError());
-		SDL_FreeSurface(bmp);
+	r = gfxLoadBMP(log, fname, &bmp); 
+	if (r != 0){
+		log_error(log, "menu_gamecover_load Load Error\n");
+		gfxFreeBMP(log, &bmp);
 		strcpy(text_buffer, ERROR_BITMAP_OPEN);
 		strcat(text_buffer, "\nFilename: ");
 		strcat(text_buffer, fname);
 		menu_infobox_print(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		log_debug(log, "menu_gamecover_load: Loaded %dx%dx%dbpp\n", bmp->w, bmp->h, bmp->format->BitsPerPixel);
-		// Ensure bitmap is converted to colour mode of display
-		//image = SDL_DisplayFormat(bmp);
+		log_debug(log, "menu_gamecover_load: Loaded %dx%dx%dbpp\n", bmp.bmp->w, bmp.bmp->h, bmp.bmp->format->BitsPerPixel);
 	}
 	
 	// Source
-	src.x = 0;		// Top left corner of source bitmap
-	src.y = 0;		// Top left corner of source bitmap
-	src.w = BMP_W;	// Crop to our sizes defined in menu.h
-	src.h = BMP_H;	// Crop to our sizes defined in menu.h
+	src.window.x = 0;		// Top left corner of source bitmap
+	src.window.y = 0;		// Top left corner of source bitmap
+	src.window.w = BMP_W;	// Crop to our sizes defined in menu.h
+	src.window.h = BMP_H;	// Crop to our sizes defined in menu.h
 
 	// Destination
-	dest.x = coords.x + 1; //(SCREEN_W - BMP_W); 	// Load the bitmap into the bordered window          
-	dest.y = coords.y + 1;	// Load the bitmap into the bordered window 
-	dest.w = coords.w - 2;  // Crop to our sizes defined in menu.h
-	dest.h = coords.h - 2;	// Crop to our sizes defined in menu.h
+	dest.window.x = coords.x + 1; //(SCREEN_W - BMP_W); 	// Load the bitmap into the bordered window          
+	dest.window.y = coords.y + 1;	// Load the bitmap into the bordered window 
+	dest.window.w = coords.w - 2;  // Crop to our sizes defined in menu.h
+	dest.window.h = coords.h - 2;	// Crop to our sizes defined in menu.h
 	
 	// Write bitmap to display
-	r = SDL_BlitSurface(bmp, &src, display, &dest);
+	r = gfxBlitBMP(log, &bmp, &src, display, &dest);
 	if ( r != 0){
-		log_error(log, "menu_gamecover_load SDL Blit Error: %s\n", SDL_GetError());
-		SDL_Quit();
+		log_error(log, "menu_gamecover_load Blit Error\n");
+		gfxQuit(log);
 		fclose(log);
 		sleep(2);
 		exit(-1);
 	}
-	SDL_FreeSurface(bmp);
+	gfxFreeBMP(log, &bmp);
 	return r;
 }
 
 // Draw the category chooser (e.g. all, favourite, 0-9, a, b, c, d etc.)
 // and highlight the current chosen category
-int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_category_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
-	COORDS coords = ALPHABET_COORDS();	// Coordinates of SDL window
+	COORDS coords = ALPHABET_COORDS();	// Coordinates of window
 	//int r = 0;							// return codes
 	int i;								// loop counter
 	int rev = 0;							// reverse video selector
@@ -322,7 +293,7 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	menu_category_init(display, log);
 	
 	// Category text
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), (coords.y + 1), 1);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), (coords.y + 1), 1);
 
 	// Game category ALL
 	if (window_state->category_window.cat_selected == -3){
@@ -330,7 +301,7 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	} else {
 		rev = 0;
 	}
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "All", (coords.x + cat_all_x_offset), coords.y + 2, rev);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "All", (coords.x + cat_all_x_offset), coords.y + 2, rev);
 
 	// Game category Favourites
 	if (window_state->category_window.cat_selected == -2){
@@ -338,7 +309,7 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	} else {
 		rev = 0;
 	}
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Fav", (coords.x + cat_fav_x_offset), coords.y + 2, rev);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Fav", (coords.x + cat_fav_x_offset), coords.y + 2, rev);
 	
 	// Game category 0-9
 	if (window_state->category_window.cat_selected == -1){
@@ -346,7 +317,7 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 	} else {
 		rev = 0;
 	}
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "0-9", (coords.x + cat_num_x_offset), coords.y + 2, rev);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "0-9", (coords.x + cat_num_x_offset), coords.y + 2, rev);
 	
 	// Game category by first letter
 	for(i = 0; i <= CATEGORY_MAX_CAT; i++){
@@ -357,7 +328,7 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 		}
 		c[0] = ALPHABET_CATS[i];
 		c[1] = '\0';
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, c, (coords.x + cat_alpha_x_offset + (i * (FONT_W + 1))), coords.y + 2, rev);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, c, (coords.x + cat_alpha_x_offset + (i * (FONT_W + 1))), coords.y + 2, rev);
 	}
 	
 	return 0;
@@ -366,9 +337,9 @@ int menu_category_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *ga
 
 // Draw the contents of the config/options window and process any input
 // commands that were sent to it
-int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_config_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
-	COORDS coords = CONFIG_COORDS();	// Coordinates of SDL window
+	COORDS coords = CONFIG_COORDS();	// Coordinates of window
 	FILE *csv;							// File handler for csv import/export
 	int r;								// return codes
 	
@@ -376,35 +347,35 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	menu_config_init(display, log);
 		
 	// List config options
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "Config Menu", 			(coords.x + 45), (coords.y + 3), 1);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Esc - Close menu", 		(coords.x + 2), (coords.y + 3 + (2 * FONT_H)), 0);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F1  - Export CSV", 		(coords.x + 2), (coords.y + 3 + (3 * FONT_H)), 0);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F2  - Import CSV", 		(coords.x + 2), (coords.y + 3 + (4 * FONT_H)), 0);
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F3  - Rescan folders", 	(coords.x + 2), (coords.y + 3 + (5 * FONT_H)), 0);
-	//text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
-	//text2surface(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Config Menu", 			(coords.x + 45), (coords.y + 3), 1);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Esc - Close menu", 		(coords.x + 2), (coords.y + 3 + (2 * FONT_H)), 0);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " F1  - Export CSV", 		(coords.x + 2), (coords.y + 3 + (3 * FONT_H)), 0);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " F2  - Import CSV", 		(coords.x + 2), (coords.y + 3 + (4 * FONT_H)), 0);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " F3  - Rescan folders", 	(coords.x + 2), (coords.y + 3 + (5 * FONT_H)), 0);
+	//text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " F4  -", 				(coords.x + 2), (coords.y + 3 + (6 * FONT_H)), 0);
+	//text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " F5  -", 				(coords.x + 2), (coords.y + 3 + (7 * FONT_H)), 0);
 
 	//==========================================
 	// rescan folders
 	if (window_state->config_window.config_option_selected == OPTION_RESCAN){		
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Rescan all folders...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Scanning, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-		SDL_Flip(display);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Rescan all folders...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Scanning, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+		gfxFlip(log, display);
 		r = scangames(log, GAMEDIR, game_data);
 		if (r > 0){
 			sprintf(text_buffer, " - %d games found", r);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
-			SDL_Flip(display);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			gfxFlip(log, display);
 			sortgames(game_data);
 			menu_refilter_browser(log, game_data, window_state);
 			// Select game list item 0
 			window_state->browser_window.select_pos = 0;
 		} else {
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - No games found" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - No games found" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 		}
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		// If successful or not, cancel export option
 		window_state->config_window.config_option_selected = OPTION_NONE;
 	}
@@ -412,29 +383,29 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	//==========================================
 	// CSV export
 	if (window_state->config_window.config_option_selected == OPTION_CSV_EXPORT){
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Export data to CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Export data to CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
 		// Export current game data
 		// Open file
 		csv = fopen(CSVFILE, "w");
 		if (csv != NULL){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Writing, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			SDL_Flip(display);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Writing, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			gfxFlip(log, display);
 			r = csv_writer(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records written", r);
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 			} else {
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error writing records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error writing records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 			}
 			// Close file
 			fclose(csv);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
 			
 		} else {
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " CSV file may be corrupt", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed (error)", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " CSV file may be corrupt", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		}
 		// If successful or not, cancel export option
 		window_state->config_window.config_option_selected = OPTION_NONE;
@@ -443,33 +414,33 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	//==========================================
 	// CSV import
 	if (window_state->config_window.config_option_selected == OPTION_CSV_IMPORT){
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Import data from CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Import data from CSV...", (coords.x + 2), (coords.y + 3 + (10 * FONT_H)), 0);
 		// Import game data
 		// Open file
 		csv = fopen(CSVFILE, "r");
 		if (csv != NULL){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Reading, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			SDL_Flip(display);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Reading, please wait", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			gfxFlip(log, display);
 			r = csv_reader(game_data, log, csv);
 			if (r > 0){
 				sprintf(text_buffer, " - %d records read", r);
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 				// Select game list item 0
 				window_state->browser_window.select_pos = 0;
 				menu_refilter_browser(log, game_data, window_state);
 			} else {
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
 			}
 			// Close file
 			fclose(csv);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		
 		} else {
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, " Game list NOT updated", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error opening CSV file", (coords.x + 2), (coords.y + 3 + (11 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Game list NOT updated", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		}		
 		// If successful or not, cancel import option
 		window_state->config_window.config_option_selected = OPTION_NONE;
@@ -477,7 +448,7 @@ int menu_config_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game
 	return 0;
 }
 
-int menu_gamecover_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_gamecover_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 
 	// Full path and filename of game bitmap
 	char fullpath[(GAME_PATH_LEN + GAME_FILE_LEN)];
@@ -500,7 +471,7 @@ int menu_gamecover_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *g
 }
 
 // The main scrollable game browser window
-int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = BROWSER_COORDS();
 	int i;
@@ -513,7 +484,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 	// Blank and redraw window borders
 	menu_browser_init(display, log);
 	
-	text2surface(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
 	
 	log_debug(log, "============================\n");
@@ -545,7 +516,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
-						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 						select_i++;
 					}
 					
@@ -569,7 +540,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 						} else {
 							selected = 0;	
 						}
-						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 					}
 				}
 				
@@ -581,7 +552,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 					} else {
 						selected = 0;	
 					}
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
+					text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
 				}
 			}
 		} else {
@@ -603,7 +574,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
-						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
 						select_i++;
 						row++;
 					}
@@ -634,7 +605,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 						} else {
 							selected = 0;	
 						}
-						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
 						row++;
 					}
 				}
@@ -643,7 +614,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 				// We can show all filtered items in the window
 				log_debug(log, "menu_browser_populate: Filtered category all lines can be shown\n");
 				if (window_state->browser_window.start_pos_filtered == -1){
-					text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);	
+					text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);	
 				} else {
 					for (i = window_state->browser_window.start_pos_filtered; i <= window_state->browser_window.end_pos_filtered; i++){
 						if (i == window_state->browser_window.select_pos){
@@ -651,7 +622,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 						} else {
 							selected = 0;	
 						}
-						text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
+						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
 						row++;
 					}
 				}
@@ -659,7 +630,7 @@ int menu_browser_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *gam
 		}
 	} else {
 		// No games found :(
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);
 	}
 	return 0;
 }
@@ -710,7 +681,7 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 }
 
 // Update the text reader window
-int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	struct COORDS coords = READER_COORDS();								// Geometry of reader window
 	int total_max_chars;		// Total number of printable chars (chars per line * lines)
@@ -776,7 +747,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 				// newline
 				// Print buffer and start new line
 				// Print line buffer up to this point
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
 				printed_lines++;
 				break;
@@ -806,7 +777,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 			log_debug(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
 			if (strlen(text_buffer) > 0){
 				log_debug(log, "menu_textreader_populate: %zu characters left to print on line %d\n", strlen(text_buffer), printed_lines);
-				text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
 				printed_lines++;
 			}
@@ -827,7 +798,7 @@ int menu_textreader_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *
 
 // The bottom info window - update it to reflect the current selected
 // game, plus any additional details for the game.
-int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menu_info_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = INFO_COORDS();
 	int game_id = window_state->browser_window.select_pos;		// short hand
@@ -856,7 +827,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 		// Draw all possible binaries
 		// Is the 'choose binary' row currently selected?
 		if (window_state->info_window.info_mode_selected == M_BINARY){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, binary_y_pos, 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, binary_y_pos, 0);
 		}
 		// binary_1
 		if (game_data->game_data_items[game_id].binary_1[0] != '\0'){
@@ -865,7 +836,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_1, x_offset, binary_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_1, x_offset, binary_y_pos, rev);
 		}
 		// binary_2
 		if (game_data->game_data_items[game_id].binary_2[0] != '\0'){
@@ -874,7 +845,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_2, (x_offset + ((16 * FONT_W) * 1)), binary_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_2, (x_offset + ((16 * FONT_W) * 1)), binary_y_pos, rev);
 		}
 		// binary_3
 		if (game_data->game_data_items[game_id].binary_3[0] != '\0'){
@@ -883,14 +854,14 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_3, (x_offset + ((16 * FONT_W) * 2)), binary_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].binary_3, (x_offset + ((16 * FONT_W) * 2)), binary_y_pos, rev);
 		}
 		
 		//==========================================================
 		// Draw all possible readme files
 		// Is the 'choose binary' row currently selected?
 		if (window_state->info_window.info_mode_selected == M_README){
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, readme_y_pos, 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, ">", 4, readme_y_pos, 0);
 		}
 		// readme_1
 		if (game_data->game_data_items[game_id].readme_1[0] != '\0'){
@@ -899,7 +870,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_1, x_offset, readme_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_1, x_offset, readme_y_pos, rev);
 		}
 		// readme_2
 		if (game_data->game_data_items[game_id].readme_2[0] != '\0'){
@@ -908,7 +879,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_2, (x_offset + ((16 * FONT_W) * 1)), readme_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_2, (x_offset + ((16 * FONT_W) * 1)), readme_y_pos, rev);
 		}
 		// readme_3
 		if (game_data->game_data_items[game_id].readme_3[0] != '\0'){
@@ -917,14 +888,14 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 			} else {
 				rev = 0;	
 			}
-			text2surface(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_3, (x_offset + ((16 * FONT_W) * 2)), readme_y_pos, rev);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[game_id].readme_3, (x_offset + ((16 * FONT_W) * 2)), readme_y_pos, rev);
 		}
 		
 		//====================================
 		// game data - show the path to the game
 		strcpy(text_buffer, "Path: ");
 		strcat(text_buffer, game_data->game_data_items[game_id].path);
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos, 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos, 0);
 		
 		// Display counter of game_id selected from total number available
 		// e.g. 13/254
@@ -934,7 +905,7 @@ int menu_info_populate(SDL_Surface *display, FILE *log, struct GAME_DATA *game_d
 		strcat(text_buffer, "/");
 		sprintf(text_buffer_alt, "%d", game_data->items);
 		strcat(text_buffer, text_buffer_alt);
-		text2surface(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos2, 0);
+		text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, x_offset, gamedata_y_pos2, 0);
 		
 		// Update last selected game to this one
 		window_state->browser_window.last_pos = game_id;
@@ -964,7 +935,7 @@ int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 }
 
 // Send events to the config window
-int menu_toggle_config_window_mode(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_config_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
 	
 	log_debug(log, "============================\n");
 	if (event.key.keysym.sym == SDLK_F1){
@@ -989,7 +960,7 @@ int menu_toggle_config_window_mode(SDL_Surface *display, FILE *log, struct GAME_
 }
 
 // Toggle rows and selected item in info window
-int menu_toggle_info_window_mode(SDL_Surface *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
 	
 	// Scroll down to readme line
 	if (event.key.keysym.sym == SDLK_DOWN){
@@ -1187,7 +1158,7 @@ int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
 	// Maximum number of characters in width we can show in text reader
 	
 	// Load fonts
-	window_state->font_normal = loadfont(log, 0);
-	window_state->font_reverse = loadfont(log, 1);
+	loadfont(log, (agnostic_bitmap *)&window_state->font_normal, 0);
+	loadfont(log, (agnostic_bitmap *)&window_state->font_reverse, 1);
 	return 0;
 }

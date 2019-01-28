@@ -1,50 +1,42 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <SDL/SDL.h>
 
 #include "menu.h"
 #include "font.h"
-#include "graphics.h"
+#include "gfx.h"
 #include "logging.h"
 
 // Load the defined font bitmap into a SDL surface.
-SDL_Surface* loadfont(FILE *log, bool inverse){
+int loadfont(FILE *log, struct agnostic_bitmap *bmp, bool inverse){
 	
-	agnostic_bitmap bmp;
 	
-	// Load splash bitmap
+	// Load font bitmap
 	if (inverse == 1){
-		loadBMP(FONT_BITMAP_REV, &bmp);
-		log_info(log, "loadfont: Loading reverse font [%s]\n", FONT_BITMAP_REV);
+		log_info(log, "[loadfont]\t: Loading reverse font [%s]\n", FONT_BITMAP_REV);
+		gfxLoadBMP(log, FONT_BITMAP_REV, (agnostic_bitmap *)bmp);
 	} else {
-		loadBMP(FONT_BITMAP, &bmp);
-		log_info(log, "loadfont: Loading normal font [%s]\n", FONT_BITMAP);
+		log_info(log, "[loadfont]\t: Loading normal font [%s]\n", FONT_BITMAP);
+		gfxLoadBMP(log, FONT_BITMAP, (agnostic_bitmap *)bmp);
 	}
-	if (bmp.bmp == NULL){
-		log_error(log, "loadfont: Error loading bitmap\n");
-		return NULL;
+	if (bmp->bmp == NULL){
+		log_error(log, "[loadfont]\t: Error loading bitmap\n");
+		return -1;
+	} else {
+		return 0;
 	}
-	return bmp.bmp;
 }
 
 // Turn a string of text into bitmaps and blit them onto
 // the main display surface.
-int text2surface(SDL_Surface *display, SDL_Surface *font_normal, SDL_Surface *font_reverse, FILE *log, char *text, int x, int y, bool inverse){
+int text2BMP(struct agnostic_bitmap *display, struct agnostic_bitmap *font_normal, struct agnostic_bitmap *font_reverse, FILE *log, char *text, int x, int y, bool inverse){
 
-	SDL_Surface *font = NULL;
-	SDL_Rect src, dest;
+	agnostic_window src, dest;
 	unsigned int i;
 	unsigned int font_index;
 	unsigned int found;
 	unsigned int r;
 	unsigned int next_x;
 	char c;
-	
-	if (inverse == 1){
-		font = font_reverse;
-	} else {
-		font = font_normal;
-	}
 
 	// Loop through every character of the text string
 	next_x = x;
@@ -58,38 +50,46 @@ int text2surface(SDL_Surface *display, SDL_Surface *font_normal, SDL_Surface *fo
 					found = 1;
 					
 					// Add this bitmap fragment to the outgoing image surface
-					src.x = FONT_W * CHAR_LIST[font_index].x;
-					src.y = FONT_H * CHAR_LIST[font_index].y;
-					src.w = FONT_W;
-					src.h = FONT_H;
-					//printf("%d : %c (x:%d,y:%d) at (%d,%d)px \n", i, c, CHAR_LIST[font_index].x, CHAR_LIST[font_index].y, src.x, src.y);
-					dest.x = next_x;
-					dest.y = y;
-					dest.w = FONT_W;
-					dest.h = FONT_H;
-					//printf("%d : %c dest.x:%d dest.y:%d\n", i, c, dest.x, dest.y);				
-					r = SDL_BlitSurface(font, &src, display, &dest);
+					src.window.x = FONT_W * CHAR_LIST[font_index].x;
+					src.window.y = FONT_H * CHAR_LIST[font_index].y;
+					src.window.w = FONT_W;
+					src.window.h = FONT_H;
+					//printf("%d : %c (x:%d,y:%d) at (%d,%d)px \n", i, c, CHAR_LIST[font_index].x, CHAR_LIST[font_index].y, src.window.x, src.window.y);
+					dest.window.x = next_x;
+					dest.window.y = y;
+					dest.window.w = FONT_W;
+					dest.window.h = FONT_H;
+					//printf("%d : %c dest.window.x:%d dest.window.y:%d\n", i, c, dest.window.x, dest.window.y);				
+					if (inverse){
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+					} else {
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+					}
 					if ( r != 0){
-						log_error(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
+						log_error(log, "[text2BMP]\t: Blit Error\n");
 						return r;
 					}
 					next_x += FONT_W;
 				}
 			}
 			if (found == 0){
-				log_warn(log, "text2surface: pos %d [%c] - No matching ASCII character found, blanking!\n", i, c);
+				log_warn(log, "[text2BMP]\t: Pos %d [%c] - No matching ASCII character found, blanking!\n", i, c);
 				// Copy a blank or some placeholder here
-				src.x = FONT_W * CHAR_LIST[FONT_PLACEHOLDER].x;
-				src.y = FONT_H * CHAR_LIST[FONT_PLACEHOLDER].y;
-				src.w = FONT_W;
-				src.h = FONT_H;
-				dest.x = next_x;
-				dest.y = y;
-				dest.w = FONT_W;
-				dest.h = FONT_H;
-				r = SDL_BlitSurface(font, &src, display, &dest);
+				src.window.x = FONT_W * CHAR_LIST[FONT_PLACEHOLDER].x;
+				src.window.y = FONT_H * CHAR_LIST[FONT_PLACEHOLDER].y;
+				src.window.w = FONT_W;
+				src.window.h = FONT_H;
+				dest.window.x = next_x;
+				dest.window.y = y;
+				dest.window.w = FONT_W;
+				dest.window.h = FONT_H;
+				if (inverse){
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+				} else {
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+				}
 				if ( r != 0){
-					log_error(log, "text2surface: SDL Blit Error: %s\n", SDL_GetError());
+					log_error(log, "[text2BMP]\t: Blit Error\n");
 					return r;
 				}
 				next_x += FONT_W;

@@ -6,6 +6,8 @@
 #include <allegro.h>
 #endif
 
+
+
 // =======================================
 //
 // Interface layer between the application and SDL/Allegro/foobar
@@ -53,11 +55,29 @@ typedef struct agnostic_window {
 //
 // ======================================
 
-// Load a bitmap from file - either SDL or Allegro
-int loadBMP(char *filename, struct agnostic_bitmap *bmp);
-
 // Draws and fills a rectangular box
-int drawBox(struct agnostic_bitmap *screen, struct agnostic_window *window, struct agnostic_colours *rgb);
+int gfxDrawBox(FILE *log, struct agnostic_bitmap *screen, struct agnostic_window *window, struct agnostic_colours *rgb);
 
 // Blit a (partial) bitmap from one area to another - either SDL or Allegro
-int blitSurface(struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst); 
+int gfxBlitBMP(FILE *log, struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst); 
+
+// Update the display buffer
+void gfxFlip(FILE *log, struct agnostic_bitmap *screen);
+
+// Unload a bitmap from memory
+void gfxFreeBMP(FILE *log, struct agnostic_bitmap *bmp);
+
+// Last driver error
+char* gfxGetError();
+
+// Load driver
+int gfxInit(FILE *log);
+
+// Load a bitmap from file - either SDL or Allegro
+int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp);
+
+// Unload driver
+int gfxQuit(FILE *log);
+
+// Initialise the display
+int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp);

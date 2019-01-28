@@ -1,4 +1,4 @@
-OBJFILES = src/logging.o src/graphics.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = src/logging.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 
 ifeq ($(LOGGING), 1)
 override CFLAGS += -DUSE_LOGGING
@@ -7,27 +7,27 @@ endif
 all: $(EXE)
 
 $(EXE):  $(OBJFILES)
-	$(CC) $(LINK_CFLAGS) -o $(EXE) $(OBJFILES) $(APP_LDFLAGS)
-	$(STRIP) --strip-all $(EXE)
+	$(CC) $(LINK_CFLAGS) -g -o $(EXE) $(OBJFILES) $(APP_LDFLAGS)
+	#$(STRIP) --strip-all $(EXE)
 	$(STACKMOD)
 	
 menu.o: src/menu.c
-	$(CC) -c -o src/$@
+	$(CC) -g -c -o src/$@
 	
 bmp2text.o: src/bmp2text.c
-	$(CC) -c -o src/$@
+	$(CC) -g -c -o src/$@
 
 gamedata.o: src/gamedata.c
-	$(CC) -c -o src/$@
+	$(CC) -g -c -o src/$@
 
 csvlib.o: src/csvlib.c
-	$(CC) -c -o src/$@
+	$(CC) -g -c -o src/$@
 	
-graphics.o: src/graphics.c
-	$(CC) -c -o src/$@
+gfx.o: src/gfx.c
+	$(CC) -g -c -o src/$@
 
 logging.o: src/logging.c
-	$(CC) -c -o src/$@
+	$(CC) -g -c -o src/$@
 	
 clean:
 	rm -f src/*.o src/*.a $(EXE) core
