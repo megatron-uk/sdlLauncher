@@ -23,8 +23,13 @@
 #include "gfx_allegro.h"
 #endif
 
-// Atari graphics library
+// Atari low level graphics library - not yet implemented, too many non-gcc m68k asm
 #ifdef USE_GODLIB
 #include "gfx_godlib.h"
+#endif
+
+// Atari GEM/VDI graphics library
+#ifdef USE_GEM
+#include "gfx_vdi.h"
 #endif
 

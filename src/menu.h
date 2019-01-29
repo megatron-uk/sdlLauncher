@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL/SDL.h>
 
 #ifdef USE_LOGGING

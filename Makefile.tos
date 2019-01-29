@@ -1,7 +1,7 @@
 # Names of the compiler and friends
 CC = m68k-atari-mint-gcc
 STRIP = m68k-atari-mint-strip
-STACK = /usr/m68k-atari-mint/bin/stack
+STACK = m68k-atari-mint-stack
 
 # libraries and paths
 APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
@@ -12,10 +12,25 @@ override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -Os $(APP_INC
 LINK_CFLAGS = -Wall -Wno-unused-function -Os
 APP_LDFLAGS = $(APP_LIB)
 
+ifeq ($(LOGGING), 1)
+override CFLAGS += -DUSE_LOGGING
+endif
+
 # What our application is named
 EXE = menu.tos
 
 # Bigger TOS files need a larger stack
-STACKMOD = $(STACK) -S 78K bin/$(EXE)
+STACKMOD = $(STACK) -S 78K
+
+all: $(EXE) vdi.tos
 
 include Makefile.common 
+
+# Extras that only TOS uses
+vdi.tos: vdi.o
+	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/logging.o src/vdi.o $(APP_LDFLAGS)
+	$(STACKMOD) bin/vdi.tos
+
+vdi.o: src/vdi.c
+	$(CC) -g -c src/vdi.c -o src/$@
+	

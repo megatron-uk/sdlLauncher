@@ -1,15 +1,9 @@
 OBJFILES = src/logging.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 
-ifeq ($(LOGGING), 1)
-override CFLAGS += -DUSE_LOGGING
-endif
-
-all: $(EXE)
-
 $(EXE):  $(OBJFILES)
 	$(CC) $(LINK_CFLAGS) -g -o bin/$(EXE) $(OBJFILES) $(APP_LDFLAGS)
 	#$(STRIP) --strip-all bin/$(EXE)
-	$(STACKMOD)
+	$(STACKMOD) bin/$(EXE)
 	
 menu.o: src/menu.c
 	$(CC) -g -c -o src/$@

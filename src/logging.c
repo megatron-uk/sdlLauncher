@@ -26,7 +26,6 @@ static int __log(FILE *fp, const char *level, const char *format, va_list args) 
 	}
 
 	len = vfprintf(fp, newformat, args);
-	fflush(fp);
 
 cleanup:
 	free(newformat);
