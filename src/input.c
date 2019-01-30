@@ -25,5 +25,5 @@
 
 // Atari GEM/VDI input library
 #ifdef USE_GEM
-#include "input_vdi.h"
+#include "input_gem.h"
 #endif

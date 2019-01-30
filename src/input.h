@@ -13,8 +13,8 @@
 #include <gem.h>
 #endif
 
+// Key definitions for SDL input handling
 #ifdef USE_SDL
-#
 #define EVENT_QUIT 	SDL_QUIT
 #define EVENT_KEYDOWN SDL_KEYDOWN
 #define KEY_q 		SDLK_q
