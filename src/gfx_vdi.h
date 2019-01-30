@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 // Use the TOS VDI/GEM functions
 #include <mint/osbind.h>
@@ -107,9 +108,8 @@ int gfxDrawBox(
 	int border_px,
 	int shadow_px
 ){
-	int r = 0;	// Return code
-	
-	short pxyarray[4];
+	short r = 0;			// Return code
+	short pxyarray[4];	// Box geometry
 	
 	w = w - 1;
 	h = h - 1;
@@ -142,7 +142,7 @@ int gfxDrawBox(
 	v_bar(gem_vdi_handle, pxyarray);
 	
 	
-	// We should only do a fill if the borde
+	// We should only do a fill if the border
 	/*
 	// Fill
 	pxyarray[0] = x + border_px;
@@ -177,17 +177,22 @@ char* gfxGetError(){
 	return "No Error";
 }
 
-// Load video driver
+// Load video driver and register application within GEM
 int gfxInit(FILE *log){
 	
 	short rgb[3];
 	short app_id;
-	int i;
+	short i;
+	short r = 0;
 
 	log_debug(log, "[%s:%d]\t: (gfxInit)\t: Start\n", __FILE__, __LINE__);
 	
 	// ====== gfxInit ============
 	app_id = appl_init();
+	if (app_id == -1){
+		log_error(log, "[%s:%d]\t: (gfxInit)\t: Unable to register application with GEM/AES!\n", __FILE__, __LINE__);
+		return -1;
+	}
 	gem_screen.multitos = (aes_global[1] == -1);
 
 	// open virtual screen workstation (screen)
@@ -211,28 +216,30 @@ int gfxInit(FILE *log){
 		gem_win_handle = wind_create(0, x, y, w, h);
 		if (gem_win_handle > 0) {
 			wind_open(gem_win_handle, x, y, w, h);
+		} else {
+			log_error(log, "[%s:%d]\t: (gfxInit)\t: Unable to acquire window handle from GEM/AES!\n", __FILE__, __LINE__);
+			return -1;	
 		}
 	} else {
 		/* reserve screen area (in multitasking AES = a no-op),
 		 * is really needed only for ACCs as on non-multitos AES
 		 * only those can come on top of other applications.
 		 */
-		//form_dial(FMD_START, gem_screen.w>>1, gem_screen.h>>1, 0, 0, 0, 0, gem_screen.w, gem_screen.h);
+		form_dial(FMD_START, gem_screen.w>>1, gem_screen.h>>1, 0, 0, 0, 0, gem_screen.w, gem_screen.h);
 	}
 
 	log_debug(log, "[%s:%d]\t: (gfxInit)\t: Window opened\n", __FILE__, __LINE__);
 	
-	/* hide mouse, stop updates */
+	// hide mouse, stop updates
 	graf_mouse(M_OFF, NULL);
 	wind_update(BEG_UPDATE);
-
-	log_debug(log, "[%s:%d]\t: (gfxInit)\t: About to clear...\n", __FILE__, __LINE__);
 	
-	/* enable clipping & clear screen */
+	// enable clipping & clear screen
+	log_debug(log, "[%s:%d]\t: (gfxInit)\t: About to clear...\n", __FILE__, __LINE__);
 	gfxClip(log, 1);
 	gfxClear(log);
 	
-	// Reverse video
+	// Enable reverse video
 	rgb[0] = 1000;
 	rgb[1] = 1000;
 	rgb[2] = 1000;
@@ -243,6 +250,8 @@ int gfxInit(FILE *log){
 	vs_color(gem_vdi_handle,0,rgb);
 	
 	log_debug(log, "[%s:%d]\t: (gfxInit)\t: End\n", __FILE__, __LINE__);
+	
+	return r;
 }
 
 // Load a bitmap file from disk into a bitmap structure
@@ -254,10 +263,9 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 int gfxQuit(FILE *log){
 	
 	short rgb[3];
+	short r = 0;
 	
 	log_debug(log, "[%s:%d]\t: (gfxQuit)\t: Unloading driver\n", __FILE__, __LINE__);
-	
-	// Restore original colours
 	
 	// Undo Reverse video
 	rgb[0] = 1000;
@@ -269,11 +277,11 @@ int gfxQuit(FILE *log){
 	rgb[2] = 0;
 	vs_color(gem_vdi_handle,1,rgb);
 	
+	// Restore original colours
 	gfxLoadPens(log);
 	
 	// Unload all the VDI and GEM handlers
 	gfxClip(log, 0);
-	
 	wind_update(END_UPDATE);
 	graf_mouse(M_ON, NULL);
 	form_dial(FMD_FINISH, gem_screen.w>>1, gem_screen.h>>1, 0, 0, 0, 0, gem_screen.w, gem_screen.h);
@@ -281,12 +289,14 @@ int gfxQuit(FILE *log){
 	appl_exit();
 	
 	log_debug(log, "[%s:%d]\t: (gfxQuit)\t: Unloaded\n", __FILE__, __LINE__);
-	return 0;
+	return r;
 }
 
 // Set gem_screen mode
 int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp){
-		
+	
+	short r = 0;
+	
 	// GEM screens count from pixel 0; hence a 320 pixel wide screen is reported as 319 pixels
 	if ((gem_screen.w != (screen_w - 1)) || (gem_screen.h != (screen_h - 1))){
 		log_error(log, "[%s:%d]\t: (gfxSetMode)\t: Requested screen mode [%dx%d]\n", __FILE__, __LINE__, screen_w, screen_h);
@@ -301,7 +311,7 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 		
 	log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Setting screen mode [%dx%d]\n", __FILE__, __LINE__, screen_w, screen_h);
 	
-	return 0;
+	return r;
 }
 
 // Print text
@@ -315,20 +325,18 @@ int gfxText2BMP(
 	int y, 
 	bool inverse
 ){
-	agnostic_window src, dest;
-	unsigned int i;
-	unsigned int font_index;
-	unsigned int found;
-	unsigned int r = 0;
-	unsigned int next_x;
-	char c;
 	short point;
 	short char_w, char_h, cell_w, cell_h;
 	short hin, vin, hout, vout;
+	short r = 0;
+	
+	// Set font and font cell sizes
 	char_w = 5;
 	char_h = 7;
 	cell_w = 6;
 	cell_h = 8;
+	
+	// Font alignment hints
 	hin = 0;
 	vin = 5;
 	

@@ -907,20 +907,20 @@ int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
 }
 
 // Send events to the config window
-int menu_toggle_config_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_config_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 	
 	log_debug(log, "============================\n");
-	if (event.key.keysym.sym == SDLK_F1){
+	if (inputEventKeypressCheck(event, KEY_F1)){
 		// Export gamedata to CSV
 		log_debug(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_EXPORT;
 		return 0;	
-	} else if (event.key.keysym.sym == SDLK_F2){
+	} else if (inputEventKeypressCheck(event, KEY_F2)){
 		// Import gamedata from CSV
 		log_debug(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_IMPORT;
 		return 0;	
-	} else if (event.key.keysym.sym == SDLK_F3){
+	} else if (inputEventKeypressCheck(event, KEY_F3)){
 		log_debug(log, "menu_toggle_config_window_mode: Rescan all game folders\n");
 		window_state->config_window.config_option_selected = OPTION_RESCAN;
 		return 0;
@@ -932,10 +932,10 @@ int menu_toggle_config_window_mode(agnostic_bitmap *display, FILE *log, struct G
 }
 
 // Toggle rows and selected item in info window
-int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 	
 	// Scroll down to readme line
-	if (event.key.keysym.sym == SDLK_DOWN){
+	if (inputEventKeypressCheck(event, KEY_DOWN)){
 		if (window_state->info_window.info_mode_selected == M_BINARY){
 			window_state->info_window.info_mode_selected = M_README;
 			return 0;
@@ -943,7 +943,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Scroll up to binary line
-	if (event.key.keysym.sym == SDLK_UP){
+	if (inputEventKeypressCheck(event, KEY_UP)){
 		if (window_state->info_window.info_mode_selected == M_README){
 			window_state->info_window.info_mode_selected = M_BINARY;
 			return 0;
@@ -951,7 +951,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Scroll left through readme files
-	if ((event.key.keysym.sym == SDLK_LEFT) && (window_state->info_window.info_mode_selected == M_README)){
+	if ((inputEventKeypressCheck(event, KEY_LEFT)) && (window_state->info_window.info_mode_selected == M_README)){
 		if (window_state->info_window.readme_selected > 0){
 			window_state->info_window.readme_selected--;
 			return 0;
@@ -959,7 +959,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Scroll right through readme files
-	if ((event.key.keysym.sym == SDLK_RIGHT) && (window_state->info_window.info_mode_selected == M_README)){
+	if ((inputEventKeypressCheck(event, KEY_RIGHT)) && (window_state->info_window.info_mode_selected == M_README)){
 		
 		if ((window_state->info_window.readme_selected == 0) && (game_data->game_data_items[window_state->browser_window.select_pos].readme_1[0] != '\0')){
 			window_state->info_window.readme_selected = 1;
@@ -978,7 +978,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Scroll left through binary files
-	if ((event.key.keysym.sym == SDLK_LEFT) && (window_state->info_window.info_mode_selected == M_BINARY)){
+	if ((inputEventKeypressCheck(event, KEY_LEFT)) && (window_state->info_window.info_mode_selected == M_BINARY)){
 		if (window_state->info_window.binary_selected > 0){
 			window_state->info_window.binary_selected--;
 			return 0;
@@ -986,7 +986,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Scroll right through binary files
-	if ((event.key.keysym.sym == SDLK_RIGHT) && (window_state->info_window.info_mode_selected == M_BINARY)){
+	if ((inputEventKeypressCheck(event, KEY_RIGHT)) && (window_state->info_window.info_mode_selected == M_BINARY)){
 		
 		if ((window_state->info_window.binary_selected == 0) && (game_data->game_data_items[window_state->browser_window.select_pos].binary_1[0] != '\0')){
 			window_state->info_window.binary_selected = 1;
@@ -1005,7 +1005,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 	}
 	
 	// Run selected item
-	if (event.key.keysym.sym == SDLK_RETURN){
+	if (inputEventKeypressCheck(event, KEY_RETURN)){
 		if (window_state->info_window.info_mode_selected == M_BINARY){
 			// Start the selected binary
 		} else if (window_state->info_window.info_mode_selected == M_README){
@@ -1028,19 +1028,19 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 }
 
 // Scroll through category window
-int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 
 	int changed;
 	changed = 0;
 	
-	if (event.key.keysym.sym == SDLK_RIGHT){
+	if (inputEventKeypressCheck(event, KEY_RIGHT)){
 		if (window_state->category_window.cat_selected < CATEGORY_MAX_CAT){
 			window_state->category_window.cat_selected++;
 			changed = 1;
 		}
 	}
 	
-	if (event.key.keysym.sym == SDLK_LEFT){
+	if (inputEventKeypressCheck(event, KEY_LEFT)){
 		if (window_state->category_window.cat_selected > CATEGORY_MIN_CAT){
 			window_state->category_window.cat_selected--;
 			changed = 1;			
@@ -1054,16 +1054,16 @@ int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_S
 }
 
 // Move selection down rows in browser window
-int menu_toggle_browser_window(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, SDL_Event event){
+int menu_toggle_browser_window(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 
-	if (event.key.keysym.sym == SDLK_DOWN){
+	if (inputEventKeypressCheck(event, KEY_DOWN)){
 		if ((window_state->browser_window.select_pos < (game_data->items - 1)) && (window_state->browser_window.select_pos < window_state->browser_window.end_pos_filtered)){
 			// Move down list
 			window_state->browser_window.select_pos++;
 		}
 	}
 	
-	if (event.key.keysym.sym == SDLK_UP){
+	if (inputEventKeypressCheck(event, KEY_UP)){
 		if ((window_state->browser_window.select_pos > 0) && (window_state->browser_window.select_pos > window_state->browser_window.start_pos_filtered)){
 			// Move up list
 			window_state->browser_window.select_pos--;

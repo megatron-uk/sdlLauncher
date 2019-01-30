@@ -4,32 +4,27 @@
 #include <string.h>
 #include <stdbool.h>
 
-#ifdef USE_SDL
-#include <SDL/SDL.h>
-#endif
-
 #include "menu.h"
 
 // Standard application functions
 #include "logging.h"
 #include "errors.h"
 #include "gfx.h"
+#include "input.h"
 #include "bmp2text.h"
 #include "gamedata.h"
 #include "csvlib.h"
 #include "menulib.h"
 
-// Global variable to hold SDL events
-SDL_Event event;
-
 // Main menu runtime
 int main(int argc, char* argv[]){
 	
-	struct agnostic_bitmap screen;
+	struct agnostic_event event;			// Input event data
+	struct agnostic_bitmap screen;			// Our display screen bitmap
 	struct GAME_DATA game_data;			// Global game data list
 	struct WINDOW_STATE window_state;	// Global window state tracking
 	
-	int r;						// return codes
+	int r = 0;					// return codes
 	bool quit = 0;				// exit
 	FILE *log;					// Log file
 	
@@ -97,81 +92,79 @@ int main(int argc, char* argv[]){
 	menu_category_populate(&screen, log, &game_data, &window_state);
 	menu_info_populate(&screen, log, &game_data, &window_state);
 	gfxFlip(log, &screen);
-		
-	sleep(5);
 	
 	// Main loop looking for user input
-	while ( quit == false ){
+	while (quit == false){
 		//While there's an event to handle
-		while (SDL_PollEvent(&event)){
+		while (inputPollEvent(&event)){
 			//If the user has Xed out the window
-			if (event.type == SDL_QUIT){
+			if (inputEventCheck(&event, EVENT_QUIT)){
 				//Quit the program
 				log_debug(log, "Quit selected\n");
 			} 
 			// Check for keypresses
-			if (event.type == SDL_KEYDOWN){
-				switch(event.key.keysym.sym){
-					case SDLK_q:
+			if (inputEventCheck(&event, EVENT_KEYDOWN)){
+				switch(inputEventKeypress(&event)){
+					case KEY_q:
 						// Close textreader if open
 						if (window_state.selected_window == W_TEXT){
 							menu_textreader_file(log, &window_state, &game_data, 0);
 						}
-						quit = 1;
+						quit = true;
 						break;
-					case SDLK_c:
+					case KEY_c:
 						if (window_state.selected_window != W_CONFIG){
 							// Open config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 							window_state.selected_window = W_CONFIG;
 						}
 						break;
-					case SDLK_F1:
+					case KEY_F1:
 						if (window_state.selected_window == W_CONFIG){
 							// Send F1 to config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_F2:
+					case KEY_F2:
 						if (window_state.selected_window == W_CONFIG){
 							// Send F2 to config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_F3:
+					case KEY_F3:
 						if (window_state.selected_window == W_CONFIG){
 							// Send F3 to config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_F4:
+					case KEY_F4:
 						if (window_state.selected_window == W_CONFIG){
 							// Send F4 to config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_F5:
+					case KEY_F5:
 						if (window_state.selected_window == W_CONFIG){
 							// Send F5 to config window
-							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_config_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_config_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_UP: 
+					case KEY_UP: 
 						if (window_state.selected_window == W_BROWSER){
 							// scroll up through browser list
-							menu_toggle_browser_window(log, &game_data, &window_state, event);
+							menu_toggle_browser_window(log, &game_data, &window_state, &event);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 							menu_gamecover_populate(&screen, log, &game_data, &window_state);
 						} else if (window_state.selected_window == W_INFO){
 							// scroll up between binary/readme lines
-							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 						} else if (window_state.selected_window == W_TEXT){
 							// scroll up text window
@@ -179,16 +172,16 @@ int main(int argc, char* argv[]){
 							// no-nop	
 						}
 						break;
-					case SDLK_DOWN: 
+					case KEY_DOWN: 
 						if (window_state.selected_window == W_BROWSER){
 							// scroll down through browser list
-							menu_toggle_browser_window(log, &game_data, &window_state, event);
+							menu_toggle_browser_window(log, &game_data, &window_state, &event);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 							menu_gamecover_populate(&screen, log, &game_data, &window_state); 
 						} else if (window_state.selected_window == W_INFO){
 							// scroll down between binary/readme lines
-							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 						} else if (window_state.selected_window == W_TEXT){
 							// scroll down text window
@@ -196,47 +189,47 @@ int main(int argc, char* argv[]){
 							// no-nop	
 						}
 						break;
-					case SDLK_LEFT: 
+					case KEY_LEFT: 
 						if (window_state.selected_window == W_BROWSER){
 							// Toggle between game categories
-							menu_toggle_category(log, &game_data, &window_state, event);
+							menu_toggle_category(log, &game_data, &window_state, &event);
 							menu_category_populate(&screen, log, &game_data, &window_state);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_gamecover_populate(&screen, log, &game_data, &window_state);
 							
 						} else if (window_state.selected_window == W_INFO){
 							// Scroll left between binary/readme lines
-							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_RIGHT:
+					case KEY_RIGHT:
 						if (window_state.selected_window == W_BROWSER){
 							// Toggle between game categories
-							menu_toggle_category(log, &game_data, &window_state, event);
+							menu_toggle_category(log, &game_data, &window_state, &event);
 							menu_category_populate(&screen, log, &game_data, &window_state);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_gamecover_populate(&screen, log, &game_data, &window_state);
 							
 						} else if (window_state.selected_window == W_INFO){
 							// Scroll right between binary/readme lines
-							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
 							menu_info_populate(&screen, log, &game_data, &window_state);
 						}
 						break;
-					case SDLK_TAB:
+					case KEY_TAB:
 						// Swap between browser and info windows
 						if ((window_state.selected_window == W_INFO) || (window_state.selected_window == W_BROWSER)){
 							menu_toggle_window(log, &window_state);
 						}
 						break;
-					case SDLK_RETURN:
+					case KEY_RETURN:
 						// Choose highlighted option of info window
 						if (window_state.selected_window == W_INFO){
-							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, event);
+							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
 						}
 						break;
-					case SDLK_ESCAPE:
+					case KEY_ESCAPE:
 						// Close text reader from info window
 						if (window_state.selected_window == W_TEXT){
 							menu_browser_populate(&screen, log, &game_data, &window_state);
@@ -269,10 +262,8 @@ int main(int argc, char* argv[]){
 #endif
 			}
 		}
-		SDL_Delay(100);
 	}	
 	// Tidy up gfx driver before closing
-	SDL_Delay(500);
 	gfxFreeBMP(log, &screen);
 	gfxQuit(log);
 	
