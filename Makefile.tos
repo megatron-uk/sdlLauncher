@@ -4,20 +4,25 @@ STRIP = /usr/m68k-atari-mint/bin/strip
 STACK = /usr/m68k-atari-mint/bin/stack
 
 # libraries and paths
-APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
+APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDL -lgem
 APP_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -Os $(APP_INCLUDE) -DUSE_SDL -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING=$(LOGGING)
+override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -Os $(APP_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING
 LINK_CFLAGS = -Wall -Wno-unused-function -Os
 APP_LDFLAGS = $(APP_LIB)
 
 ifeq ($(LOGGING), 1)
 override CFLAGS += -DUSE_LOGGING
+override LINK_CFLAGS += -DUSE_LOGGING
 endif
 
-# What our application is named
-EXE = menu.tos
+# We either use GEM or SDL on Atari
+#override CFLAGS += -DUSE_SDL
+#EXE = menu_sdl.tos
+
+override CFLAGS += -DUSE_GEM
+EXE = menu_gem.tos
 
 # Bigger TOS files need a larger stack
 STACKMOD = $(STACK) -S 78K
@@ -30,7 +35,7 @@ include Makefile.common
 vdi.tos: vdi.o
 	@echo
 	@echo Linking test application....
-	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/logging.o src/vdi.o $(APP_LDFLAGS)
+	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/gfx.o src/logging.o src/vdi.o $(APP_LDFLAGS)
 	@echo
 	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/vdi.tos

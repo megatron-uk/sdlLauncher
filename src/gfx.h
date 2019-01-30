@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef USE_SDL
 #include <SDL/SDL.h>
 #endif
@@ -6,7 +8,44 @@
 #include <allegro.h>
 #endif
 
+#ifdef USE_GEM
+#include <mint/osbind.h>
+#include <gem.h>
+// Gem_screen geometry
+struct gem_screen {
+	int w, h;
+	int multitos;
+} gem_screen;
 
+// Structure to fake a bitmap object for GEM
+typedef struct gem_format {
+	unsigned int BitsPerPixel;
+} gem_format;
+
+// Structure to fake a bitmap object for GEM
+typedef struct gem_bitmap {
+	unsigned int w;
+	unsigned int h;
+	struct gem_format *format;
+} gem_bitmap;
+
+// Number of pens (aka colours)
+#define gem_max_pens 16
+
+// VDI function call handles
+short gem_vdi_handle;
+short gem_win_handle;
+short gem_work_in[12];
+short gem_work_out[57];
+
+// Store original colour settings so that we can restore on exit
+short gem_old_rgb[gem_max_pens][3];
+static bool gem_old_rgb_saved = 0;
+
+// Store original GEM attributes, so that we restore on exit
+short gem_attrib[5];
+
+#endif
 
 // =======================================
 //
@@ -34,6 +73,9 @@ typedef struct agnostic_bitmap {
 #ifdef USE_ALLEGRO
 	BITMAP *bmp;
 #endif
+#ifdef USE_GEM
+	gem_bitmap *bmp;
+#endif
 #ifdef USE_SDL
 	SDL_Surface *bmp;
 #endif
@@ -42,6 +84,9 @@ typedef struct agnostic_bitmap {
 // Structure to hold a window/rectangle/view
 typedef struct agnostic_window {
 #ifdef USE_ALLEGRO
+	struct window_coords window;
+#endif
+#ifdef USE_GEM
 	struct window_coords window;
 #endif
 #ifdef USE_SDL
@@ -81,3 +126,13 @@ int gfxQuit(FILE *log);
 
 // Initialise the display
 int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp);
+
+// Print text
+int gfxText2BMP(struct agnostic_bitmap *display, struct agnostic_bitmap *font_normal, struct agnostic_bitmap *font_reverse,	FILE *log, char *text, int x, int y, bool inverse);
+
+#ifdef USE_GEM
+void gfxClear(FILE *log);
+int gfxLoadPens(FILE *log);
+int gfxSavePens(FILE *log);
+void gfxClip(FILE *log, int enabled);
+#endif

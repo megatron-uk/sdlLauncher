@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdbool.h>
 
 // Definition of the loadfont function

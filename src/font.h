@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <SDL/SDL.h>
 
@@ -13,7 +14,7 @@ typedef struct CHAR_SYM {
 
 // 32 * 6px wide
 // 8 * 8px high
-CHAR_SYM CHAR_LIST[] = {
+static CHAR_SYM CHAR_LIST[] = {
 
 	// This array defines the coordinates into the bitmap file for the individual characters for our font.
 	// Char, x-index, y-index

@@ -32,14 +32,15 @@ cleanup:
 	return len;
 }
 
+// Debug logs are flushed to disk
 int log_debug(FILE *fp, const char *format, ...) {
 	int r = 0;
-	
-#ifdef USE_LOGGING
 	va_list ap;
 	va_start(ap, format);
 	r = __log(fp, "DEBUG", format, ap);
 	va_end(ap);
+#ifdef USE_LOGGING
+	fflush(fp);
 #endif
 	return r;
 }
@@ -66,6 +67,7 @@ int log_warn(FILE *fp, const char *format, ...) {
 	return r;
 }
 
+// Errors are flushed to disk
 int log_error(FILE *fp, const char *format, ...) {
 	int r;
 	va_list ap;
@@ -73,6 +75,7 @@ int log_error(FILE *fp, const char *format, ...) {
 	va_start(ap, format);
 	r = __log(fp, "ERROR", format, ap);
 	va_end(ap);
+	fflush(fp);
 
 	return r;
 }

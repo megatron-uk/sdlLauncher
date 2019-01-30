@@ -33,6 +33,7 @@ int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h
 int menu_gamecover_init(agnostic_bitmap *display, FILE *log){
 	
 	// redraw our box borders and blank any previous bitmap
+	log_debug(log, "[%s:%d]\t: (menu_gamecover_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = GAMECOVER_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);	
 	return 0;
@@ -42,6 +43,7 @@ int menu_gamecover_init(agnostic_bitmap *display, FILE *log){
 int menu_browser_init(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,137 that is 320x63 pixels for our game list window
+	log_debug(log, "[%s:%d]\t: (menu_browser_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = BROWSER_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
@@ -50,6 +52,7 @@ int menu_browser_init(agnostic_bitmap *display, FILE *log){
 // Draw the alphabet menu window
 int menu_category_init(agnostic_bitmap *display, FILE *log){
 	
+	log_debug(log, "[%s:%d]\t: (menu_category_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = ALPHABET_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
@@ -59,6 +62,7 @@ int menu_category_init(agnostic_bitmap *display, FILE *log){
 int menu_info_init(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,0 that is 138x137 pixels for our info window
+	log_debug(log, "[%s:%d]\t: (menu_info_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = INFO_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
@@ -67,6 +71,7 @@ int menu_info_init(agnostic_bitmap *display, FILE *log){
 // Draw the blank on-screen text reader box
 int menu_textreader_init(agnostic_bitmap *display, FILE *log){
 	
+	log_debug(log, "[%s:%d]\t: (menu_textreader_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = READER_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
@@ -75,6 +80,7 @@ int menu_textreader_init(agnostic_bitmap *display, FILE *log){
 // Draw the config menu window
 int menu_config_init(agnostic_bitmap *display, FILE *log){
 	
+	log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = CONFIG_COORDS();
 	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
@@ -98,6 +104,7 @@ int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_sta
 	menu_info_init(display, log);
 
 	// Blank the local text buffer
+	log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Clearing text buffer\n", __FILE__, __LINE__);
 	memset(text_line, '\0', sizeof(text_line));
 	for (src_pos = 0; src_pos < strlen(text); src_pos++){		
 		// We read a normal character
@@ -114,6 +121,8 @@ int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_sta
 			y = coords.y + 2 + (line_number * 8);
 			
 			// Carriage return, print line buffer
+			log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Writing line %d\n", __FILE__, __LINE__, line_number);
+			log_debug(log, "[%s:%d]\t: (menu_config_init)\t: text [%s]\n", __FILE__, __LINE__, text);
 			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
 			
 			// Reset line buffer for next pass

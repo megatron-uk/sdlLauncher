@@ -2,13 +2,6 @@
 
 #include <SDL/SDL.h>
 
-#ifdef USE_LOGGING
-#define LOGGING 1
-#endif
-#ifndef USE_LOGGING
-#define LOGGING 0
-#endif
-
 // Default names of useful files
 #define EXE_SUFFIX ".tos"
 #define EXE_SUFFIX_U ".TOS"

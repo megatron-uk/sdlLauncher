@@ -1,3 +1,5 @@
+#pragma once
+
 // Sets the gamedata object
 int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *game_data);
 

@@ -3,6 +3,8 @@
 
 // Include our logging functions
 #include "logging.h"
+#include "menu.h"
+#include "font.h"
 
 // Copies a bitmap (specified by a source window overlay), to a destination bitmap (with a destination window overlay) 
 int gfxBlitBMP(
@@ -15,7 +17,7 @@ int gfxBlitBMP(
 	int r = 0;	// Return code
 	r = SDL_BlitSurface(bmp_src->bmp, &window_src->window, bmp_dst->bmp, &window_dst->window);
 	if (r != 0 ){
-		log_error(log, "[gfxBlitBMP]\t: Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxBlitBMP)\t: Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;	
 	} else {
 		return r;
@@ -46,7 +48,7 @@ int gfxDrawBox(
 		box.window.h = h;
 		r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
 		if (r != 0){
-			log_error(log, "[gfxDrawBox]\t: Shadow Error: %s\n", SDL_GetError());
+			log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 			return -1;
 		}
 	}
@@ -57,7 +59,7 @@ int gfxDrawBox(
 	box.window.h = h;
 	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
 	if (r != 0){
-		log_error(log, "[gfxDrawBox]\t: Perimeter Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Perimeter Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
 	}
 	
@@ -68,7 +70,7 @@ int gfxDrawBox(
 	box.window.h = h - (border_px + 1);
 	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, fill->r, fill->g, fill->b));
 	if (r != 0){
-		log_error(log, "[gfxDrawBox]\t: Fill Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Fill Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
 	}
 	
@@ -98,11 +100,11 @@ int gfxInit(FILE *log){
 	
 	r = SDL_Init(SDL_INIT_VIDEO);
 	if (r != 0){
-		log_error(log, "[gfxInit]\t: Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxInit)\t: Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
 	} else {
 		SDL_VERSION(&sdl_compiled);
-		log_info(log, "[gfxInit]\t: SDL v%d.%d.%d\n", sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
+		log_info(log, "[%s:%d]\t: (gfxInit)\t: SDL v%d.%d.%d\n", __FILE__, __LINE__, sdl_compiled.major, sdl_compiled.minor, sdl_compiled.patch);
 		return r;
 	}
 }
@@ -113,7 +115,7 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	bmp->bmp = SDL_LoadBMP(filename);
 	if (!bmp->bmp){
 		// Error in loading bitmap
-		log_error(log, "[gfxLoadBMP]\t: Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxLoadBMP)\t: Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;	
 	}
 	return 0;
@@ -133,12 +135,90 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 	screen->bmp = SDL_SetVideoMode(screen_w, screen_h, screen_bpp, SDL_HWSURFACE);
 	if (screen->bmp == NULL){
 		// Error in screen init
-		log_error(log, "[gfxSetMode]\t: Error: %s\n", SDL_GetError());
+		log_error(log, "[%s:%d]\t: (gfxSetMode)\t: Error setting screen mode: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
 	} else {
-		log_info(log, "[gfxSetMode]\t: Driver %s\n", SDL_VideoDriverName(vdriver, 32));
-		log_info(log, "[gfxSetMode]\t: Mode %dx%dx%dbpp\n", screen->bmp->w, screen->bmp->h, screen->bmp->format->BitsPerPixel);
-		log_info(log, "[gfxSetMode]\t: HW Surfaces? (%d)\n", SDL_GetVideoSurface()->flags & SDL_HWSURFACE);	
+		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Driver %s\n", __FILE__, __LINE__, SDL_VideoDriverName(vdriver, 32));
+		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Mode %dx%dx%dbpp\n", __FILE__, __LINE__, screen->bmp->w, screen->bmp->h, screen->bmp->format->BitsPerPixel);
+		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: HW Surfaces? (%d)\n", __FILE__, __LINE__, SDL_GetVideoSurface()->flags & SDL_HWSURFACE);	
 		return 0;
 	}
+}
+
+// Print text
+int gfxText2BMP(
+	struct agnostic_bitmap *display, 
+	struct agnostic_bitmap *font_normal, 
+	struct agnostic_bitmap *font_reverse, 
+	FILE *log, 
+	char *text, 
+	int x, 
+	int y, 
+	bool inverse
+){
+	agnostic_window src, dest;
+	unsigned int i;
+	unsigned int font_index;
+	unsigned int found;
+	unsigned int r = 0;
+	unsigned int next_x;
+	char c;
+
+	// Loop through every character of the text string
+	next_x = x;
+	for (i = 0; i < strlen(text); i++){
+		c = text[i];
+		found = 0;
+		if (c != '\0'){
+			// Find a matching character in the font table
+			for (font_index = 0; font_index < CHAR_LIST_SIZE; font_index++){
+				if (CHAR_LIST[font_index].sym == c){
+					found = 1;
+					
+					// Add this bitmap fragment to the outgoing image surface
+					src.window.x = FONT_W * CHAR_LIST[font_index].x;
+					src.window.y = FONT_H * CHAR_LIST[font_index].y;
+					src.window.w = FONT_W;
+					src.window.h = FONT_H;
+					dest.window.x = next_x;
+					dest.window.y = y;
+					dest.window.w = FONT_W;
+					dest.window.h = FONT_H;
+					if (inverse){
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+					} else {
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+					}
+					if ( r != 0){
+						log_error(log, "[text2BMP]\t: Blit Error\n");
+						return r;
+					}
+					next_x += FONT_W;
+				}
+			}
+			if (found == 0){
+				log_warn(log, "[text2BMP]\t: Pos %d [%c] - No matching ASCII character found, blanking!\n", i, c);
+				// Copy a blank or some placeholder here
+				src.window.x = FONT_W * CHAR_LIST[FONT_PLACEHOLDER].x;
+				src.window.y = FONT_H * CHAR_LIST[FONT_PLACEHOLDER].y;
+				src.window.w = FONT_W;
+				src.window.h = FONT_H;
+				dest.window.x = next_x;
+				dest.window.y = y;
+				dest.window.w = FONT_W;
+				dest.window.h = FONT_H;
+				if (inverse){
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+				} else {
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+				}
+				if ( r != 0){
+					log_error(log, "[text2BMP]\t: Blit Error\n");
+					return r;
+				}
+				next_x += FONT_W;
+			}
+		}
+	}
+	return r;
 }

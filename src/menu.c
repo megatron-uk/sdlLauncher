@@ -61,7 +61,6 @@ int main(int argc, char* argv[]){
 	menu_category_init(&screen, log);
 	menu_gamecover_init(&screen, log);
 	menu_browser_init(&screen, log);
-	log_debug(log, "%d\n", __LINE__);
 	menu_infobox_print(&screen, &window_state, log, INFO_GAMEDIR_WAIT);
 	log_debug(log, "%d\n", __LINE__);
 	gfxFlip(log, &screen);
@@ -94,11 +93,13 @@ int main(int argc, char* argv[]){
 	
 	// Fill the browser window once
 	menu_browser_populate(&screen, log, &game_data, &window_state);
-	menu_gamecover_populate(&screen, log, &game_data, &window_state);
+	//menu_gamecover_populate(&screen, log, &game_data, &window_state);
 	menu_category_populate(&screen, log, &game_data, &window_state);
 	menu_info_populate(&screen, log, &game_data, &window_state);
 	gfxFlip(log, &screen);
 		
+	sleep(5);
+	
 	// Main loop looking for user input
 	while ( quit == false ){
 		//While there's an event to handle
@@ -263,14 +264,14 @@ int main(int argc, char* argv[]){
 				gfxFlip(log, &screen);
 				
 				// Flush any log message
-				if (LOGGING){
-					fflush(log);
-				}
+#ifdef USE_LOGGING
+				fflush(log);
+#endif
 			}
 		}
 		SDL_Delay(100);
 	}	
-	// Tidy up SDL before closing
+	// Tidy up gfx driver before closing
 	SDL_Delay(500);
 	gfxFreeBMP(log, &screen);
 	gfxQuit(log);
