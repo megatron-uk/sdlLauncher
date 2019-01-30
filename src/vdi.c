@@ -177,36 +177,15 @@ static void draw_box(int x1, int y1, int x2, int y2, int fill){
 	
 	pxyarray[0] = x1;
 	pxyarray[1] = y1;
-	pxyarray[2] = x1;
-	pxyarray[3] = y2;
-	v_pline(vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = x1;
-	pxyarray[1] = y1;
-	pxyarray[2] = x2;
-	pxyarray[3] = y1;
-	v_pline(vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = x2;
-	pxyarray[1] = y1;
 	pxyarray[2] = x2;
 	pxyarray[3] = y2;
-	v_pline(vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = x1;
-	pxyarray[1] = y2;
-	pxyarray[2] = x2;
-	pxyarray[3] = y2;
-	v_pline(vdi_handle, 2, pxyarray);
-	
 	if (fill){
-		// Fill inner area
-		pxyarray[0] = x1 + 1;
-		pxyarray[1] = y1 + 1;
-		pxyarray[2] = (x2 - x1) - 1;
-		pxyarray[3] = (y2 - y1) - 1;
-		vr_recfl(vdi_handle, pxyarray);
+		vsf_interior(vdi_handle, FIS_SOLID);
+	} else {
+		vsf_interior(vdi_handle, FIS_HOLLOW);
 	}
+	vsf_perimeter(vdi_handle, 1);
+	v_bar(vdi_handle, pxyarray);
 }
 
 static void draw_hline_dashed(int x1, int x2, int y)
@@ -235,8 +214,6 @@ static void blankScreen(FILE *log){
 	vswr_mode(vdi_handle, MD_REPLACE);
 	vr_recfl(vdi_handle, pxyarray);
 	
-	// Restore colors
-	//vs_color(vdi_handle, 0, old_rgb[0]);
 }
 
 #define MAX_PENS 16
@@ -269,6 +246,17 @@ int setPen(FILE *log, short pen, short rgb[3]){
 
 	log_info(log, "[setPen]\t: Set pen %d [%d,%d,%d]\n", pen, rgb[0], rgb[1], rgb[2]);
 	vs_color(vdi_handle,pen,rgb);
+	return 0;
+}
+
+int setLine(FILE *log, short rgb[3]){
+
+	return setPen(log, 1, rgb);
+}
+
+int setFill(FILE *log, short rgb[3]){
+
+	return setPen(log, 0, rgb);
 }
 
 int main(void)
@@ -284,24 +272,34 @@ int main(void)
 	fflush(log);
 	
 	work_open();
-	//style_bg();
 	
 	// Save attributes
 	vqf_attributes(vdi_handle, attrib);
 	
 	savePens(log, old_rgb);
+	
+	// Draw a horizontal line from x1 to x2, at y
+	
+	rgb[0] = 1000;
+	rgb[1] = 1000;
+	rgb[2] = 1000;
+	setLine(log, rgb);
+	
 	rgb[0] = 0;
 	rgb[1] = 0;
 	rgb[2] = 0;
-	setPen(log, 0, rgb);
+	setFill(log, rgb);
 	
-	// Draw a horizontal line from x1 to x2, at y
-	draw_hline(0, 319, 60);
-
-	blankScreen(log);
+	
+	//draw_hline(0, 319, 60);
 	
 	// Draw a box
-	draw_box(0, 0, 319, 199, 0);
+	//draw_fbox(0, 0, 40, 100);
+	vsf_perimeter(vdi_handle, 1);
+	//vsl_color(vdi_handle, 0);
+	//vsf_color(vdi_handle, 1);
+	draw_box(10, 10, 80, 40, 0);
+	draw_box(50, 70, 160, 140, 1);
 	
 	sleep(5);
 	

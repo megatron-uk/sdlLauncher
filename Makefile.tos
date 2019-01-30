@@ -1,7 +1,7 @@
 # Names of the compiler and friends
-CC = m68k-atari-mint-gcc
-STRIP = m68k-atari-mint-strip
-STACK = m68k-atari-mint-stack
+CC = /usr/m68k-atari-mint/bin/gcc
+STRIP = /usr/m68k-atari-mint/bin/strip
+STACK = /usr/m68k-atari-mint/bin/stack
 
 # libraries and paths
 APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDLmain -lSDL -lgem
@@ -28,9 +28,17 @@ include Makefile.common
 
 # Extras that only TOS uses
 vdi.tos: vdi.o
+	@echo
+	@echo Linking test application....
 	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/logging.o src/vdi.o $(APP_LDFLAGS)
+	@echo
+	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/vdi.tos
 
 vdi.o: src/vdi.c
-	$(CC) -g -c src/vdi.c -o src/$@
+	@echo
+	@echo ===================================
+	@echo Building Atari ST test VDI application
+	@echo
+	$(CC) $(CFLAGS) -g -c src/vdi.c -o src/$@
 	

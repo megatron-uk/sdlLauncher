@@ -56,7 +56,7 @@ typedef struct agnostic_window {
 // ======================================
 
 // Draws and fills a rectangular box
-int gfxDrawBox(FILE *log, struct agnostic_bitmap *screen, struct agnostic_window *window, struct agnostic_colours *rgb);
+int gfxDrawBox(FILE *log, struct agnostic_bitmap *screen, int x, int y, int w, int h, struct agnostic_colours *border, struct agnostic_colours *fill, int border_px, int shadow_px);
 
 // Blit a (partial) bitmap from one area to another - either SDL or Allegro
 int gfxBlitBMP(FILE *log, struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst); 

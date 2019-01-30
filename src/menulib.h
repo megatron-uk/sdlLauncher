@@ -6,62 +6,25 @@ char text_buffer[256];
 char text_buffer_alt[256];
 
 // Draw a bordered box at pos x,y, of height h and width w, and of border px thickness
-int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h, int px, int shadow_px){
+int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h, int border_px, int shadow_px){
 	
-	agnostic_window box;	// A bounding box for the borders we want to draw
-	agnostic_colours rgb;	// Colour spec
-	int r;				// return codes
+	agnostic_colours border;	// Colour spec
+	agnostic_colours fill;		// Colour spec
+	int r;					// return codes
 	
-	box.window.x = x + shadow_px;
-	box.window.y = y + shadow_px;
-	box.window.w = w;
-	box.window.h = h;
-	// Shadow in grey
-	if (shadow_px > 0){
-		rgb.r = 128;
-		rgb.g = 128;
-		rgb.b= 128;
-		r = gfxDrawBox(log, display, &box, &rgb);
-		if ( r != 0){
-			log_error(log, "[menu_borders]\t: Shadow Fill Error\n");
-			gfxQuit(log);
-			fclose(log);
-			exit(-1);
-		}
-	}
-	
-	box.window.x = x;
-	box.window.y = y;
-	box.window.w = w;
-	box.window.h = h;
-	rgb.r = 255;
-	rgb.g = 255;
-	rgb.b= 255;
-	// Outer box in white
-	r = gfxDrawBox(log, display, &box, &rgb);
+	border.r = 255;
+	border.g = 255;
+	border.b= 255;
+	fill.r = 0;
+	fill.g = 0;
+	fill.b= 0;
+	r = gfxDrawBox(log, display, x, y, w, h, &border, &fill, border_px, shadow_px);
 	if ( r != 0){
-		log_error(log, "[menu_borders]\t: Border Fill Error\n");
+		log_error(log, "[menu_borders]\t: Drawing Error\n");
 		gfxQuit(log);
 		fclose(log);
 		exit(-1);
-	}
-	
-	// Inner fill
-	box.window.x = x + px;
-	box.window.y = y + px;
-	box.window.w = w - (px + 1);
-	box.window.h = h - (px + 1);
-	rgb.r = 0;
-	rgb.g = 0;
-	rgb.b= 0;
-	// Inner box in black
-	r = gfxDrawBox(log, display, &box, &rgb);
-	if ( r != 0){
-		log_error(log, "[menu_borders]\t: Inner Fill Error\n");
-		gfxQuit(log);
-		fclose(log);
-		exit(-1);
-	}
+	}	
 	return r;
 	
 }

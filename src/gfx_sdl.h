@@ -25,18 +25,54 @@ int gfxBlitBMP(
 // Draw a box at the given coordinates in a given colour
 int gfxDrawBox(
 	FILE *log, 
-	struct agnostic_bitmap *screen, 
-	struct agnostic_window *window, 
-	struct agnostic_colours *rgb
+	struct agnostic_bitmap *screen,
+	int x,
+	int y,
+	int w,
+	int h,
+	struct agnostic_colours *border,
+	struct agnostic_colours *fill,
+	int border_px,
+	int shadow_px
 ){
-	int r = 0;	// Return code
-	r = SDL_FillRect(screen->bmp, &window->window, SDL_MapRGB(screen->bmp->format, rgb->r, rgb->g, rgb->b));
-	if (r != 0){
-		log_error(log, "[gfxDrawBox]\t: Error: %s\n", SDL_GetError());
-		return -1;
-	} else {
-		return r;
+	agnostic_window box;	// A bounding box for the borders we want to draw
+	int r = 0;			// Return code
+	
+	// Drop shadow
+	if (shadow_px > 0){
+		box.window.x = x + shadow_px;
+		box.window.y = y + shadow_px;
+		box.window.w = w;
+		box.window.h = h;
+		r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
+		if (r != 0){
+			log_error(log, "[gfxDrawBox]\t: Shadow Error: %s\n", SDL_GetError());
+			return -1;
+		}
 	}
+	// Perimeter
+	box.window.x = x;
+	box.window.y = y;
+	box.window.w = w;
+	box.window.h = h;
+	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
+	if (r != 0){
+		log_error(log, "[gfxDrawBox]\t: Perimeter Error: %s\n", SDL_GetError());
+		return -1;
+	}
+	
+	// Fill
+	box.window.x = x + border_px;
+	box.window.y = y + border_px;
+	box.window.w = w - (border_px + 1);
+	box.window.h = h - (border_px + 1);
+	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, fill->r, fill->g, fill->b));
+	if (r != 0){
+		log_error(log, "[gfxDrawBox]\t: Fill Error: %s\n", SDL_GetError());
+		return -1;
+	}
+	
+	return 0;
 }
 
 // Update the buffers to refresh screen contents

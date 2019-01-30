@@ -37,47 +37,21 @@ int gfxBlitBMP(
 
 // Draw a box at the given coordinates in a given colour
 int gfxDrawBox(
-	FILE *log,
-	struct agnostic_bitmap *screen, 
-	struct agnostic_window *window, 
-	struct agnostic_colours *rgb
+	FILE *log, 
+	struct agnostic_bitmap *screen,
+	int x,
+	int y,
+	int w,
+	int h,
+	struct agnostic_colours *border,
+	struct agnostic_colours *fill,
+	int border_px,
+	int shadow_px
 ){
 	int r = 0;	// Return code
 	
 	short pxyarray[4];
 	
-	pxyarray[0] = window->x;
-	pxyarray[1] = window->y;
-	pxyarray[2] = window->x;
-	pxyarray[3] = window->y + window->h;
-	v_pline(screen->vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = window->x;
-	pxyarray[1] = window->y;
-	pxyarray[2] = window->x + window->w;
-	pxyarray[3] = window->y;
-	v_pline(screen->vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = window->x + window->w;
-	pxyarray[1] = window->y;
-	pxyarray[2] = window->x + window->w;
-	pxyarray[3] = window->y + window->h;
-	v_pline(screen->vdi_handle, 2, pxyarray);
-	
-	pxyarray[0] = window->x;
-	pxyarray[1] = window->y + window->h;
-	pxyarray[2] = window->x + window->w;
-	pxyarray[3] = window->y + window->h;
-	v_pline(screen->vdi_handle, 2, pxyarray);
-	
-	//if (fill){
-		// Fill inner area
-		pxyarray[0] = x1 + 1;
-		pxyarray[1] = y1 + 1;
-		pxyarray[2] = (x2 - x1) - 1;
-		pxyarray[3] = (y2 - y1) - 1;
-		vr_recfl(screen->vdi_handle, pxyarray);
-	//}
 	
 	return r;
 }
