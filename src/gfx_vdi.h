@@ -249,6 +249,8 @@ int gfxInit(FILE *log){
 	rgb[2] = 0;
 	vs_color(gem_vdi_handle,0,rgb);
 	
+	//v_show_c(gem_vdi_handle, 1);
+	
 	log_debug(log, "[%s:%d]\t: (gfxInit)\t: End\n", __FILE__, __LINE__);
 	
 	return r;
@@ -286,6 +288,8 @@ int gfxQuit(FILE *log){
 	graf_mouse(M_ON, NULL);
 	form_dial(FMD_FINISH, gem_screen.w>>1, gem_screen.h>>1, 0, 0, 0, 0, gem_screen.w, gem_screen.h);
 	v_clsvwk(gem_vdi_handle);
+	
+	//v_show_c(gem_vdi_handle, 0);
 	appl_exit();
 	
 	log_debug(log, "[%s:%d]\t: (gfxQuit)\t: Unloaded\n", __FILE__, __LINE__);

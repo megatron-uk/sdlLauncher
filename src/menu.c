@@ -104,6 +104,7 @@ int main(int argc, char* argv[]){
 			} 
 			// Check for keypresses
 			if (inputEventCheck(&event, EVENT_KEYDOWN)){
+				
 				switch(inputEventKeypress(&event)){
 					case KEY_q:
 						// Close textreader if open

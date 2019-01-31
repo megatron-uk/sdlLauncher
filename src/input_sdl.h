@@ -10,7 +10,6 @@ int inputPollEvent(struct agnostic_event *event){
 
 bool inputEventCheck(struct agnostic_event *event, input_event_type event_type){
 	bool r = false;
-	
 	if (event_type == SDL_KEYDOWN){
 		if (event->event.type == SDL_KEYDOWN){
 			r = true;

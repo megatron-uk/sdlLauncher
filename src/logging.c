@@ -35,11 +35,11 @@ cleanup:
 // Debug logs are flushed to disk
 int log_debug(FILE *fp, const char *format, ...) {
 	int r = 0;
+#ifdef USE_LOGGING
 	va_list ap;
 	va_start(ap, format);
 	r = __log(fp, "DEBUG", format, ap);
 	va_end(ap);
-#ifdef USE_LOGGING
 	fflush(fp);
 #endif
 	return r;
