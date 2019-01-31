@@ -8,9 +8,11 @@
 // Poll the input event queue
 int inputPollEvent(struct agnostic_event *event){
 	int r = 0;
-	event->ev_flags = MU_KEYBD|MU_BUTTON;
 	
-	//printf("checking event\n");
+	// Only respond to these type of events
+	event->ev_flags = (MU_KEYBD|MU_TIMER);
+	event->ev_clicks = 1;
+	
 	event->event = evnt_multi(event->ev_flags,
 		event->ev_mbclicks, event->ev_mbmask, event->ev_mbstate,
 		event->ev_mm1_flags, event->ev_mm1_x, event->ev_mm1_y, event->ev_mm1_w, event->ev_mm1_h,
@@ -19,8 +21,7 @@ int inputPollEvent(struct agnostic_event *event){
 		event->ev_interval,
 		&event->ev_mmo_x, &event->ev_mmo_y, &event->ev_mbutton, &event->ev_kbd_special, &event->ev_keycode, &event->ev_clicks
 	);
-	//printf("got event\n");
-	return r;
+	return 1;
 }
 
 bool inputEventCheck(struct agnostic_event *event, input_event_type event_type){
@@ -29,7 +30,7 @@ bool inputEventCheck(struct agnostic_event *event, input_event_type event_type){
 	// Test if keyboard event bit is set
 	if (event->event & event_type){
 		r = true;
-		printf("Keyboard event\n");
+	} else {
 	}
 	return r;
 }

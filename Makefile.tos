@@ -4,21 +4,22 @@ STRIP = /usr/m68k-atari-mint/bin/strip
 STACK = /usr/m68k-atari-mint/bin/stack
 
 # libraries and paths
-APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lSDL -lgem
+APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lgem
 APP_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -Os $(APP_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) -DLOGGING
+override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -Os $(APP_INCLUDE) -DTOS -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE) 
 LINK_CFLAGS = -Wall -Wno-unused-function -Os
 APP_LDFLAGS = $(APP_LIB)
 
 ifeq ($(LOGGING), 1)
-override CFLAGS += -DUSE_LOGGING
-override LINK_CFLAGS += -DUSE_LOGGING
+override CFLAGS += -DUSE_LOGGING -DLOGGING
+override LINK_CFLAGS += -DUSE_LOGGING -DLOGGING
 endif
 
 # We either use GEM or SDL on Atari
 #override CFLAGS += -DUSE_SDL
+#override APP_LIB += -lSDL
 #EXE = menu_sdl.tos
 
 override CFLAGS += -DUSE_GEM
@@ -27,7 +28,7 @@ EXE = menu_gem.tos
 # Bigger TOS files need a larger stack
 STACKMOD = $(STACK) -S 78K
 
-all: $(EXE) vdi.tos
+all: $(EXE) #vdi.tos
 
 include Makefile.common 
 

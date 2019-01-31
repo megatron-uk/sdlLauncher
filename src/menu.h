@@ -125,7 +125,7 @@ typedef struct CATEGORY_WINDOW_DATA {
 #define CATEGORY_NUM -1
 #define CATEGORY_ALPHA 0
 static char ALPHABET_CATS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//static char ALPHABET_CATS_L[] = "abcdefghijklmnopqrstuvwxyz"; // Lower case version of the categories
+static char ALPHABET_CATS_L[] = "abcdefghijklmnopqrstuvwxyz"; // Lower case version of the categories
 
 // Structure which holds data on what games are visible in the scrolling window
 // which game is currently highlighted, etc.
