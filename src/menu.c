@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
 							menu_toggle_browser_window(log, &game_data, &window_state, &event);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_info_populate(&screen, log, &game_data, &window_state);
-							//menu_gamecover_populate(&screen, log, &game_data, &window_state);
+							menu_gamecover_populate(&screen, log, &game_data, &window_state);
 						} else if (window_state.selected_window == W_INFO){
 							// scroll up between binary/readme lines
 							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]){
 							menu_toggle_browser_window(log, &game_data, &window_state, &event);
 							menu_browser_populate(&screen, log, &game_data, &window_state);
 							menu_info_populate(&screen, log, &game_data, &window_state);
-							//menu_gamecover_populate(&screen, log, &game_data, &window_state); 
+							menu_gamecover_populate(&screen, log, &game_data, &window_state); 
 						} else if (window_state.selected_window == W_INFO){
 							// scroll down between binary/readme lines
 							menu_toggle_info_window_mode(&screen, log, &game_data, &window_state, &event);

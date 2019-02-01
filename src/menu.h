@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL/SDL.h>
-
 // Default names of useful files
 #define EXE_SUFFIX ".tos"
 #define EXE_SUFFIX_U ".TOS"

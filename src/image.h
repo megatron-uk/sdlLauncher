@@ -1,0 +1,1 @@
+int imageLoadBMP(FILE *log, char *src, int freesrc);

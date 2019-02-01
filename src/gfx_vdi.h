@@ -8,6 +8,7 @@
 // Include our logging functions
 #include "logging.h"
 #include "gfx.h"
+#include "image.h"
 
 // ================================================================
 //
@@ -258,7 +259,10 @@ int gfxInit(FILE *log){
 
 // Load a bitmap file from disk into a bitmap structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
+	
+	imageLoadBMP(log, filename, 0);
 	return 0;
+	
 }
 
 // Unload driver
