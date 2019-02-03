@@ -112,6 +112,8 @@ int gfxInit(FILE *log){
 // Load a bitmap file from disk into a in-memory structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 
+	imageLoadBMP(log, filename, 0);
+	
 	bmp->bmp = SDL_LoadBMP(filename);
 	if (!bmp->bmp){
 		// Error in loading bitmap

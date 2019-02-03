@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 // Our application headers 
@@ -215,6 +216,233 @@ Uint32 imageReadLE32(FILE *log, struct imageContext *context){
 	return(imageSwapLE32(value));
 }
 
+imagePixelFormat *imageAllocFormat(FILE *log, int bpp,
+			Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask){
+	imagePixelFormat *format;
+	Uint32 mask;
+
+	/* Allocate an empty pixel format structure */
+	format = malloc(sizeof(*format));
+	if ( format == NULL ) {
+		log_error(log, "[%s:%d]\t: (imageAllocFormat)\t: Out of memory\n", __FILE__, __LINE__);
+		return(NULL);
+	}
+	memset(format, 0, sizeof(*format));
+	format->alpha = 0;
+
+	/* Set up the format */
+	format->BitsPerPixel = bpp;
+	format->BytesPerPixel = (bpp+7)/8;
+	if ( Rmask || Bmask || Gmask ) { /* Packed pixels with custom mask */
+		format->palette = NULL;
+		format->Rshift = 0;
+		format->Rloss = 8;
+		if ( Rmask ) {
+			for ( mask = Rmask; !(mask&0x01); mask >>= 1 )
+				++format->Rshift;
+			for ( ; (mask&0x01); mask >>= 1 )
+				--format->Rloss;
+		}
+		format->Gshift = 0;
+		format->Gloss = 8;
+		if ( Gmask ) {
+			for ( mask = Gmask; !(mask&0x01); mask >>= 1 )
+				++format->Gshift;
+			for ( ; (mask&0x01); mask >>= 1 )
+				--format->Gloss;
+		}
+		format->Bshift = 0;
+		format->Bloss = 8;
+		if ( Bmask ) {
+			for ( mask = Bmask; !(mask&0x01); mask >>= 1 )
+				++format->Bshift;
+			for ( ; (mask&0x01); mask >>= 1 )
+				--format->Bloss;
+		}
+		format->Ashift = 0;
+		format->Aloss = 8;
+		if ( Amask ) {
+			for ( mask = Amask; !(mask&0x01); mask >>= 1 )
+				++format->Ashift;
+			for ( ; (mask&0x01); mask >>= 1 )
+				--format->Aloss;
+		}
+		format->Rmask = Rmask;
+		format->Gmask = Gmask;
+		format->Bmask = Bmask;
+		format->Amask = Amask;
+	} else if ( bpp > 8 ) {		/* Packed pixels with standard mask */
+		/* R-G-B */
+		if ( bpp > 24 )
+			bpp = 24;
+		format->Rloss = 8-(bpp/3);
+		format->Gloss = 8-(bpp/3)-(bpp%3);
+		format->Bloss = 8-(bpp/3);
+		format->Rshift = ((bpp/3)+(bpp%3))+(bpp/3);
+		format->Gshift = (bpp/3);
+		format->Bshift = 0;
+		format->Rmask = ((0xFF>>format->Rloss)<<format->Rshift);
+		format->Gmask = ((0xFF>>format->Gloss)<<format->Gshift);
+		format->Bmask = ((0xFF>>format->Bloss)<<format->Bshift);
+	} else {
+		/* Palettized formats have no mask info */
+		format->Rloss = 8;
+		format->Gloss = 8;
+		format->Bloss = 8;
+		format->Aloss = 8;
+		format->Rshift = 0;
+		format->Gshift = 0;
+		format->Bshift = 0;
+		format->Ashift = 0;
+		format->Rmask = 0;
+		format->Gmask = 0;
+		format->Bmask = 0;
+		format->Amask = 0;
+	}
+	if ( bpp <= 8 ) {			/* Palettized mode */
+		int ncolors = 1<<bpp;
+		format->palette = (imagePalette *)malloc(sizeof(imagePalette));
+		if ( format->palette == NULL ) {
+			//SDL_FreeFormat(format);
+			log_error(log, "[%s:%d]\t: (imageAllocFormat)\t: Out of memory\n", __FILE__, __LINE__);
+			return(NULL);
+		}
+		(format->palette)->ncolors = ncolors;
+		(format->palette)->colors = (imageColor *)malloc(
+				(format->palette)->ncolors*sizeof(imageColor));
+		if ( (format->palette)->colors == NULL ) {
+			//SDL_FreeFormat(format);
+			log_error(log, "[%s:%d]\t: (imageAllocFormat)\t: Out of memory\n", __FILE__, __LINE__);
+			return(NULL);
+		}
+		if ( Rmask || Bmask || Gmask ) {
+			/* create palette according to masks */
+			int i;
+			int Rm=0,Gm=0,Bm=0;
+			int Rw=0,Gw=0,Bw=0;
+			if(Rmask)
+			{
+				Rw=8-format->Rloss;
+				for(i=format->Rloss;i>0;i-=Rw)
+					Rm|=1<<i;
+			}
+			if(Gmask)
+			{
+				Gw=8-format->Gloss;
+				for(i=format->Gloss;i>0;i-=Gw)
+					Gm|=1<<i;
+			}
+			if(Bmask)
+			{
+				Bw=8-format->Bloss;
+				for(i=format->Bloss;i>0;i-=Bw)
+					Bm|=1<<i;
+			}
+			for(i=0; i < ncolors; ++i) {
+				int r,g,b;
+				r=(i&Rmask)>>format->Rshift;
+				r=(r<<format->Rloss)|((r*Rm)>>Rw);
+				format->palette->colors[i].r=r;
+
+				g=(i&Gmask)>>format->Gshift;
+				g=(g<<format->Gloss)|((g*Gm)>>Gw);
+				format->palette->colors[i].g=g;
+
+				b=(i&Bmask)>>format->Bshift;
+				b=(b<<format->Bloss)|((b*Bm)>>Bw);
+				format->palette->colors[i].b=b;
+				format->palette->colors[i].unused=0;
+			}
+		} else if ( ncolors == 2 ) {
+			/* Create a black and white bitmap palette */
+			format->palette->colors[0].r = 0xFF;
+			format->palette->colors[0].g = 0xFF;
+			format->palette->colors[0].b = 0xFF;
+			format->palette->colors[1].r = 0x00;
+			format->palette->colors[1].g = 0x00;
+			format->palette->colors[1].b = 0x00;
+		} else {
+			/* Create an empty palette */
+			memset((format->palette)->colors, 0,
+				(format->palette)->ncolors*sizeof(imageColor));
+		}
+	}
+	return(format);
+}
+
+imageSurface * imageCreateRGBSurface (FILE *log, Uint32 flags,
+			int width, int height, int depth,
+			Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask){
+	imageSurface *screen;
+	imageSurface *surface;
+
+	/* Make sure the size requested doesn't overflow our datatypes */
+	/* Next time I write a library like SDL, I'll use int for size. :) */
+	if ( width >= 16384 || height >= 65536 ) {
+		log_error(log, "[%s:%d]\t: (imageCreateRGBSurface)\t: Width or height is too large\n", __FILE__, __LINE__);
+		return(NULL);
+	}
+
+	/* Check to see if we desire the surface in video memory */
+	screen = NULL;
+
+	/* Allocate the surface */
+	surface = (imageSurface *)malloc(sizeof(*surface));
+	if ( surface == NULL ) {
+		log_error(log, "[%s:%d]\t: (imageCreateRGBSurface)\t: Out of memory\n", __FILE__, __LINE__);
+		return(NULL);
+	}
+	depth = screen->format->BitsPerPixel;
+	Rmask = screen->format->Rmask;
+	Gmask = screen->format->Gmask;
+	Bmask = screen->format->Bmask;
+	Amask = screen->format->Amask;
+	
+	surface->format = imageAllocFormat(log, depth, Rmask, Gmask, Bmask, Amask);
+	if ( surface->format == NULL ) {
+		//SDL_free(surface);
+		return(NULL);
+	}
+	surface->w = width;
+	surface->h = height;
+	//surface->pitch = SDL_CalculatePitch(surface);
+	surface->pixels = NULL;
+	surface->offset = 0;
+	surface->hwdata = NULL;
+	surface->locked = 0;
+	//surface->map = NULL;
+	surface->unused1 = 0;
+	//SDL_SetClipRect(surface, NULL);
+	//SDL_FormatChanged(surface);
+
+	// Get the pixels
+	/*
+	if ( ((flags&SDL_HWSURFACE) == SDL_SWSURFACE) || 
+				(video->AllocHWSurface(this, surface) < 0) ) {
+		if ( surface->w && surface->h ) {
+			surface->pixels = malloc(surface->h*surface->pitch);
+			if ( surface->pixels == NULL ) {
+				//SDL_FreeSurface(surface);
+				log_error(log. "[%s:%d]\t: (imageCreateRGBSurface)\t: Out of memory\n", __FILE__, __LINE__);
+				return(NULL);
+			}
+			// This is important for bitmaps 
+			memset(surface->pixels, 0, surface->h*surface->pitch);
+		}
+	}*/
+
+	/* Allocate an empty mapping */
+	//surface->map = SDL_AllocBlitMap();
+	//if ( surface->map == NULL ) {
+		//SDL_FreeSurface(surface);
+	//	return(NULL);
+	//}
+
+	/* The surface is ready to go */
+	surface->refcount = 1;
+	return(surface);
+}
+
 // ===========================================================
 //
 // Public image functions for platforms not using SDL.
@@ -304,17 +532,43 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 	} else {
 		log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: File is BMP [%s]\n", __FILE__, __LINE__, magic);	
 	}
+	
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Read bfSize\n", __FILE__, __LINE__);
 	bfSize		= imageReadLE32(log, &ctx);
-	bfReserved1	= imageReadLE16(log, &ctx);
-	bfReserved2	= imageReadLE16(log, &ctx);
-	bfOffBits	= imageReadLE32(log, &ctx);
-
 	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: File size is %d\n", __FILE__, __LINE__, bfSize);
-	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Offset [%d]\n", __FILE__, __LINE__, bfOffBits);
+
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Read bfReserved1\n", __FILE__, __LINE__);
+	bfReserved1	= imageReadLE16(log, &ctx);
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Read bfReserved1\n", __FILE__, __LINE__);
+	bfReserved2	= imageReadLE16(log, &ctx);
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Read data offset\n", __FILE__, __LINE__);
+	bfOffBits	= imageReadLE32(log, &ctx);
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Data aofset [%d]\n", __FILE__, __LINE__, bfOffBits);
 	
 	// Read the Win32 BITMAPINFOHEADER
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Read header size\n", __FILE__, __LINE__);
 	biSize		= imageReadLE32(log, &ctx);
 	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Header size [%d]\n", __FILE__, __LINE__, biSize);
+	switch(biSize){
+		case(BITMAPINFOHEADER):
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is standard BMP\n", __FILE__, __LINE__);
+			break;
+		case(BITMAPV2INFOHEADER):
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v2\n", __FILE__, __LINE__);
+			break;
+		case(BITMAPV3INFOHEADER):
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v3\n", __FILE__, __LINE__);
+			break;
+		case(BITMAPV4HEADER):
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v4\n", __FILE__, __LINE__);
+			break;
+		case(BITMAPV5HEADER):
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v5\n", __FILE__, __LINE__);
+			break;
+		default:
+			break;
+	}
+	
 	if (biSize == 12){
 		biWidth		= (Uint32)imageReadLE16(log, &ctx);
 		biHeight	= (Uint32)imageReadLE16(log, &ctx);
@@ -339,26 +593,6 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 		biClrImportant	= imageReadLE32(log, &ctx);
 	}
 
-	switch(biSize){
-		case(BITMAPINFOHEADER):
-			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is standard BMP\n", __FILE__, __LINE__);
-			break;
-		case(BITMAPV2INFOHEADER):
-			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v2\n", __FILE__, __LINE__);
-			break;
-		case(BITMAPV3INFOHEADER):
-			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v3\n", __FILE__, __LINE__);
-			break;
-		case(BITMAPV4HEADER):
-			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v4\n", __FILE__, __LINE__);
-			break;
-		case(BITMAPV5HEADER):
-			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Format is BMP v5\n", __FILE__, __LINE__);
-			break;
-		default:
-			break;
-	}
-	
 	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Geometry [%dx%d]\n", __FILE__, __LINE__, biWidth, biHeight);
 	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Planes [%d]\n", __FILE__, __LINE__, biPlanes);
 	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Bitcount [%d]\n", __FILE__, __LINE__, biBitCount);
@@ -376,6 +610,7 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 	(void) biClrImportant;
 
 	if (biHeight < 0){
+		log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t: Inverted image\n", __FILE__, __LINE__);
 		topDown = true;
 		biHeight = -biHeight;
 	} else {
@@ -387,7 +622,7 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 	//	was_error = true;
 	//	goto done;
 	//}
-
+	
 	// Expand 1 and 4 bit bitmaps to 8 bits per pixel
 	switch (biBitCount){
 		case 1:
@@ -399,7 +634,7 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 			ExpandBMP = 0;
 			break;
 	}
-
+	
 	// We don't support any BMP compression right now
 	Rmask = Gmask = Bmask = 0;
 	switch (biCompression){
@@ -453,21 +688,27 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 			was_error = true;
 			goto done;
 	}
-
+	
 	// Create a compatible surface, note that the colors are RGB ordered
-	//surface = SDL_CreateRGBSurface(SDL_SWSURFACE, biWidth, biHeight, biBitCount, Rmask, Gmask, Bmask, 0);
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
+	surface = imageCreateRGBSurface(log, 0, biWidth, biHeight, biBitCount, Rmask, Gmask, Bmask, 0);
 	//if (surface == NULL ){
 		//was_error = true;
 		//goto done;
 	//}
 
 	// Load the palette, if any
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 	palette = (surface->format)->palette;
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 	if (palette){
 		if (biClrUsed == 0){
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 			biClrUsed = 1 << biBitCount;
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 		}
 		if (biSize == 12){
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 			for (i = 0; i < (int)biClrUsed; ++i){
 				imageRead(log, &ctx, &palette->colors[i].b, 1, 1);
 				imageRead(log, &ctx, &palette->colors[i].g, 1, 1);
@@ -475,6 +716,7 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 				palette->colors[i].unused = 0;
 			}	
 		} else {
+			log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 			for (i = 0; i < (int)biClrUsed; ++i){
 				imageRead(log, &ctx, &palette->colors[i].b, 1, 1);
 				imageRead(log, &ctx, &palette->colors[i].g, 1, 1);
@@ -484,6 +726,8 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 		}
 		palette->ncolors = biClrUsed;
 	}
+	
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
 
 	// Read the surface pixels.  Note that the bmp image is upside down
 	if (imageSeek(log, &ctx, fp_offset+bfOffBits, RW_SEEK_SET) < 0){
@@ -491,6 +735,9 @@ int imageLoadBMP(FILE *log, char *src, int freesrc){
 		was_error = true;
 		goto done;
 	}
+	
+	log_debug(log, "[%s:%d]\t: (imageLoadBMP)\t:\n", __FILE__, __LINE__);
+	
 	top = (Uint8 *)surface->pixels;
 	end = (Uint8 *)surface->pixels+(surface->h*surface->pitch);
 	switch (ExpandBMP){

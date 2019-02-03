@@ -11,6 +11,11 @@ override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -O3 $(APP_INC
 LINK_CFLAGS = -Wall
 APP_LDFLAGS = $(APP_LIB)
 
+ifeq ($(LOGGING), 1)
+override CFLAGS += -DUSE_LOGGING -DLOGGING
+override LINK_CFLAGS += -DUSE_LOGGING -DLOGGING
+endif
+
 # What our application is named
 EXE = menu
 

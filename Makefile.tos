@@ -1,7 +1,10 @@
 # Names of the compiler and friends
-CC = /usr/m68k-atari-mint/bin/gcc
-STRIP = /usr/m68k-atari-mint/bin/strip
-STACK = /usr/m68k-atari-mint/bin/stack
+#CC = /usr/m68k-atari-mint/bin/gcc
+CC = m68k-atari-mint-gcc
+#STRIP = /usr/m68k-atari-mint/bin/strip
+STRIP = m68k-atari-mint-strip
+#STACK = /usr/m68k-atari-mint/bin/stack
+STACK = m68k-atari-mint-stack
 
 # libraries and paths
 APP_LIB = -L/usr/m68k-atari-mint/sys-root/usr/lib -lgem
