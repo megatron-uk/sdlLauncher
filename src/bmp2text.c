@@ -9,16 +9,17 @@
 // Load the defined font bitmap into a SDL surface.
 int loadfont(FILE *log, struct agnostic_bitmap *bmp, bool inverse){
 	
+	int r = 0;
 	
 	// Load font bitmap
 	if (inverse == 1){
 		log_info(log, "[loadfont]\t: Loading reverse font [%s]\n", FONT_BITMAP_REV);
-		gfxLoadBMP(log, FONT_BITMAP_REV, (agnostic_bitmap *)bmp);
+		gfxLoadFont(log, FONT_BITMAP_REV, (agnostic_bitmap *)bmp);
 	} else {
 		log_info(log, "[loadfont]\t: Loading normal font [%s]\n", FONT_BITMAP);
-		gfxLoadBMP(log, FONT_BITMAP, (agnostic_bitmap *)bmp);
+		gfxLoadFont(log, FONT_BITMAP, (agnostic_bitmap *)bmp);
 	}
-	if (bmp->bmp == NULL){
+	if (r == -1){
 		log_error(log, "[loadfont]\t: Error loading bitmap\n");
 		return -1;
 	} else {

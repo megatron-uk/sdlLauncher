@@ -111,8 +111,6 @@ int gfxInit(FILE *log){
 
 // Load a bitmap file from disk into a in-memory structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
-
-	imageLoadBMP(log, filename, 0);
 	
 	bmp->bmp = SDL_LoadBMP(filename);
 	if (!bmp->bmp){
@@ -121,6 +119,11 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 		return -1;	
 	}
 	return 0;
+}
+
+// Load a font bitmap from disk into a bitmap structure
+int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
+	return gfxLoadBMP(log, filename, bmp);
 }
 
 // Unload driver

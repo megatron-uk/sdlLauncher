@@ -121,7 +121,7 @@ int gfxDrawBox(
 		pxyarray[1] = y + shadow_px;
 		pxyarray[2] = x + w + shadow_px;
 		pxyarray[3] = y + h + shadow_px;
-		log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow [%d,%d -> %d,%d]\n", __FILE__, __LINE__, pxyarray[0], pxyarray[1], pxyarray[2], pxyarray[3]);
+		//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow [%d,%d -> %d,%d]\n", __FILE__, __LINE__, pxyarray[0], pxyarray[1], pxyarray[2], pxyarray[3]);
 		vsf_interior(gem_vdi_handle, FIS_SOLID);
 		vsf_perimeter(gem_vdi_handle, 1);
 		v_bar(gem_vdi_handle, pxyarray);
@@ -137,7 +137,7 @@ int gfxDrawBox(
 		vsl_width(gem_vdi_handle, border_px);
 	}
 	//vsf_color(gem_vdi_handle, 0);
-	log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Perimeter [%d,%d -> %d,%d]\n", __FILE__, __LINE__, pxyarray[0], pxyarray[1], pxyarray[2], pxyarray[3]);
+	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Perimeter [%d,%d -> %d,%d]\n", __FILE__, __LINE__, pxyarray[0], pxyarray[1], pxyarray[2], pxyarray[3]);
 	vsf_interior(gem_vdi_handle, FIS_HOLLOW);
 	vsf_perimeter(gem_vdi_handle, 1);
 	v_bar(gem_vdi_handle, pxyarray);
@@ -161,7 +161,7 @@ int gfxDrawBox(
 		vsl_width(gem_vdi_handle, 1);
 	}
 	
-	log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Done\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Done\n", __FILE__, __LINE__);
 	return r;
 }
 
@@ -260,10 +260,32 @@ int gfxInit(FILE *log){
 // Load a bitmap file from disk into a bitmap structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
-	imageLoadBMP(log, filename, 0);
+	int r = 0;
+	// Load raw chunky bitmap
+	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Loading chunky bitmap [%s]\n", __FILE__, __LINE__, filename);
+	r = imageLoadBMP(log, filename, bmp);
+	if (r != 0){
+		return -1;	
+	}
+	// Convert to bitplanes
+	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Converting to bitplanes\n", __FILE__, __LINE__);
+	r = imageBMP2Bitplane(log, bmp, 1);
+	if (r != 0){
+		return -1;	
+	}
 	return 0;
 	
 }
+
+// Load a font bitmap from disk into a bitmap structure
+int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
+	
+	// Not used on Atari VDI - we just use the built in OS ROM fonts
+	log_warn(log, "[%s:%d]\t: (gfxLoadFont)\t: Font loading not supported on Atari GEM/VDI backend\n", __FILE__, __LINE__);
+	return 0;
+	
+}
+
 
 // Unload driver
 int gfxQuit(FILE *log){
@@ -295,6 +317,7 @@ int gfxQuit(FILE *log){
 	
 	//v_show_c(gem_vdi_handle, 0);
 	appl_exit();
+	Cursconf(2, 2);
 	
 	log_debug(log, "[%s:%d]\t: (gfxQuit)\t: Unloaded\n", __FILE__, __LINE__);
 	return r;
@@ -303,7 +326,12 @@ int gfxQuit(FILE *log){
 // Set gem_screen mode
 int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp){
 	
+	short char_w, char_h, cell_w, cell_h;
+	short hin, vin, hout, vout;
 	short r = 0;
+	short point;
+	
+	log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Setting screen mode [%dx%d]\n", __FILE__, __LINE__, screen_w, screen_h);
 	
 	// GEM screens count from pixel 0; hence a 320 pixel wide screen is reported as 319 pixels
 	if ((gem_screen.w != (screen_w - 1)) || (gem_screen.h != (screen_h - 1))){
@@ -316,8 +344,25 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 	if (screen_bpp != 0){
 		log_warn(log, "[%s:%d]\t: (gfxSetMode)\t: Driver does not support setting pixel depth\n", __FILE__, __LINE__);
 	}
-		
-	log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Setting screen mode [%dx%d]\n", __FILE__, __LINE__, screen_w, screen_h);
+	
+	// Set text mode
+	// Set font and font cell sizes
+	char_w = 6;
+	char_h = 8;
+	cell_w = 6;
+	cell_h = 9;
+	
+	// Font alignment hints
+	hin = 0;
+	vin = 5;
+	
+	// Set font alignment & size`
+	vst_alignment(gem_vdi_handle, hin, vin, &hout, &vout);	
+	point = vst_point(gem_vdi_handle, 8, &char_w, &char_h, &cell_w, &cell_h);
+	log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Font set to %dpt\n", __FILE__, __LINE__, point);
+	
+	// Disable xbios cursor
+	Cursconf(0, 0);
 	
 	return r;
 }
@@ -333,31 +378,21 @@ int gfxText2BMP(
 	int y, 
 	bool inverse
 ){
-	short point;
-	short char_w, char_h, cell_w, cell_h;
-	short hin, vin, hout, vout;
 	short r = 0;
 	
-	// Set font and font cell sizes
-	char_w = 5;
-	char_h = 7;
-	cell_w = 6;
-	cell_h = 8;
-	
-	// Font alignment hints
-	hin = 0;
-	vin = 5;
-	
-	log_debug(log, "[%s:%d]\t: (gfxText2BMP)\t: Printing %d characters\n", __FILE__, __LINE__, strlen(text));
+	//log_debug(log, "[%s:%d]\t: (gfxText2BMP)\t: Printing %d characters\n", __FILE__, __LINE__, strlen(text));
 
-	// Set font alignment
-	vst_alignment(gem_vdi_handle, hin, vin, &hout, &vout);
+	// Reverse video mode
+	if (inverse){
+		vswr_mode(gem_vdi_handle, 4);
+	}	
 	
-	// Set font size
-	point = vst_point(gem_vdi_handle, 8, &char_w, &char_h, &cell_w, &cell_h);
-	
-	log_debug(log, "[%s:%d]\t: (gfxText2BMP)\t: Font set to %dpt\n", __FILE__, __LINE__, point);
 	v_gtext(gem_vdi_handle, x, y + 1, text);
+	
+	// Toggle inverse mode back off again
+	if (inverse){
+		vswr_mode(gem_vdi_handle, 1);
+	}	
 	
 	return r;
 }

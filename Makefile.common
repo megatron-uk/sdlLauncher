@@ -1,4 +1,4 @@
-OBJFILES = src/logging.o src/input.o src/image.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 
 $(EXE):  $(OBJFILES)
 	@echo ""
@@ -31,6 +31,9 @@ logging.o: src/logging.c
 	$(CC) -g -c -o src/$@
 	
 image.o: src/image.c
+	$(CC) -g -c -o src/$@
+
+qdbmp.o: src/qdbmp.c
 	$(CC) -g -c -o src/$@
 	
 clean:

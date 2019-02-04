@@ -43,9 +43,10 @@ typedef unsigned short input_event_type;
 #endif
 
 #ifdef USE_GEM
-#define EVENT_QUIT	"QUIT"
+#define EVENT_QUIT	0xffff
 #define EVENT_KEYDOWN MU_KEYBD
-#define KEY_q		0x1071
+#define KEY_Q		0x1071
+#define KEY_q		0x1051
 #define KEY_c 		0x2E63
 #define KEY_F1 		0x3B00
 #define KEY_F2 		0x3C00
@@ -103,6 +104,7 @@ typedef struct agnostic_event {
 } agnostic_event;
 
 // Public event handling functions
+void inputSleep();
 int inputPollEvent(struct agnostic_event *event);
 bool inputEventCheck(struct agnostic_event *event, input_event_type event_type);
 keypress inputEventKeypress(struct agnostic_event *event);

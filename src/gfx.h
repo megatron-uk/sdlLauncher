@@ -11,6 +11,7 @@
 #ifdef USE_GEM
 #include <mint/osbind.h>
 #include <gem.h>
+#include "qdbmp.h"
 // Gem_screen geometry
 struct gem_screen {
 	int w, h;
@@ -19,14 +20,15 @@ struct gem_screen {
 
 // Structure to fake a bitmap object for GEM
 typedef struct gem_format {
-	unsigned int BitsPerPixel;
+	unsigned short BitsPerPixel;
 } gem_format;
 
 // Structure to fake a bitmap object for GEM
 typedef struct gem_bitmap {
 	unsigned int w;
 	unsigned int h;
-	struct gem_format *format;
+	gem_format *format;
+	BMP *pixels; // Store GEM/VDI bitmaps here - a point to a qdbmp structure (see qdbmp.h)
 } gem_bitmap;
 
 // Number of pens (aka colours)
@@ -120,6 +122,7 @@ int gfxInit(FILE *log);
 
 // Load a bitmap from file - either SDL or Allegro
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp);
+int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp);
 
 // Unload driver
 int gfxQuit(FILE *log);

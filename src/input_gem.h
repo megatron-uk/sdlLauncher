@@ -5,6 +5,9 @@
 // Include our generic input handling headers
 #include "input.h"
 
+void inputSleep(){
+}
+
 // Poll the input event queue
 int inputPollEvent(struct agnostic_event *event){
 	int r = 0;

@@ -243,6 +243,14 @@ int comparegames(const void *s1, const void *s2){
 	struct GAME_DATA_ITEM *game_a = (struct GAME_DATA_ITEM *)s1;
 	struct GAME_DATA_ITEM *game_b = (struct GAME_DATA_ITEM *)s2;
 	int r = 0;
+	char c;
+	
+	// Uppercase the first character
+	c = toupper(game_a->name[0]);
+	game_a->name[0] = c;
+	c = toupper(game_b->name[0]);
+	game_b->name[0] = c;
+	
 	r = strcmp(game_a->name, game_b->name);
 	
 	// Game b comes first in character sequence
