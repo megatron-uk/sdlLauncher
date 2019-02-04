@@ -27,8 +27,10 @@ typedef struct gem_format {
 typedef struct gem_bitmap {
 	unsigned int w;
 	unsigned int h;
-	gem_format *format;
-	BMP *pixels; // Store GEM/VDI bitmaps here - a point to a qdbmp structure (see qdbmp.h)
+	struct gem_format format;
+	BMP* pixels; 	// Store raw bitmaps here - a point to a qdbmp structure (see qdbmp.h)
+	char *bitplanes;// converted bitplane format image here
+	MFDB mfdb;		// VDI format raster image device header to describe the converted bitplane image data
 } gem_bitmap;
 
 // Number of pens (aka colours)
@@ -120,7 +122,7 @@ char* gfxGetError();
 // Load driver
 int gfxInit(FILE *log);
 
-// Load a bitmap from file - either SDL or Allegro
+// Load a bitmap from file - either SDL, GEM or Allegro
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp);
 int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp);
 

@@ -262,14 +262,14 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
 	int r = 0;
 	// Load raw chunky bitmap
-	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Loading chunky bitmap [%s]\n", __FILE__, __LINE__, filename);
-	r = imageLoadBMP(log, filename, bmp);
+	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Loading chunky bitmap\n", __FILE__, __LINE__, filename);
+	r = imageLoadBMP(log, filename, &bmp);
 	if (r != 0){
 		return -1;	
 	}
 	// Convert to bitplanes
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Converting to bitplanes\n", __FILE__, __LINE__);
-	r = imageBMP2Bitplane(log, bmp, 1);
+	r = imageBMP2Bitplane(log, &bmp, 1);
 	if (r != 0){
 		return -1;	
 	}

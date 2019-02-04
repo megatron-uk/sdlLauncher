@@ -214,7 +214,8 @@ int menuGamecoverLoad(agnostic_bitmap *display, struct WINDOW_STATE *window_stat
 		menuInfoboxPrint(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded [%dx%dx%dbpp]\n", __FILE__, __LINE__, bmp.bmp->w, bmp.bmp->h, bmp.bmp->format->BitsPerPixel);
+		log_debug(log, "here\n");
+		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded [%dx%d]\n", __FILE__, __LINE__, bmp.bmp->w, bmp.bmp->h);
 	}
 	
 	// Source
@@ -1141,29 +1142,29 @@ int menuInitWindowstate(FILE *log, struct WINDOW_STATE *window_state){
 
 // Print help text in bottom row of screen based on currently selected
 // window.
-int menuHelpTextPopulate(FILE *log, struct agnostic_bitmap *display, struct WINDOW_STATE *window_state){
+void menuHelpTextPopulate(FILE *log, struct agnostic_bitmap *display, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = INFO_COORDS();
 	int x_pos = coords.x + 2;
 	int y_pos = coords.y + 2 + (5 * FONT_H);
 	char *msg;
-	switch(window_state->selected_window){
-		case(W_INFO):
+	switch((int)window_state->selected_window){
+		case W_INFO:
 			msg = "Info: Cursor:select. Enter:open. Tab:change mode";
 			break;
-		case(W_TEXT):
+		case W_TEXT:
 			msg = "Textreader: U/D:scroll. Esc:exit";
 			break;
-		case(W_BROWSER):
+		case W_BROWSER:
 			msg = "Browser: U/D:scroll. L/R:category. Tab:change mode";
 			break;
-		case(W_CONFIG):
+		case W_CONFIG:
 			msg = "Config: Press indicated keys. Esc:exit";
 			break;
 		default:
+			msg = "";
 			break;
 			
 	}
 	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, msg, x_pos, y_pos, 0);
-	
 }
