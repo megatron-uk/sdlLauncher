@@ -214,8 +214,7 @@ int menuGamecoverLoad(agnostic_bitmap *display, struct WINDOW_STATE *window_stat
 		menuInfoboxPrint(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		log_debug(log, "here\n");
-		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded [%dx%d]\n", __FILE__, __LINE__, bmp.bmp->w, bmp.bmp->h);
+		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded [%dx%dx%dbpp]\n", __FILE__, __LINE__, bmp.w, bmp.h, bmp.bpp);
 	}
 	
 	// Source
@@ -400,16 +399,22 @@ int menuConfigPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *ga
 			if (r > 0){
 				sprintf(text_buffer, " - %d records read", r);
 				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				
+				// Sort games list
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+				sortgames(game_data);
+				
 				// Select game list item 0
 				window_state->browser_window.select_pos = 0;
 				menuRefilterBrowser(log, game_data, window_state);
 			} else {
 				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Skipped sorting" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			}
 			// Close file
 			fclose(csv);
-			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
-			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (15 * FONT_H)), 0);
 			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		
 		} else {
@@ -475,7 +480,7 @@ int menuBrowserPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *g
 
 		if (window_state->category_window.cat_selected == CATEGORY_ALL){
 			// We're in the category 'ALL'
-			log_debug(log, "menuBrowserPopulate: Category All\n");
+			//log_debug(log, "menuBrowserPopulate: Category All\n");
 			
 			total_items = game_data->items;
 			// Is our game list longer than max number of rows?
@@ -508,7 +513,7 @@ int menuBrowserPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *g
 						window_state->browser_window.end_pos--;
 					}
 				} else {
-					log_debug(log, "menuBrowserPopulate: All selected lines can be shown - we're starting at 0\n");
+					//log_debug(log, "menuBrowserPopulate: All selected lines can be shown - we're starting at 0\n");
 					window_state->browser_window.start_pos = 0;
 					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){

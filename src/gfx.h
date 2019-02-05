@@ -19,18 +19,15 @@ struct gem_screen {
 } gem_screen;
 
 // Structure to fake a bitmap object for GEM
-typedef struct gem_format {
-	unsigned short BitsPerPixel;
-} gem_format;
-
-// Structure to fake a bitmap object for GEM
 typedef struct gem_bitmap {
-	unsigned int w;
-	unsigned int h;
-	struct gem_format format;
-	BMP* pixels; 	// Store raw bitmaps here - a point to a qdbmp structure (see qdbmp.h)
-	char *bitplanes;// converted bitplane format image here
-	MFDB mfdb;		// VDI format raster image device header to describe the converted bitplane image data
+	BMP* pixels; 	// Store raw bitmaps here - a pointer to a qdbmp structure (see qdbmp.h)
+					// - hopefully freed() after being converted to bp_pixels.
+	
+	MFDB *mfdb;		// VDI format raster image device header to describe the converted 
+					// bitplane image data held at *bp_pixels.
+					
+	unsigned char *bp_pixels;// The converted Atari bitplane format image here.
+	
 } gem_bitmap;
 
 // Number of pens (aka colours)
@@ -75,14 +72,18 @@ typedef struct agnostic_colours {
 // Structure to hold a bitmap object
 typedef struct agnostic_bitmap {
 #ifdef USE_ALLEGRO
-	BITMAP *bmp;
+	BITMAP *bmp;		// Allegro bitmap structure - only accessed by gfx_allego.c
 #endif
 #ifdef USE_GEM
-	gem_bitmap *bmp;
+	gem_bitmap *bmp;	// GEM bitmap structure - only accessed by gfx_vdi.c
 #endif
 #ifdef USE_SDL
-	SDL_Surface *bmp;
+	SDL_Surface *bmp;	// SDL_Surface bitmap structure - only accessed by gfx_sdl.c
 #endif
+	// Standard bitmap fields for all backends
+	unsigned int w;		// Width in pixels of source bitmap
+	unsigned int h;		// Height in pixels of source bitmap
+	unsigned int bpp;	// Colour depth of source bitmap
 } agnostic_bitmap;
 
 // Structure to hold a window/rectangle/view

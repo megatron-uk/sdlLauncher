@@ -109,7 +109,7 @@ int main(int argc, char* argv[]){
 		
 		// Check for keypresses
 		if (inputEventCheck(&event, EVENT_KEYDOWN)){
-			log_debug(log, "[%s:%d]\t: (main)\t: Processing key\n", __FILE__, __LINE__);
+			//log_debug(log, "[%s:%d]\t: (main)\t: Processing key\n", __FILE__, __LINE__);
 			switch(inputEventKeypress(&event)){
 				case KEY_q:
 					// Close textreader if open

@@ -118,6 +118,9 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 		log_error(log, "[%s:%d]\t: (gfxLoadBMP)\t: Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;	
 	}
+	bmp->w = bmp->bmp->w;
+	bmp->h = bmp->bmp->h;
+	bmp->bpp = bmp->bmp->format->BitsPerPixel;
 	return 0;
 }
 

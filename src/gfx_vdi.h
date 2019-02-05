@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Use the TOS VDI/GEM functions
 #include <mint/osbind.h>
@@ -169,8 +170,15 @@ int gfxDrawBox(
 void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
 }
 
-// Free a bitmap from memory
+// Free bitplane pixels from memory
 void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
+	if (&bmp->bmp->bp_pixels != NULL){
+		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing bitplane pixel buffer @ %p\n", __FILE__, __LINE__, (void *) &bmp->bmp->bp_pixels);
+		free(&bmp->bmp->bp_pixels);
+		bmp->bmp->bp_pixels = NULL;
+	} else {
+		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Pixel buffer pointer is NULL - not freeing\n", __FILE__, __LINE__);
+	}
 }
 
 // Get last driver error
@@ -260,16 +268,19 @@ int gfxInit(FILE *log){
 // Load a bitmap file from disk into a bitmap structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
+	int autofree = 1;
 	int r = 0;
+	bmp->bmp->bp_pixels = NULL;
+	
 	// Load raw chunky bitmap
-	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Loading chunky bitmap\n", __FILE__, __LINE__, filename);
-	r = imageLoadBMP(log, filename, &bmp);
+	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Loading chunky bitmap\n", __FILE__, __LINE__, filename);
+	r = imageLoadBMP(log, filename, bmp);
 	if (r != 0){
 		return -1;	
-	}
-	// Convert to bitplanes
-	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Converting to bitplanes\n", __FILE__, __LINE__);
-	r = imageBMP2Bitplane(log, &bmp, 1);
+	}	
+	// Convert to bitplanes and auto free the raw bitmap
+	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Converting to bitplanes\n", __FILE__, __LINE__);
+	r = imageBMP2Bitplane(log, bmp, autofree);
 	if (r != 0){
 		return -1;	
 	}
