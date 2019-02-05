@@ -172,10 +172,11 @@ void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
 
 // Free bitplane pixels from memory
 void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
-	if (&bmp->bmp->bp_pixels != NULL){
-		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing bitplane pixel buffer @ %p\n", __FILE__, __LINE__, (void *) &bmp->bmp->bp_pixels);
-		free(&bmp->bmp->bp_pixels);
-		bmp->bmp->bp_pixels = NULL;
+	
+	if (bmp->bmp->bp_pixels_set){
+		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing planar pixel buffer\n", __FILE__, __LINE__);
+		free(*bmp->bmp->bp_pixels);
+		bmp->bmp->bp_pixels_set = false;
 	} else {
 		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Pixel buffer pointer is NULL - not freeing\n", __FILE__, __LINE__);
 	}
@@ -270,17 +271,17 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
 	int autofree = 1;
 	int r = 0;
-	bmp->bmp->bp_pixels = NULL;
+	//bmp->bmp->bp_pixels = NULL;
 	
 	// Load raw chunky bitmap
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Loading chunky bitmap\n", __FILE__, __LINE__, filename);
-	r = imageLoadBMP(log, filename, bmp);
+	r = imageLoadBMP(log, filename, &bmp);
 	if (r != 0){
 		return -1;	
 	}	
 	// Convert to bitplanes and auto free the raw bitmap
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Converting to bitplanes\n", __FILE__, __LINE__);
-	r = imageBMP2Bitplane(log, bmp, autofree);
+	r = imageBMP2Bitplane(log, &bmp, autofree);
 	if (r != 0){
 		return -1;	
 	}
@@ -371,6 +372,11 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 	vst_alignment(gem_vdi_handle, hin, vin, &hout, &vout);	
 	point = vst_point(gem_vdi_handle, 8, &char_w, &char_h, &cell_w, &cell_h);
 	log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Font set to %dpt\n", __FILE__, __LINE__, point);
+	
+	// Set screen 'bitmap' to be nulled
+	//screen->bmp->bp_pixels = NULL;
+	//screen->bmp->mfdb = malloc(sizeof(MFDB));
+	//screen->bmp->pixels = malloc(sizeof(BMP));
 	
 	// Disable xbios cursor
 	Cursconf(0, 0);

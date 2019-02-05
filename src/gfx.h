@@ -28,6 +28,9 @@ typedef struct gem_bitmap {
 					
 	unsigned char *bp_pixels;// The converted Atari bitplane format image here.
 	
+	bool bp_pixels_set;
+	bool pixels_set;
+	
 } gem_bitmap;
 
 // Number of pens (aka colours)

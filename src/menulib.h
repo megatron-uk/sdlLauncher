@@ -214,7 +214,7 @@ int menuGamecoverLoad(agnostic_bitmap *display, struct WINDOW_STATE *window_stat
 		menuInfoboxPrint(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded [%dx%dx%dbpp]\n", __FILE__, __LINE__, bmp.w, bmp.h, bmp.bpp);
+		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded\n", __FILE__, __LINE__);
 	}
 	
 	// Source
@@ -440,7 +440,7 @@ int menuGamecoverPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 	menuGamecoverInit(display, log);
 		
 	// Show cover bitmap
-	if (game_data->game_data_items[selected].has_bitmap){
+	if ((selected >= 0) && (game_data->game_data_items[selected].has_bitmap)){
 		strcpy(fullpath, game_data->game_data_items[selected].path);
 		strcat(fullpath, DIRSEP);
 		strcat(fullpath, game_data->game_data_items[selected].bitmap);

@@ -1,5 +1,5 @@
 #!/bin/bash
 
 make -f Makefile.common clean
-make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' LOGGING=1 && > MENU.LOG
-#make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' && > MENU.LOG
+make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' USE_GEM=1 LOGGING=1 && > MENU.LOG
+#make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' USE_GEM=1 && > MENU.LOG
