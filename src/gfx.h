@@ -20,7 +20,7 @@ struct gem_screen {
 
 // Structure to fake a bitmap object for GEM
 typedef struct gem_bitmap {
-	BMP* pixels; 	// Store raw bitmaps here - a pointer to a qdbmp structure (see qdbmp.h)
+	BMP *pixels; 	// Store raw bitmaps here - a pointer to a qdbmp structure (see qdbmp.h)
 					// - hopefully freed() after being converted to bp_pixels.
 	
 	MFDB *mfdb;		// VDI format raster image device header to describe the converted 

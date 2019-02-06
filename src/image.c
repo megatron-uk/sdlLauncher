@@ -22,7 +22,7 @@ void imagePrintBitmap(FILE *log, struct agnostic_bitmap *bmp){
 
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: MFDB\n", __FILE__, __LINE__);
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: MFDB set? %d\n", __FILE__, __LINE__, bmp->bmp->mfdb_set);
-	if (bmp->bmp->mfdb_set){
+	if (bmp->bmp->mfdb_set == 1){
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: MFDB header @ %p\n", __FILE__, __LINE__, (void *) bmp->bmp->mfdb);
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: MFDB fd_addrt %p <- This is where your planar pixels live!\n", __FILE__, __LINE__, (void *) bmp->bmp->mfdb->fd_addr);
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: MFDB fd_w %d\n", __FILE__, __LINE__, bmp->bmp->mfdb->fd_w);
@@ -40,7 +40,7 @@ void imagePrintBitmap(FILE *log, struct agnostic_bitmap *bmp){
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t:\n", __FILE__, __LINE__);
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Chunky bitmap\n", __FILE__, __LINE__);
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Chunky pixel set? %d\n", __FILE__, __LINE__, bmp->bmp->pixels_set);
-	if (bmp->bmp->pixels_set){
+	if (bmp->bmp->pixels_set == 1){
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Chunky pixel data @ %p\n", __FILE__, __LINE__, (void *) bmp->bmp->pixels);
 	} else {
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Chunky pixel data - not set\n", __FILE__, __LINE__);
@@ -49,7 +49,7 @@ void imagePrintBitmap(FILE *log, struct agnostic_bitmap *bmp){
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t:\n", __FILE__, __LINE__);
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Planar data\n", __FILE__, __LINE__);
 	log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Planar data set? %d\n", __FILE__, __LINE__, bmp->bmp->bp_pixels_set);
-	if (bmp->bmp->bp_pixels_set){
+	if (bmp->bmp->bp_pixels_set == 1){
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Planar pixel data @ %p\n", __FILE__, __LINE__, (void *) bmp->bmp->bp_pixels);		
 	} else {
 		log_debug(log, "[%s:%d]\t: (imagePrintBitmap)\t: Planar pixel data - not set\n", __FILE__, __LINE__);
@@ -63,9 +63,7 @@ int imageLoadBMP(FILE *log, char *src, struct agnostic_bitmap *bmp){
 	
 	int t1, t2;
 	t1 = clock();
-	
-	bmp->bmp->pixels_set = 0;
-	
+		
 	if (src == NULL){
 		log_warn(log, "[%s:%d]\t: (imageLoadBMP)\t: Filename argument was empty!\n", __FILE__, __LINE__);		
 		return -1;	
@@ -104,9 +102,6 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bmp, int auto_free){
 	unsigned char *buf;
 	unsigned char *ptr;
 	bool used_buf = false;
-	
-	bmp->bmp->bp_pixels_set = 0;
-	bmp->bmp->mfdb_set = 0;
 	
 	if (bmp->bmp->pixels == NULL){
 		log_warn(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: No pixel data founds\n", __FILE__, __LINE__);
@@ -156,8 +151,6 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bmp, int auto_free){
 	
 	bmp->bmp->bp_pixels = malloc(bitplane_px_size * sizeof(unsigned char));
 	if (bmp->bmp->bp_pixels == NULL){
-		bmp->bmp->bp_pixels = NULL;
-		bmp->bmp->bp_pixels_set = 0;
 		log_error(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Memory allocation error for planar pixel buffer\n", __FILE__, __LINE__);
 		return -1;
 	} else {
@@ -182,7 +175,6 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bmp, int auto_free){
 		bmp->w,
 		(bmp->w / 2)
 	);
-	bmp->bmp->bp_pixels_set = 1; // Flag to indicate we've used this data structure
 	
 	// End timer for C2P routine
 	t2 = clock();
@@ -190,7 +182,6 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bmp, int auto_free){
 	// Allocate and fill in GEM VDI MFDB header
 	bmp->bmp->mfdb = malloc(sizeof(MFDB));
 	if (bmp->bmp->mfdb == NULL){
-		bmp->bmp->mfdb_set = 0;
 		log_error(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Memory allocation error for MFDB header\n", __FILE__, __LINE__);
 		return -1;	
 	} else {
@@ -205,10 +196,9 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bmp, int auto_free){
 	bmp->bmp->mfdb->fd_r1 = 0;
 	bmp->bmp->mfdb->fd_r2 = 0;
 	bmp->bmp->mfdb->fd_r3 = 0;	
-	bmp->bmp->mfdb_set = 1; // Flag to indicate we've used this data structure
 	
 	log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: C2P [%p -> %p] Time [%.3fs]\n", __FILE__, __LINE__, (void *) ptr, (void *) bmp->bmp->bp_pixels, (double) (t2 - t1) / CLOCKS_PER_SEC);
-	imagePrintBitmap(log, bmp);
+	//imagePrintBitmap(log, bmp);
 	
 	// Auto free raw bitmap pixel data
 	if (auto_free){
