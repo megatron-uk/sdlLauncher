@@ -179,7 +179,7 @@ void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
 	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: bp_pixels_set %d\n", __FILE__, __LINE__, bmp->bmp->bp_pixels_set);
 	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: pixels_set %d\n", __FILE__, __LINE__, bmp->bmp->pixels_set);
 	
-	imagePrintBitmap(log, &bmp);
+	imagePrintBitmap(log, bmp);
 	
 	if (bmp->bmp->mfdb_set == true){
 		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing MFDB header\n", __FILE__, __LINE__);
@@ -201,7 +201,7 @@ void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
 	
 	if (bmp->bmp->pixels_set == true){
 		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing chunky bitmap\n", __FILE__, __LINE__);
-		//BMP_Free(bmp->bmp->pixels);
+		BMP_Free(bmp->bmp->pixels);
 		bmp->bmp->pixels_set = 0;
 	} else {
 		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Chunky bitmap is unused - not freeing\n", __FILE__, __LINE__);
@@ -318,7 +318,7 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
 	// Load raw chunky bitmap
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Loading chunky bitmap\n", __FILE__, __LINE__, filename);
-	r = imageLoadBMP(log, filename, &bmp);
+	r = imageLoadBMP(log, filename, bmp);
 	if (r != 0){
 		return -1;	
 	} else {
@@ -329,7 +329,7 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: pixels_set %d\n", __FILE__, __LINE__, bmp->bmp->pixels_set);
 	// Convert to bitplanes and auto free the raw bitmap
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Converting to bitplanes\n", __FILE__, __LINE__);
-	r = imageBMP2Bitplane(log, &bmp, auto_free);
+	r = imageBMP2Bitplane(log, bmp, auto_free);
 	if (r != 0){
 		return -1;	
 	} else {
