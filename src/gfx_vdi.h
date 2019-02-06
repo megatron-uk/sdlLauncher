@@ -173,6 +173,14 @@ void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
 // Free bitplane pixels from memory
 void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
 	
+	if (bmp->bmp->mfdb_set){
+		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing MFDB header\n", __FILE__, __LINE__);
+		free(bmp->bmp->mfdb);
+		bmp->bmp->mfdb_set = false;
+	} else {
+		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: MFDB pointer is NULL - not freeing\n", __FILE__, __LINE__);
+	}
+	
 	if (bmp->bmp->bp_pixels_set){
 		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing planar pixel buffer\n", __FILE__, __LINE__);
 		free(*bmp->bmp->bp_pixels);
@@ -372,11 +380,6 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 	vst_alignment(gem_vdi_handle, hin, vin, &hout, &vout);	
 	point = vst_point(gem_vdi_handle, 8, &char_w, &char_h, &cell_w, &cell_h);
 	log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Font set to %dpt\n", __FILE__, __LINE__, point);
-	
-	// Set screen 'bitmap' to be nulled
-	//screen->bmp->bp_pixels = NULL;
-	//screen->bmp->mfdb = malloc(sizeof(MFDB));
-	//screen->bmp->pixels = malloc(sizeof(BMP));
 	
 	// Disable xbios cursor
 	Cursconf(0, 0);

@@ -127,13 +127,15 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bitmap, int auto_free){
 		log_error(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Memory allocation error\n", __FILE__, __LINE__);
 		return -1;
 	}
-	
+		
 	// Convert chunky to planar screen
 	// This routine was sourced from SDL-1.2.15/src/video/ataricommon/ataric2p_s.h
 	if (used_buf){
 		ptr = buf;
+		log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Using downsample buffer\n", __FILE__, __LINE__);
 	} else {
 		ptr = bitmap->bmp->pixels->Data;
+		log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Using chunky bitmap\n", __FILE__, __LINE__);
 	}
 	Atari_C2pConvert8(
 		ptr,
@@ -145,10 +147,11 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bitmap, int auto_free){
 		(bitmap->w / 2)
 	);
 	
-	//log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: FIRST here\n", __FILE__, __LINE__);
-	// Fill in GEM VDI MFDB header
-	bitmap->bmp->mfdb->fd_addr = bitmap->bmp->bp_pixels;
+	log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: here\n", __FILE__, __LINE__);
 	
+	// Fill in GEM VDI MFDB header
+	bitmap->bmp->mfdb = malloc(sizeof(MFDB));
+	bitmap->bmp->mfdb->fd_addr = bitmap->bmp->bp_pixels;
 	bitmap->bmp->mfdb->fd_w = (unsigned short) bitmap->w;
 	bitmap->bmp->mfdb->fd_h = (unsigned short) bitmap->h;
 	bitmap->bmp->mfdb->fd_wdwidth = ((bitmap->w / sizeof(unsigned char)) / bitplanes_num) / 2;
@@ -157,6 +160,9 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bitmap, int auto_free){
 	bitmap->bmp->mfdb->fd_r1 = 0;
 	bitmap->bmp->mfdb->fd_r2 = 0;
 	bitmap->bmp->mfdb->fd_r3 = 0;	
+	bitmap->bmp->mfdb_set = false;
+	
+	log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: here\n", __FILE__, __LINE__);
 	
 	// End timer
 	t2 = clock();
@@ -165,10 +171,13 @@ int imageBMP2Bitplane(FILE *log, struct agnostic_bitmap *bitmap, int auto_free){
 	imagePrintMFDB(log, bitmap->bmp->mfdb);
 	
 	// Auto free raw bitmap pixel data
-	log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Freeing raw bitmap data @ %p\n", __FILE__, __LINE__, (void *) bitmap->bmp->pixels);
-	BMP_Free(bitmap->bmp->pixels);
-	bitmap->bmp->pixels_set = false;
+	if (auto_free){
+		log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Freeing raw bitmap data @ %p\n", __FILE__, __LINE__, (void *) bitmap->bmp->pixels);
+		BMP_Free(bitmap->bmp->pixels);
+		bitmap->bmp->pixels_set = false;
+	}
 	
+	// Free downsample buffer
 	if (used_buf){
 		log_debug(log, "[%s:%d]\t: (imageBMP2Bitplane)\t: Freeing downsample buffer @ %p\n", __FILE__, __LINE__, (void *) buf);
 		free(buf);	

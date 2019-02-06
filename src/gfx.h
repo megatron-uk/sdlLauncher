@@ -30,6 +30,7 @@ typedef struct gem_bitmap {
 	
 	bool bp_pixels_set;
 	bool pixels_set;
+	bool mfdb_set;
 	
 } gem_bitmap;
 
