@@ -38,7 +38,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	int pos = game_data->pos;
 	char *substring;
 		
-	log_debug(log, "set_gamedata: Setting gamedata[%d] object for [%s]\n", game_data->pos, gamename);
+	log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Setting gamedata[%d] object for [%s]\n", __FILE__, __LINE__, game_data->pos, gamename);
 	
 	// Blank everything first
 	memset(game_data->game_data_items[pos].name, '\0', GAME_NAME_LEN);
@@ -66,7 +66,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	strcat(fullpath, DIRSEP);
 	strcat(fullpath, gamename);
 	strcpy(game_data->game_data_items[pos].path, fullpath);
-	log_debug(log, "set_gamedata: Full path set [%s]\n", game_data->game_data_items[pos].path);
+	log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Full path set [%s]\n", __FILE__, __LINE__, game_data->game_data_items[pos].path);
 	
 	// Scan for further files
 	dir = opendir(fullpath);
@@ -221,8 +221,12 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 				stat(gamepath, &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif
+					// This should really only increment the game_data items counter if it successfully 
+					// adds at least a folder image, a readme file, or an executable.
 					log_debug(log, "scangames: Adding dir: [%s @ game_id %d]\n", ep->d_name, game_data->items);
 					set_gamedata(log, gamepath, ep->d_name, game_data);
+					
+					// Check if an item was find and only increment these counters in that case
 					game_data->pos++;
 					game_data->items++;
 				}

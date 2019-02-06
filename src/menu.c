@@ -65,8 +65,8 @@ int main(int argc, char* argv[]){
 	// or just allow the user to select those options themselves.
 	
 	// Option 1. Get initial list of games in a directory (slow)
-	//r = scangames(log, GAMEDIR, &game_data);
-	//window_state.browser_window.select_pos = 0;
+	r = scangames(log, GAMEDIR, &game_data);
+	window_state.browser_window.select_pos = 0;
 	
 	// Option 2. Load CSV data
 	// csv = fopen();
@@ -75,8 +75,9 @@ int main(int argc, char* argv[]){
 	// fclose(csv);
 	
 	// Option 3. Do nothing
-	window_state.browser_window.select_pos = -1;
-	r = 0;
+	//window_state.browser_window.select_pos = -1;
+	//r = 0;
+	
 	if (r < 0){
 		menuInfoboxPrint(&screen, &window_state, log, ERROR_GAMEDIR_OPEN);	
 	} else {

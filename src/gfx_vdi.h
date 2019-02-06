@@ -172,21 +172,39 @@ void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
 
 // Free bitplane pixels from memory
 void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
+
+	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing bitmap data\n", __FILE__, __LINE__);
 	
-	if (bmp->bmp->mfdb_set){
+	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: mfdb_set %d\n", __FILE__, __LINE__, bmp->bmp->mfdb_set);
+	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: bp_pixels_set %d\n", __FILE__, __LINE__, bmp->bmp->bp_pixels_set);
+	log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: pixels_set %d\n", __FILE__, __LINE__, bmp->bmp->pixels_set);
+	
+	imagePrintBitmap(log, &bmp);
+	
+	if (bmp->bmp->mfdb_set == true){
 		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing MFDB header\n", __FILE__, __LINE__);
 		free(bmp->bmp->mfdb);
+		bmp->bmp->mfdb = NULL;
 		bmp->bmp->mfdb_set = false;
 	} else {
-		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: MFDB pointer is NULL - not freeing\n", __FILE__, __LINE__);
+		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: MFDB header is unused - not freeing\n", __FILE__, __LINE__);
 	}
 	
-	if (bmp->bmp->bp_pixels_set){
+	if (bmp->bmp->bp_pixels_set == true){
 		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing planar pixel buffer\n", __FILE__, __LINE__);
 		free(*bmp->bmp->bp_pixels);
+		bmp->bmp->bp_pixels = NULL;
 		bmp->bmp->bp_pixels_set = false;
 	} else {
-		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Pixel buffer pointer is NULL - not freeing\n", __FILE__, __LINE__);
+		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Planar pixel buffer is unused - not freeing\n", __FILE__, __LINE__);
+	}
+	
+	if (bmp->bmp->pixels_set == true){
+		log_debug(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Freeing chunky bitmap\n", __FILE__, __LINE__);
+		BMP_Free(bmp->bmp->pixels);
+		bmp->bmp->pixels_set = false;
+	} else {
+		log_warn(log, "[%s:%d]\t: (gfxFreeBMP)\t\t: Chunky bitmap is unused - not freeing\n", __FILE__, __LINE__);
 	}
 }
 
@@ -277,7 +295,7 @@ int gfxInit(FILE *log){
 // Load a bitmap file from disk into a bitmap structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
-	int autofree = 1;
+	int auto_free = 0;
 	int r = 0;
 	//bmp->bmp->bp_pixels = NULL;
 	
@@ -289,7 +307,7 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	}	
 	// Convert to bitplanes and auto free the raw bitmap
 	log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t\t: Converting to bitplanes\n", __FILE__, __LINE__);
-	r = imageBMP2Bitplane(log, &bmp, autofree);
+	r = imageBMP2Bitplane(log, &bmp, auto_free);
 	if (r != 0){
 		return -1;	
 	}
@@ -383,6 +401,10 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int scre
 	
 	// Disable xbios cursor
 	Cursconf(0, 0);
+	
+	screen->bmp->mfdb_set = false;
+	screen->bmp->pixels_set = false;
+	screen->bmp->bp_pixels_set = false;
 	
 	return r;
 }
