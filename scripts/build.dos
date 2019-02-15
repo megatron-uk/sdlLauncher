@@ -2,4 +2,4 @@
 
 > MENU.LOG
 make -f Makefile.dos clean 
-make -f Makefile.dos all GAMEDIR='\"./GAMES\"' DIR_SEP='\"\"' CSV_FILE='\"MENU.CSV\"' LOGGING=1
+make -f Makefile.dos all GAMEDIR='\"C:\GAMES\"' DIR_SEP='\"\"' CSV_FILE='\"MENU.CSV\"' LOGGING=1

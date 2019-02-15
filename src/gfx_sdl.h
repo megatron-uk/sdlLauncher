@@ -83,7 +83,7 @@ void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
 }
 
 // Free a bitmap from memory
-void gfxFreeBMP(FILE *log,  struct agnostic_bitmap bmp){
+void gfxFreeBMP(FILE *log,  struct agnostic_bitmap *bmp){
 	SDL_FreeSurface(bmp->bmp);
 }
 

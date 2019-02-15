@@ -28,9 +28,9 @@
 #define GAME_DATA_MAX 250
 
 // Screen geometry
-static unsigned const int SCREEN_W = 320;
-static unsigned const int SCREEN_H = 200;
-static unsigned const int SCREEN_BPP = 8;
+#define MENU_SCREEN_W 320
+#define MENU_SCREEN_H 200
+#define MENU_SCREEN_BPP 8
 
 // Size of the game wallpaper we load
 static unsigned const int BMP_W = 180;
@@ -53,7 +53,7 @@ static struct COORDS BROWSER_COORDS(){
 	COORDS coords;
 	coords.x = 0;
 	coords.y = 0;
-	coords.w = (SCREEN_W - BMP_W);
+	coords.w = (MENU_SCREEN_W - BMP_W);
 	coords.h = (BMP_H + 2);
 	return coords;
 }
@@ -63,7 +63,7 @@ static struct COORDS ALPHABET_COORDS(){
 	COORDS coords;
 	coords.x = 0;
 	coords.y = BMP_H + 1;
-	coords.w = SCREEN_W;
+	coords.w = MENU_SCREEN_W;
 	coords.h = FONT_H + 3;
 	return coords;
 }
@@ -73,15 +73,15 @@ static struct COORDS INFO_COORDS(){
 	COORDS coords;
 	coords.x = 0;
 	coords.y = (BMP_H + FONT_H + 3);
-	coords.w = SCREEN_W;
-	coords.h = (SCREEN_H - (BMP_H + 3) - (FONT_H));
+	coords.w = MENU_SCREEN_W;
+	coords.h = (MENU_SCREEN_H - (BMP_H + 3) - (FONT_H));
 	return coords;
 }
 
 // Game bitmap window coordinates
 static struct COORDS GAMECOVER_COORDS(){
 	COORDS coords;
-	coords.x = (SCREEN_W - (BMP_W + 2));
+	coords.x = (MENU_SCREEN_W - (BMP_W + 2));
 	coords.y = 0;
 	coords.w = (BMP_W + 2);
 	coords.h = (BMP_H + 2);
@@ -93,8 +93,8 @@ static struct COORDS READER_COORDS(){
 	COORDS coords;
 	coords.x = 20;
 	coords.y = 20;
-	coords.w = (SCREEN_W - 40);
-	coords.h = (SCREEN_H - 40);
+	coords.w = (MENU_SCREEN_W - 40);
+	coords.h = (MENU_SCREEN_H - 40);
 	return coords;
 }
 
@@ -103,8 +103,8 @@ static struct COORDS CONFIG_COORDS(){
 	COORDS coords;
 	coords.x = 80;
 	coords.y = 20;
-	coords.w = (SCREEN_W - 160);
-	coords.h = (SCREEN_H - 40);
+	coords.w = (MENU_SCREEN_W - 160);
+	coords.h = (MENU_SCREEN_H - 40);
 	return coords;
 }
 

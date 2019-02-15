@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
 	gfxInit(log);
 	
 	// Set screen.bmp mode for the screen
-	r = gfxSetMode(log, &screen, SCREEN_W, SCREEN_H, SCREEN_BPP);
+	r = gfxSetMode(log, &screen, MENU_SCREEN_W, MENU_SCREEN_H, MENU_SCREEN_BPP);
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (main)\t: Unable to initialise video driver!\n");
 		log_error(log, "[%s:%d]\t: (main)\t: Application closing\n", __FILE__, __LINE__);

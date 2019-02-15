@@ -7,11 +7,20 @@ APP_LIB = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/lib -lalleg
 APP_INCLUDE = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/sys-include 
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -mtune=i386 -mfpmath=387 -O3 $(APP_INCLUDE) -DUSE_ALLEGRO -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
+override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -mtune=i386 -mfpmath=387 \
+	-O3 $(APP_INCLUDE) -DUSE_ALLEGRO -DPOSIX \
+	-DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
 LINK_CFLAGS = -Wall
 APP_LDFLAGS = $(APP_LIB)
 
+ifeq ($(LOGGING), 1)
+override CFLAGS += -DUSE_LOGGING -DLOGGING
+override LINK_CFLAGS += -DUSE_LOGGING -DLOGGING
+endif
+
 # What our application is named
-EXE = menu.exe
+EXE = menu_dos.exe
+
+all: $(EXE)
 
 include Makefile.common

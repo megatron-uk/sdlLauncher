@@ -224,7 +224,7 @@ int menuGamecoverLoad(agnostic_bitmap *display, struct WINDOW_STATE *window_stat
 	src.window.h = BMP_H;	// Crop to our sizes defined in menu.h
 
 	// Destination
-	dest.window.x = coords.x + 1; //(SCREEN_W - BMP_W); 	// Load the bitmap into the bordered window          
+	dest.window.x = coords.x + 1; //(MENU_SCREEN_W - BMP_W); 	// Load the bitmap into the bordered window          
 	dest.window.y = coords.y + 1;	// Load the bitmap into the bordered window 
 	dest.window.w = coords.w - 2;  // Crop to our sizes defined in menu.h
 	dest.window.h = coords.h - 2;	// Crop to our sizes defined in menu.h

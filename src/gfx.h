@@ -4,10 +4,6 @@
 #include <SDL/SDL.h>
 #endif
 
-#ifdef USE_ALLEGRO
-#include <allegro.h>
-#endif
-
 #ifdef USE_GEM
 #include <mint/osbind.h>
 #include <gem.h>
@@ -77,7 +73,7 @@ typedef struct agnostic_colours {
 // Structure to hold a bitmap object
 typedef struct agnostic_bitmap {
 #ifdef USE_ALLEGRO
-	BITMAP *bmp;		// Allegro bitmap structure - only accessed by gfx_allego.c
+	BITMAP *bmp;		// Allegro bitmap structure - only accessed by gfx_allegro.c
 #endif
 #ifdef USE_GEM
 	gem_bitmap *bmp;	// GEM bitmap structure - only accessed by gfx_vdi.c

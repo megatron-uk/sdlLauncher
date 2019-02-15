@@ -7,12 +7,12 @@
 // Our application headers 
 #include "menu.h"
 #include "logging.h"
+
+#ifdef USE_GEM
+#include "ataric2p_s.h"
 #include "gfx.h"
 #include "image.h"
 #include "qdbmp.h"
-#include "ataric2p_s.h"
-
-#ifdef USE_GEM
 
 // Print the contents of a MFDB block
 void imagePrintBitmap(FILE *log, struct agnostic_bitmap *bmp){

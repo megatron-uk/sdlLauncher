@@ -4,10 +4,6 @@
 #include <SDL/SDL.h>
 #endif
 
-#ifdef USE_ALLEGRO
-#include <allegro.h>
-#endif
-
 #ifdef USE_GEM
 #include <mint/osbind.h>
 #include <gem.h>
@@ -68,6 +64,17 @@ typedef unsigned short input_event_type;
 #define KEY_ESCAPE	0x011b
 #define KEY_RETURN	0x1C0D
 typedef short keypress;
+typedef int input_event_type;
+#endif
+
+#ifdef USE_ALLEGRO
+#define EVENT_QUIT 	"quit"
+#define EVENT_KEYDOWN "keypressed"
+#define KEY_q 		KEY_Q
+#define KEY_c 		KEY_C
+#define KEY_RETURN	KEY_ENTER
+#define KEY_ESCAPE	KEY_ESC
+typedef int keypress;
 typedef int input_event_type;
 #endif
 

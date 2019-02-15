@@ -20,6 +20,7 @@
 
 // MS-DOS library
 #ifdef USE_ALLEGRO
+#include <allegro.h>
 #include "input_allegro.h"
 #endif
 

@@ -20,6 +20,7 @@
 
 // MS-DOS graphics library
 #ifdef USE_ALLEGRO
+#include <allegro.h>
 #include "gfx_allegro.h"
 #endif
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <stdio.h>
-#include <SDL/SDL.h>
 
 // Define the lookup table for the characters in a 6x8 bitmap font
 #define FONT_BITMAP "ASSETS/white.bmp"		 // Standard font bitmap
