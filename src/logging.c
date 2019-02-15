@@ -35,6 +35,8 @@ cleanup:
 // Debug logs are flushed to disk
 int log_debug(FILE *fp, const char *format, ...) {
 	int r = 0;
+	
+	// Enable synchronous logging of debug messages
 #ifdef LOGGING
 	va_list ap;
 	va_start(ap, format);
@@ -75,6 +77,7 @@ int log_error(FILE *fp, const char *format, ...) {
 	va_start(ap, format);
 	r = __log(fp, "ERROR", format, ap);
 	va_end(ap);
+	// Errors should *always* be flushed to disk
 	fflush(fp);
 
 	return r;

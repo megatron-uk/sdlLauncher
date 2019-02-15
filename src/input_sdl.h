@@ -1,6 +1,10 @@
 #include <stdbool.h>
 #include <SDL/SDL.h>
 
+void inputSleep(){
+	SDL_Delay(200);
+}
+
 // Poll the SDL input event queue
 int inputPollEvent(struct agnostic_event *event){
 	int r;

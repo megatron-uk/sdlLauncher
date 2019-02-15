@@ -6,7 +6,7 @@ char text_buffer[256];
 char text_buffer_alt[256];
 
 // Draw a bordered box at pos x,y, of height h and width w, and of border px thickness
-int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h, int border_px, int shadow_px){
+int menuBorders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h, int border_px, int shadow_px){
 	
 	agnostic_colours border;	// Colour spec
 	agnostic_colours fill;		// Colour spec
@@ -20,7 +20,7 @@ int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h
 	fill.b= 0;
 	r = gfxDrawBox(log, display, x, y, w, h, &border, &fill, border_px, shadow_px);
 	if ( r != 0){
-		log_error(log, "[menu_borders]\t: Drawing Error\n");
+		log_error(log, "[menuBorders]\t: Drawing Error\n");
 		gfxQuit(log);
 		fclose(log);
 		exit(-1);
@@ -30,64 +30,64 @@ int menu_borders(agnostic_bitmap *display, FILE *log, int x, int y, int w, int h
 }
 
 // Draw the blank game cover/bitmap window
-int menu_gamecover_init(agnostic_bitmap *display, FILE *log){
+int menuGamecoverInit(agnostic_bitmap *display, FILE *log){
 	
 	// redraw our box borders and blank any previous bitmap
-	log_debug(log, "[%s:%d]\t: (menu_gamecover_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuGamecoverInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = GAMECOVER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);	
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);	
 	return 0;
 }
 
 // Draw the blank browser window
-int menu_browser_init(agnostic_bitmap *display, FILE *log){
+int menuBrowserInit(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,137 that is 320x63 pixels for our game list window
-	log_debug(log, "[%s:%d]\t: (menu_browser_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuBrowserInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = BROWSER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
 }
 
 // Draw the alphabet menu window
-int menu_category_init(agnostic_bitmap *display, FILE *log){
+int menuCategoryInit(agnostic_bitmap *display, FILE *log){
 	
-	log_debug(log, "[%s:%d]\t: (menu_category_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuCategoryInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = ALPHABET_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
 }
 
 // Draw the blank info window
-int menu_info_init(agnostic_bitmap *display, FILE *log){
+int menuInfoInit(agnostic_bitmap *display, FILE *log){
 
 	// Draw an outlined box at 0,0 that is 138x137 pixels for our info window
-	log_debug(log, "[%s:%d]\t: (menu_info_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuInfoInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = INFO_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 0);
 	return 0;
 }
 
 // Draw the blank on-screen text reader box
-int menu_textreader_init(agnostic_bitmap *display, FILE *log){
+int menuTextreaderInit(agnostic_bitmap *display, FILE *log){
 	
-	log_debug(log, "[%s:%d]\t: (menu_textreader_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuTextreaderInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = READER_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
 }
 
 // Draw the config menu window
-int menu_config_init(agnostic_bitmap *display, FILE *log){
+int menuConfigInit(agnostic_bitmap *display, FILE *log){
 	
-	log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Redrawing window\n", __FILE__, __LINE__);
+	//log_debug(log, "[%s:%d]\t: (menuConfigInit)\t: Redrawing window\n", __FILE__, __LINE__);
 	COORDS coords = CONFIG_COORDS();
-	menu_borders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
+	menuBorders(display, log, coords.x, coords.y, coords.w, coords.h, 1, 4);
 	return 0;
 }
 
 // Print a message from the menu programme in the bottom status box
-int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *text){
+int menuInfoboxPrint(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *text){
 	
 	// Iterate over the string, printing each line seperated by \n on a
 	COORDS coords = INFO_COORDS();
@@ -101,10 +101,10 @@ int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_sta
 
 	// This is a generic error/warning/info function to use
 	// the info window, so blank anything that was there previously.
-	menu_info_init(display, log);
+	menuInfoInit(display, log);
 
 	// Blank the local text buffer
-	log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Clearing text buffer\n", __FILE__, __LINE__);
+	log_debug(log, "[%s:%d]\t: (menuConfigInit)\t: Clearing text buffer\n", __FILE__, __LINE__);
 	memset(text_line, '\0', sizeof(text_line));
 	for (src_pos = 0; src_pos < strlen(text); src_pos++){		
 		// We read a normal character
@@ -121,8 +121,8 @@ int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_sta
 			y = coords.y + 2 + (line_number * 8);
 			
 			// Carriage return, print line buffer
-			log_debug(log, "[%s:%d]\t: (menu_config_init)\t: Writing line %d\n", __FILE__, __LINE__, line_number);
-			log_debug(log, "[%s:%d]\t: (menu_config_init)\t: text [%s]\n", __FILE__, __LINE__, text);
+			log_debug(log, "[%s:%d]\t: (menuConfigInit)\t: Writing line %d\n", __FILE__, __LINE__, line_number);
+			log_debug(log, "[%s:%d]\t: (menuConfigInit)\t: text [%s]\n", __FILE__, __LINE__, text);
 			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_line, x, y, 0);
 			
 			// Reset line buffer for next pass
@@ -135,7 +135,7 @@ int menu_infobox_print(agnostic_bitmap *display, struct WINDOW_STATE *window_sta
 }
 
 // Adjust start and end position in game list based on category selected
-int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuRefilterBrowser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	int i;
 	int new_start_pos = -1;
@@ -143,10 +143,10 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 	char cat_letter;
 	
 	log_debug(log, "============================\n");
-	log_debug(log, "menu_refilter_browser: Category ID [%d]\n", window_state->category_window.cat_selected);
+	log_debug(log, "menuRefilterBrowser: Category ID [%d]\n", window_state->category_window.cat_selected);
 	if (window_state->category_window.cat_selected == CATEGORY_ALL){
 		// Show all items
-		log_debug(log, "menu_refilter_browser: Show all entries\n");	
+		log_debug(log, "menuRefilterBrowser: Show all entries\n");	
 		window_state->browser_window.select_pos = 0;
 		window_state->browser_window.start_pos = 0;
 		window_state->browser_window.start_pos_filtered = 0;		
@@ -155,21 +155,21 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 		
 	} else if (window_state->category_window.cat_selected == CATEGORY_FAV){
 		// Show only favourite items
-		log_debug(log, "menu_refilter_browser: Show favourites\n");	
+		log_debug(log, "menuRefilterBrowser: Show favourites\n");	
 		
 	} else if (window_state->category_window.cat_selected == CATEGORY_NUM){
 		// Show games starting with 0-9
-		log_debug(log, "menu_refilter_browser: Show games with numeric titles\n");	
+		log_debug(log, "menuRefilterBrowser: Show games with numeric titles\n");	
 		
 	} else if (window_state->category_window.cat_selected >= CATEGORY_ALPHA){
 		// Show games starting with A-Z, that letter only
 		cat_letter = ALPHABET_CATS[window_state->category_window.cat_selected];
-		log_debug(log, "menu_refilter_browser: Show games with titles [%c]\n", cat_letter);
+		log_debug(log, "menuRefilterBrowser: Show games with titles [%c]\n", cat_letter);
 		// Find the start position that matches our new selected category
 		for (i = 0; i<game_data->items; i++){
 			if (game_data->game_data_items[i].name[0] == cat_letter){
 				new_start_pos = i;
-				log_debug(log, "menu_refilter_browser: New start position [%d]\n", new_start_pos);	
+				log_debug(log, "menuRefilterBrowser: New start position [%d]\n", new_start_pos);	
 				break;
 			}
 		}
@@ -177,7 +177,7 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 		for (i = game_data->items; i >= 0; i--){
 			if (game_data->game_data_items[i].name[0] == cat_letter){
 				new_end_pos = i;
-				log_debug(log, "menu_refilter_browser: New end position [%d]\n", new_end_pos);	
+				log_debug(log, "menuRefilterBrowser: New end position [%d]\n", new_end_pos);	
 				break;
 			}
 		}
@@ -193,27 +193,28 @@ int menu_refilter_browser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_
 
 
 // Load and display the game cover for the currently selected game	
-int menu_gamecover_load(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *fname){
+int menuGamecoverLoad(agnostic_bitmap *display, struct WINDOW_STATE *window_state, FILE *log, char *fname){
 	
 	COORDS coords = GAMECOVER_COORDS();
 	agnostic_bitmap bmp;			// Raw bitmap as loaded from disk
 	agnostic_window src, dest;		// Cropping surfaces for displaying bitmaps
 	int r = 0;						// return codes
 
-	log_debug(log, "============================\n");
-	log_debug(log, "menu_gamecover_load: Loading [%s]\n", fname);
-	// Load splash bitmap
+	log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: ============================\n", __FILE__, __LINE__);
+	log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Loading [%s]\n", __FILE__, __LINE__, fname);
+	
+	// Load bitmap cover for this game
 	r = gfxLoadBMP(log, fname, &bmp); 
 	if (r != 0){
-		log_error(log, "menu_gamecover_load Load Error\n");
+		log_error(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Load Error\n", __FILE__, __LINE__);
 		gfxFreeBMP(log, &bmp);
 		strcpy(text_buffer, ERROR_BITMAP_OPEN);
 		strcat(text_buffer, "\nFilename: ");
 		strcat(text_buffer, fname);
-		menu_infobox_print(display, window_state, log, text_buffer);
+		menuInfoboxPrint(display, window_state, log, text_buffer);
 		return r;
 	} else {
-		log_debug(log, "menu_gamecover_load: Loaded %dx%dx%dbpp\n", bmp.bmp->w, bmp.bmp->h, bmp.bmp->format->BitsPerPixel);
+		log_debug(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Game cover loaded\n", __FILE__, __LINE__);
 	}
 	
 	// Source
@@ -231,7 +232,8 @@ int menu_gamecover_load(agnostic_bitmap *display, struct WINDOW_STATE *window_st
 	// Write bitmap to display
 	r = gfxBlitBMP(log, &bmp, &src, display, &dest);
 	if ( r != 0){
-		log_error(log, "menu_gamecover_load Blit Error\n");
+		log_error(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Blit Error\n", __FILE__, __LINE__);
+		log_error(log, "[%s:%d]\t: (menuGamecoverLoad)\t: Application closing\n", __FILE__, __LINE__);
 		gfxQuit(log);
 		fclose(log);
 		sleep(2);
@@ -243,7 +245,7 @@ int menu_gamecover_load(agnostic_bitmap *display, struct WINDOW_STATE *window_st
 
 // Draw the category chooser (e.g. all, favourite, 0-9, a, b, c, d etc.)
 // and highlight the current chosen category
-int menu_category_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuCategoryPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = ALPHABET_COORDS();	// Coordinates of window
 	//int r = 0;							// return codes
@@ -259,13 +261,13 @@ int menu_category_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA
 	int cat_alpha_x_offset = cat_num_x_offset + (FONT_W * 3) + 6;
 	
 	log_debug(log, "============================\n");
-	log_debug(log, "menu_category_populate: Elements at %d, %d, %d, %d\n", cat_all_x_offset, cat_fav_x_offset, cat_num_x_offset, cat_alpha_x_offset);	
+	log_debug(log, "menuCategoryPopulate: Elements at %d, %d, %d, %d\n", cat_all_x_offset, cat_fav_x_offset, cat_num_x_offset, cat_alpha_x_offset);	
 	
 	// Blank and redraw window
-	menu_category_init(display, log);
+	menuCategoryInit(display, log);
 	
 	// Category text
-	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), (coords.y + 1), 1);
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Category", (coords.x + 1), coords.y + 2, 1);
 
 	// Game category ALL
 	if (window_state->category_window.cat_selected == -3){
@@ -309,14 +311,14 @@ int menu_category_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA
 
 // Draw the contents of the config/options window and process any input
 // commands that were sent to it
-int menu_config_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuConfigPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = CONFIG_COORDS();	// Coordinates of window
 	FILE *csv;							// File handler for csv import/export
 	int r;								// return codes
 	
 	// Blank and redraw window
-	menu_config_init(display, log);
+	menuConfigInit(display, log);
 		
 	// List config options
 	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "Config Menu", 			(coords.x + 45), (coords.y + 3), 1);
@@ -340,7 +342,7 @@ int menu_config_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *
 			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			gfxFlip(log, display);
 			sortgames(game_data);
-			menu_refilter_browser(log, game_data, window_state);
+			menuRefilterBrowser(log, game_data, window_state);
 			// Select game list item 0
 			window_state->browser_window.select_pos = 0;
 		} else {
@@ -397,16 +399,22 @@ int menu_config_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *
 			if (r > 0){
 				sprintf(text_buffer, " - %d records read", r);
 				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				
+				// Sort games list
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Sorting, please wait" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
+				sortgames(game_data);
+				
 				// Select game list item 0
 				window_state->browser_window.select_pos = 0;
-				menu_refilter_browser(log, game_data, window_state);
+				menuRefilterBrowser(log, game_data, window_state);
 			} else {
 				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Error reading records" , (coords.x + 2), (coords.y + 3 + (12 * FONT_H)), 0);
+				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Skipped sorting" , (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
 			}
 			// Close file
 			fclose(csv);
-			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (13 * FONT_H)), 0);
-			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " - Closed CSV file", (coords.x + 2), (coords.y + 3 + (14 * FONT_H)), 0);
+			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Completed", (coords.x + 2), (coords.y + 3 + (15 * FONT_H)), 0);
 			text2BMP(display, window_state->font_normal, window_state->font_reverse, log, " Press Esc to reload", (coords.x + 2), (coords.y + 3 + (18 * FONT_H)), 0);
 		
 		} else {
@@ -420,7 +428,7 @@ int menu_config_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *
 	return 0;
 }
 
-int menu_gamecover_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuGamecoverPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 
 	// Full path and filename of game bitmap
 	char fullpath[(GAME_PATH_LEN + GAME_FILE_LEN)];
@@ -429,21 +437,21 @@ int menu_gamecover_populate(agnostic_bitmap *display, FILE *log, struct GAME_DAT
 	int selected = window_state->browser_window.select_pos;
 	
 	// Blank and redraw window borders
-	menu_gamecover_init(display, log);
+	menuGamecoverInit(display, log);
 		
 	// Show cover bitmap
-	if (game_data->game_data_items[selected].has_bitmap){
+	if ((selected >= 0) && (game_data->game_data_items[selected].has_bitmap)){
 		strcpy(fullpath, game_data->game_data_items[selected].path);
 		strcat(fullpath, DIRSEP);
 		strcat(fullpath, game_data->game_data_items[selected].bitmap);
-		menu_gamecover_load(display, window_state, log, fullpath);	
+		menuGamecoverLoad(display, window_state, log, fullpath);	
 	}
 	
 	return 0;
 }
 
 // The main scrollable game browser window
-int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuBrowserPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = BROWSER_COORDS();
 	int i;
@@ -454,23 +462,25 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 	bool selected = 0;
 	
 	// Blank and redraw window borders
-	menu_browser_init(display, log);
+	menuBrowserInit(display, log);
 	
 	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "        Browser        ", (coords.x), (coords.y + 1), 1);
 	// Any games?
 	
+	/*
 	log_debug(log, "============================\n");
-	log_debug(log, "menu_browser_populate: select_pos %d\n", window_state->browser_window.select_pos);
-	log_debug(log, "menu_browser_populate: start_pos %d\n", window_state->browser_window.start_pos);
-	log_debug(log, "menu_browser_populate: end_pos %d\n", window_state->browser_window.end_pos);
-	log_debug(log, "menu_browser_populate: start_pos_filtered %d\n", window_state->browser_window.start_pos_filtered);
-	log_debug(log, "menu_browser_populate: end_pos_filtered %d\n", window_state->browser_window.end_pos_filtered);
+	log_debug(log, "menuBrowserPopulate: select_pos %d\n", window_state->browser_window.select_pos);
+	log_debug(log, "menuBrowserPopulate: start_pos %d\n", window_state->browser_window.start_pos);
+	log_debug(log, "menuBrowserPopulate: end_pos %d\n", window_state->browser_window.end_pos);
+	log_debug(log, "menuBrowserPopulate: start_pos_filtered %d\n", window_state->browser_window.start_pos_filtered);
+	log_debug(log, "menuBrowserPopulate: end_pos_filtered %d\n", window_state->browser_window.end_pos_filtered);
+	*/
 	
 	if (game_data->items > 0){
 
 		if (window_state->category_window.cat_selected == CATEGORY_ALL){
 			// We're in the category 'ALL'
-			log_debug(log, "menu_browser_populate: Category All\n");
+			//log_debug(log, "menuBrowserPopulate: Category All\n");
 			
 			total_items = game_data->items;
 			// Is our game list longer than max number of rows?
@@ -482,10 +492,10 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 					select_i = window_state->browser_window.start_pos;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
 						if (select_i == window_state->browser_window.select_pos){
-							log_debug(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							log_debug(log, "menuBrowserPopulate: row: %d select_i: %d <- selected\n", i, select_i);
 							selected = 1;
 						} else {
-							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							log_debug(log, "menuBrowserPopulate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
 						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((i + i_offset) * FONT_H)), selected);
@@ -503,7 +513,7 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 						window_state->browser_window.end_pos--;
 					}
 				} else {
-					log_debug(log, "menu_browser_populate: All selected lines can be shown - we're starting at 0\n");
+					//log_debug(log, "menuBrowserPopulate: All selected lines can be shown - we're starting at 0\n");
 					window_state->browser_window.start_pos = 0;
 					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -529,21 +539,21 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 			}
 		} else {
 			// We're in a filtered category and not 'ALL'
-			log_debug(log, "menu_browser_populate: Filtered category\n");
+			log_debug(log, "menuBrowserPopulate: Filtered category\n");
 			total_items = window_state->browser_window.end_pos_filtered - window_state->browser_window.start_pos_filtered;
 			
 			if (total_items >= (window_state->browser_window.max_lines - 1)){
 				// We have more filtered items than can fit in the window
 				
 				if ((window_state->browser_window.end_pos_filtered  - window_state->browser_window.start_pos) >= (window_state->browser_window.max_lines - 1)){
-					log_debug(log, "menu_browser_populate: Filtered category only %d lines can be shown, starting from item %d\n", window_state->browser_window.max_lines, window_state->browser_window.start_pos);
+					log_debug(log, "menuBrowserPopulate: Filtered category only %d lines can be shown, starting from item %d\n", window_state->browser_window.max_lines, window_state->browser_window.start_pos);
 					select_i = window_state->browser_window.start_pos;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
 						if (select_i == window_state->browser_window.select_pos){
-							log_debug(log, "menu_browser_populate: row: %d select_i: %d <- selected\n", i, select_i);
+							log_debug(log, "menuBrowserPopulate: row: %d select_i: %d <- selected\n", i, select_i);
 							selected = 1;
 						} else {
-							log_debug(log, "menu_browser_populate: row: %d select_i: %d\n", i, select_i);
+							log_debug(log, "menuBrowserPopulate: row: %d select_i: %d\n", i, select_i);
 							selected = 0;	
 						}
 						text2BMP(display, window_state->font_normal, window_state->font_reverse, log, game_data->game_data_items[select_i].name, (coords.x + 2), (coords.y + 3 + ((row + i_offset) * FONT_H)), selected);
@@ -568,7 +578,7 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 						// wha?	
 					}
 				} else {
-					log_debug(log, "menu_browser_populate: All selected lines can be shown - we're starting at 0\n");
+					log_debug(log, "menuBrowserPopulate: All selected lines can be shown - we're starting at 0\n");
 					window_state->browser_window.start_pos = 0;
 					window_state->browser_window.end_pos = window_state->browser_window.max_lines;
 					for (i = 0; i < window_state->browser_window.max_lines; i++){
@@ -584,7 +594,7 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 				
 			} else {
 				// We can show all filtered items in the window
-				log_debug(log, "menu_browser_populate: Filtered category all lines can be shown\n");
+				log_debug(log, "menuBrowserPopulate: Filtered category all lines can be shown\n");
 				if (window_state->browser_window.start_pos_filtered == -1){
 					text2BMP(display, window_state->font_normal, window_state->font_reverse, log, "No entries", (coords.x + 2), (coords.y + 3 + (i_offset * FONT_H)), 0);	
 				} else {
@@ -608,7 +618,7 @@ int menu_browser_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA 
 }
 
 // Open/close the textreader file handler
-int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GAME_DATA *game_data, bool open_file){
+int menuTextreaderFile(FILE *log, struct WINDOW_STATE *window_state, struct GAME_DATA *game_data, bool open_file){
 	
 	int pos = window_state->browser_window.select_pos;
 	
@@ -626,15 +636,15 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 		if (window_state->info_window.readme_selected == 3){
 			strcat(window_state->text_window.buffer, game_data->game_data_items[pos].readme_3);
 		}
-		log_debug(log, "menu_textreader_file: Open file [%s]\n", window_state->text_window.buffer);
+		log_debug(log, "menuTextreaderFile: Open file [%s]\n", window_state->text_window.buffer);
 		window_state->text_window.readme = fopen(window_state->text_window.buffer, "r");
 		memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 		if (window_state->text_window.readme != NULL){
-			log_debug(log, "menu_textreader_file: Opened\n");
+			log_debug(log, "menuTextreaderFile: Opened\n");
 			window_state->text_window.f_pos = 0;
 			return 0;
 		} else {
-			log_debug(log, "menu_textreader_file: Error, file not open\n");
+			log_debug(log, "menuTextreaderFile: Error, file not open\n");
 			return -1;
 		}
 	} else {
@@ -643,17 +653,17 @@ int menu_textreader_file(FILE *log, struct WINDOW_STATE *window_state, struct GA
 			fclose(window_state->text_window.readme);
 			memset(window_state->text_window.buffer, '\0', sizeof(window_state->text_window.buffer));
 			window_state->text_window.f_pos = 0;
-			log_debug(log, "menu_textreader_file: Closed file\n");
+			log_debug(log, "menuTextreaderFile: Closed file\n");
 			return 0;
 		} else {
-			log_debug(log, "menu_textreader_file: Attempt to close a file not already open!\n");
+			log_debug(log, "menuTextreaderFile: Attempt to close a file not already open!\n");
 			return 0;
 		}
 	}
 }
 
 // Update the text reader window
-int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuTextreaderPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	struct COORDS coords = READER_COORDS();								// Geometry of reader window
 	int total_max_chars;		// Total number of printable chars (chars per line * lines)
@@ -671,27 +681,27 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 	window_state->text_window.max_chars = (coords.w / FONT_W) - 2;
 	total_max_chars = window_state->text_window.max_lines * window_state->text_window.max_chars;
 	
-	log_debug(log, "menu_textreader_populate: Reading file\n");
+	log_debug(log, "menuTextreaderPopulate: Reading file\n");
 	fseek(window_state->text_window.readme, 0L, SEEK_END);
 	f_size = ftell(window_state->text_window.readme);
 	fseek(window_state->text_window.readme, 0L, SEEK_SET);
 	fseek(window_state->text_window.readme, window_state->text_window.f_pos, SEEK_SET);
-	log_debug(log, "menu_textreader_populate: File is %d bytes\n", f_size);
-	log_debug(log, "menu_textreader_populate: Reading from byte %d\n", window_state->text_window.f_pos);
+	log_debug(log, "menuTextreaderPopulate: File is %d bytes\n", f_size);
+	log_debug(log, "menuTextreaderPopulate: Reading from byte %d\n", window_state->text_window.f_pos);
 	
 	if (f_size < sizeof(window_state->text_window.buffer)){
 		// File is smaller than the available buffer, so read it all
-		log_debug(log, "menu_textreader_populate: Reading entire file\n");
+		log_debug(log, "menuTextreaderPopulate: Reading entire file\n");
 		i = fread(window_state->text_window.buffer, 1, f_size, window_state->text_window.readme);
-		log_debug(log, "menu_textreader_populate: Read %d bytes\n", i);
+		log_debug(log, "menuTextreaderPopulate: Read %d bytes\n", i);
 	} else {
 		// File is larger than the available buffer, so read a maximum of total_max_chars
-		log_debug(log, "menu_textreader_populate: Reading partial file\n");
+		log_debug(log, "menuTextreaderPopulate: Reading partial file\n");
 		for (i = 0; i < total_max_chars; i++){
 			c = fgetc(window_state->text_window.readme);
 			window_state->text_window.f_pos++;
 			if (c == EOF){
-				log_debug(log, "menu_textreader_populate: %d bytes read before EOF\n", i);
+				log_debug(log, "menuTextreaderPopulate: %d bytes read before EOF\n", i);
 				break;
 			} else {
 				window_state->text_window.buffer[i] = c;
@@ -710,7 +720,7 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 	memset(text_buffer, '\0', 256);
 	
 	while (printed_lines <= window_state->text_window.max_lines){
-		log_debug(log, "menu_textreader_populate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
+		//log_debug(log, "menuTextreaderPopulate: Parsing line %d, starting at pos %d\n", printed_lines, last_i);
 		for (i = 0; i <= window_state->text_window.max_chars; i++){
 			last_i ++;
 			// Read next char
@@ -734,7 +744,7 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 			
 			// Total number of visible lines reached - break inner loop
 			if (printed_lines == window_state->text_window.max_lines){
-				log_debug(log, "menu_textreader_populate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
+				//log_debug(log, "menuTextreaderPopulate: [Inner] Reached limit of %d lines\n", window_state->text_window.max_lines);
 				// Save position and exit
 				break;
 			}
@@ -742,13 +752,13 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines >= window_state->text_window.max_lines){
-			log_debug(log, "menu_textreader_populate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			//log_debug(log, "menuTextreaderPopulate: [Before extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
 			// Save position and exit
 			break;
 		} else if (printed_lines < window_state->text_window.max_lines){
-			log_debug(log, "menu_textreader_populate: Reached line %d chars limit\n", printed_lines);
+			//log_debug(log, "menuTextreaderPopulate: Reached line %d chars limit\n", printed_lines);
 			if (strlen(text_buffer) > 0){
-				log_debug(log, "menu_textreader_populate: %zu characters left to print on line %d\n", strlen(text_buffer), printed_lines);
+				//log_debug(log, "menuTextreaderPopulate: %zu characters left to print on line %d\n", strlen(text_buffer), printed_lines);
 				text2BMP(display, window_state->font_normal, window_state->font_reverse, log, text_buffer, coords.x + 2, (coords.y + 2 + (printed_lines * FONT_H)), 0);
 				memset(text_buffer, '\0', 256);
 				printed_lines++;
@@ -757,12 +767,12 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 		
 		// Total number of visible lines reached - break outer loop
 		if (printed_lines == window_state->text_window.max_lines){
-			log_debug(log, "menu_textreader_populate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
+			//log_debug(log, "menuTextreaderPopulate: [After extra chars] Reached limit of %d lines\n", window_state->text_window.max_lines);
 			// Save position and exit
 			break;
 		}
 	}
-	log_debug(log, "menu_textreader_populate: Final position @ byte %u\n", last_i);
+	//log_debug(log, "menuTextreaderPopulate: Final position @ byte %u\n", last_i);
 	// Save state of file pointer so we know where to load next time around
 	window_state->text_window.f_pos = last_i;
 	return 0;
@@ -770,7 +780,7 @@ int menu_textreader_populate(agnostic_bitmap *display, FILE *log, struct GAME_DA
 
 // The bottom info window - update it to reflect the current selected
 // game, plus any additional details for the game.
-int menu_info_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
+int menuInfoPopulate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state){
 	
 	COORDS coords = INFO_COORDS();
 	int game_id = window_state->browser_window.select_pos;		// short hand
@@ -783,7 +793,7 @@ int menu_info_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *ga
 	int gamedata_y_pos2 = coords.y + 2 + (4 * FONT_H);
 	
 	// Blank and redraw window borders
-	menu_info_init(display, log);
+	menuInfoInit(display, log);
 	
 	if (game_id >= 0){
 	
@@ -882,57 +892,57 @@ int menu_info_populate(agnostic_bitmap *display, FILE *log, struct GAME_DATA *ga
 		// Update last selected game to this one
 		window_state->browser_window.last_pos = game_id;
 	} else {
-		menu_infobox_print(display, window_state, log, INFO_GAME_LIST_EMPTY);	
+		menuInfoboxPrint(display, window_state, log, INFO_GAME_LIST_EMPTY);	
 	}
 	
 	return 0;
 }
 
 // Toggle between selected windows
-int menu_toggle_window(FILE *log, struct WINDOW_STATE *window_state){
+int menuToggleWindow(FILE *log, struct WINDOW_STATE *window_state){
 	
 	log_debug(log, "============================\n");
 	if (window_state->selected_window == W_BROWSER){
 		window_state->selected_window = W_INFO;
-		log_debug(log, "menu_toggle_window: Info panel now selected\n");
+		log_debug(log, "menuToggleWindow: Info panel now selected\n");
 		return 0;
 	} else if (window_state->selected_window == W_INFO){
 		window_state->selected_window = W_BROWSER;
-		log_debug(log, "menu_toggle_window: Browser now selected\n");
+		log_debug(log, "menuToggleWindow: Browser now selected\n");
 		return 0;
 	} else {
-		log_debug(log, "menu_toggle_window: Error unknown window mode\n");
+		log_debug(log, "menuToggleWindow: Error unknown window mode\n");
 		return -1;
 	}
 }
 
 // Send events to the config window
-int menu_toggle_config_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
+int menuToggleConfigWindowMode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 	
 	log_debug(log, "============================\n");
 	if (inputEventKeypressCheck(event, KEY_F1)){
 		// Export gamedata to CSV
-		log_debug(log, "menu_toggle_config_window_mode: Export to CSV activated\n");
+		log_debug(log, "menuToggleConfigWindowMode: Export to CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_EXPORT;
 		return 0;	
 	} else if (inputEventKeypressCheck(event, KEY_F2)){
 		// Import gamedata from CSV
-		log_debug(log, "menu_toggle_config_window_mode: Import from  CSV activated\n");
+		log_debug(log, "menuToggleConfigWindowMode: Import from  CSV activated\n");
 		window_state->config_window.config_option_selected = OPTION_CSV_IMPORT;
 		return 0;	
 	} else if (inputEventKeypressCheck(event, KEY_F3)){
-		log_debug(log, "menu_toggle_config_window_mode: Rescan all game folders\n");
+		log_debug(log, "menuToggleConfigWindowMode: Rescan all game folders\n");
 		window_state->config_window.config_option_selected = OPTION_RESCAN;
 		return 0;
 	} else {
-		log_debug(log, "menu_toggle_config_window_mode: Default to no option selected\n");
+		log_debug(log, "menuToggleConfigWindowMode: Default to no option selected\n");
 		window_state->config_window.config_option_selected = OPTION_NONE;
 		return 0;
 	}
 }
 
 // Toggle rows and selected item in info window
-int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
+int menuToggleInfoWindowMode(agnostic_bitmap *display, FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 	
 	// Scroll down to readme line
 	if (inputEventKeypressCheck(event, KEY_DOWN)){
@@ -1012,13 +1022,13 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 			// View a readme file
 			if (window_state->info_window.readme_selected > 0){
 				window_state->selected_window = W_TEXT;
-				log_debug(log, "menu_toggle_info_window_mode: Open document %d\n", window_state->info_window.readme_selected);
+				log_debug(log, "menuToggleInfoWindowMode: Open document %d\n", window_state->info_window.readme_selected);
 				// Open reader window
-				menu_textreader_init(display, log);
+				menuTextreaderInit(display, log);
 				// Open file handler
-				menu_textreader_file(log, window_state, game_data, 1);
+				menuTextreaderFile(log, window_state, game_data, 1);
 				// Draw initial contents
-				menu_textreader_populate(display, log, game_data, window_state);
+				menuTextreaderPopulate(display, log, game_data, window_state);
 			}
 		}
 	} 
@@ -1028,7 +1038,7 @@ int menu_toggle_info_window_mode(agnostic_bitmap *display, FILE *log, struct GAM
 }
 
 // Scroll through category window
-int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
+int menuToggleCategory(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 
 	int changed;
 	changed = 0;
@@ -1048,13 +1058,13 @@ int menu_toggle_category(FILE *log, struct GAME_DATA *game_data, struct WINDOW_S
 	}
 	
 	if (changed == 1){
-		menu_refilter_browser(log, game_data, window_state);
+		menuRefilterBrowser(log, game_data, window_state);
 	}
 	return 0;
 }
 
 // Move selection down rows in browser window
-int menu_toggle_browser_window(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
+int menuToggleBrowserWindow(FILE *log, struct GAME_DATA *game_data, struct WINDOW_STATE *window_state, struct agnostic_event *event){
 
 	if (inputEventKeypressCheck(event, KEY_DOWN)){
 		if ((window_state->browser_window.select_pos < (game_data->items - 1)) && (window_state->browser_window.select_pos < window_state->browser_window.end_pos_filtered)){
@@ -1076,7 +1086,7 @@ int menu_toggle_browser_window(FILE *log, struct GAME_DATA *game_data, struct WI
 }
 
 // Save last selected game
-int menu_save_last_game(struct WINDOW_STATE *window_state){
+int menuSaveLastGame(struct WINDOW_STATE *window_state){
 
 	// Save last selected game
 	window_state->browser_window.last_pos = window_state->browser_window.select_pos;
@@ -1085,22 +1095,22 @@ int menu_save_last_game(struct WINDOW_STATE *window_state){
 }
 
 // Initialise game data structures
-int menu_init_gamedata(FILE *log, struct GAME_DATA *game_data){
+int menuInitGamedata(FILE *log, struct GAME_DATA *game_data){
 	
 	// Set initial list position and number of items to zero
-	log_debug(log, "============================\n");
-	log_debug(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
-	log_debug(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
+	//log_debug(log, "============================\n");
+	//log_debug(log, "menInitGamedata: Current game pos: [%d]\n", game_data->pos);
+	//log_debug(log, "menInitGamedata: Current game items: [%d]\n", game_data->items);
 	game_data->pos = 0;
 	game_data->items = 0;
-	log_debug(log, "menu_init_gamedata: Current game pos: [%d]\n", game_data->pos);
-	log_debug(log, "menu_init_gamedata: Current game items: [%d]\n", game_data->items);
+	//log_debug(log, "menInitGamedata: Current game pos: [%d]\n", game_data->pos);
+	//log_debug(log, "menInitGamedata: Current game items: [%d]\n", game_data->items);
 	
 	return 0;
 }
 
 // Initialise window data structures
-int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
+int menuInitWindowstate(FILE *log, struct WINDOW_STATE *window_state){
 	
 	// Default to having the browser selected
 	window_state->selected_window = W_BROWSER;
@@ -1133,4 +1143,33 @@ int menu_init_windowstate(FILE *log, struct WINDOW_STATE *window_state){
 	loadfont(log, (agnostic_bitmap *)&window_state->font_normal, 0);
 	loadfont(log, (agnostic_bitmap *)&window_state->font_reverse, 1);
 	return 0;
+}
+
+// Print help text in bottom row of screen based on currently selected
+// window.
+void menuHelpTextPopulate(FILE *log, struct agnostic_bitmap *display, struct WINDOW_STATE *window_state){
+	
+	COORDS coords = INFO_COORDS();
+	int x_pos = coords.x + 2;
+	int y_pos = coords.y + 2 + (5 * FONT_H);
+	char *msg;
+	switch((int)window_state->selected_window){
+		case W_INFO:
+			msg = "Info: Cursor:select. Enter:open. Tab:change mode";
+			break;
+		case W_TEXT:
+			msg = "Textreader: U/D:scroll. Esc:exit";
+			break;
+		case W_BROWSER:
+			msg = "Browser: U/D:scroll. L/R:category. Tab:change mode";
+			break;
+		case W_CONFIG:
+			msg = "Config: Press indicated keys. Esc:exit";
+			break;
+		default:
+			msg = "";
+			break;
+			
+	}
+	text2BMP(display, window_state->font_normal, window_state->font_reverse, log, msg, x_pos, y_pos, 0);
 }

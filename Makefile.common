@@ -1,4 +1,10 @@
-OBJFILES = src/logging.o src/input.o src/image.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+
+ifeq ($(USE_GEM), 1)
+OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/ataric2p.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+else
+OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+endif
+
 
 $(EXE):  $(OBJFILES)
 	@echo ""
@@ -32,6 +38,14 @@ logging.o: src/logging.c
 	
 image.o: src/image.c
 	$(CC) -g -c -o src/$@
+
+qdbmp.o: src/qdbmp.c
+	$(CC) -g -c -o src/$@
+	
+ifeq ($(USE_GEM), 1)
+ataric2p.o: src/ataric2p.S
+	$(CC) -g -c -o src/$@
+endif
 	
 clean:
 	rm -f src/*.o src/*.a $(EXE) bin/$(EXE) bin/core core
