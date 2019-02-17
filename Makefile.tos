@@ -31,23 +31,23 @@ EXE = menu_gem.tos
 # Bigger TOS files need a larger stack
 STACKMOD = $(STACK) -S 78K
 
-all: $(EXE) #vdi.tos
+all: $(EXE) ximgview.tos
 
 include Makefile.common 
 
 # Extras that only TOS uses
-vdi.tos: vdi.o
+ximgview.tos: ximgview.o
 	@echo
 	@echo Linking test application....
-	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/gfx.o src/logging.o src/vdi.o $(APP_LDFLAGS)
+	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/ximgview.o $(APP_LDFLAGS)
 	@echo
 	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/vdi.tos
 
-vdi.o: src/vdi.c
+ximgview.o: src/ximgview.c
 	@echo
 	@echo ===================================
 	@echo Building Atari ST test VDI application
 	@echo
-	$(CC) $(CFLAGS) -g -c src/vdi.c -o src/$@
+	$(CC) $(CFLAGS) -g -c src/ximgview.c -o src/$@
 	

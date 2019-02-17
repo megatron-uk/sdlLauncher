@@ -94,6 +94,32 @@ int gfxBlitBMP(
 	struct agnostic_window *window_dst
 ){
 	int r = 0;	// Return code
+	unsigned short pxyarray[8];
+	MFDB dst_mfdb;
+	
+	dst_mfdb.fd_addr = 0;
+	dst_mfdb.fd_w = gem_screen.w;
+	dst_mfdb.fd_h = gem_screen.h;
+	dst_mfdb.fd_wdwidth = gem_screen.w / 16;
+	dst_mfdb.fd_stand = 1;
+	dst_mfdb.fd_nplanes = 4;
+	dst_mfdb.fd_r1 = 0;
+	dst_mfdb.fd_r2 = 0;
+	dst_mfdb.fd_r3 = 0;
+	
+	// Source
+/*	pxyarray[0] = ;
+	pxyarray[1] = ;
+	pxyarray[2] = ;
+	pxyarray[3] = ;
+*/	
+	// Desintation
+/*	pxyarray[4] = ;
+	pxyarray[5] = ;
+	pxyarray[6] = ;
+	pxyarray[7] = ;
+	*/
+	//vro_cpyfm(gem_vdi_handle, 3, &bmp_src->bmp->mfdb, dst_mfdb);
 	return r;
 }
 
