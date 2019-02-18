@@ -4,13 +4,22 @@ STRIP = /usr/i586-pc-msdosdjgpp/bin/i586-pc-msdosdjgpp-strip
 
 # SDL libraries and paths
 APP_LIB = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/lib -lalleg
-APP_INCLUDE = -L/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/sys-include 
+APP_INCLUDE = -I/usr/i586-pc-msdosdjgpp/i586-pc-msdosdjgpp/sys-include 
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -mtune=i386 -mfpmath=387 \
-	-O3 $(APP_INCLUDE) -DUSE_ALLEGRO -DPOSIX \
-	-DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
-LINK_CFLAGS = -Wall
+override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable \
+	-march=i386 -mtune=i386 -mfpmath=387 \
+	-fgnu89-inline \
+	-O3 $(APP_INCLUDE) \
+	-DDOS \
+	-DALLEGRO_STATICLINK \
+	-DUSE_ALLEGRO \
+	-DDIR_SEP=$(DIR_SEP) \
+	-DGAMEDIR=$(GAMEDIR) \
+	-DCSV_FILE=$(CSV_FILE) \
+	-DALLEGRO_NO_COMPATIBILITY \
+	-DSTATICLINK=1
+LINK_CFLAGS = -Wall -Wno-unused-function
 APP_LDFLAGS = $(APP_LIB)
 
 ifeq ($(LOGGING), 1)

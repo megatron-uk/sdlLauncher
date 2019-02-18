@@ -4,6 +4,11 @@
 #include <SDL/SDL.h>
 #endif
 
+#ifdef USE_ALLEGRO
+#define ALLEGRO_STATICLINK
+#include <allegro.h>
+#endif
+
 #ifdef USE_GEM
 #include <mint/osbind.h>
 #include <gem.h>

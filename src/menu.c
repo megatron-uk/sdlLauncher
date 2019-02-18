@@ -281,3 +281,7 @@ int main(int argc, char* argv[]){
 	fclose(log);
 	return 0;
 }
+
+#ifdef USE_ALLEGRO
+END_OF_MAIN()
+#endif

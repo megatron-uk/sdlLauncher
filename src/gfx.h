@@ -4,10 +4,17 @@
 #include <SDL/SDL.h>
 #endif
 
+#ifdef USE_ALLEGRO
+#include <allegro/gfx.h>
+#endif
+
 #ifdef USE_GEM
 #include <mint/osbind.h>
 #include <gem.h>
 #include "qdbmp.h"
+#endif
+
+#ifdef USE_GEM
 // Gem_screen geometry
 struct gem_screen {
 	int w, h;
@@ -23,7 +30,6 @@ typedef struct gem_bitmap {
 					// bitplane image data held at *bp_pixels.
 					
 	unsigned char *bp_pixels;// The converted Atari bitplane format image here.
-	
 	unsigned short bplanes;
 	unsigned short bp_pixels_set;
 	unsigned short pixels_set;
@@ -46,7 +52,6 @@ static bool gem_old_rgb_saved = 0;
 
 // Store original GEM attributes, so that we restore on exit
 short gem_attrib[5];
-
 #endif
 
 // =======================================

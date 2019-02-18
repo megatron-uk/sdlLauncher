@@ -2,7 +2,7 @@
 ifeq ($(USE_GEM), 1)
 OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/ataric2p.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
 else
-OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = src/menu.o src/logging.o src/input.o src/image.o src/qdbmp.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o
 endif
 
 

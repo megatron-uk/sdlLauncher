@@ -15,16 +15,15 @@
 
 // Linux, Risc-OS and most other platforms
 #ifdef USE_SDL
-#include "input_sdl.h"
+#include "input_sdl.c"
 #endif
 
 // MS-DOS library
 #ifdef USE_ALLEGRO
-#include <allegro.h>
-#include "input_allegro.h"
+#include "input_allegro.c"
 #endif
 
 // Atari GEM/VDI input library
 #ifdef USE_GEM
-#include "input_gem.h"
+#include "input_gem.c"
 #endif

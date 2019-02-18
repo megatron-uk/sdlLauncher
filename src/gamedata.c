@@ -5,6 +5,11 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#ifdef DOS
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 #ifdef AMIGAOS
 #include <glob.h>
 #include <sys/stat.h>
@@ -34,6 +39,11 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	char filename[GAME_PATH_LEN];
 	struct stat stat_buf;
 	memset( &stat_buf, 0, sizeof(struct stat) );
+#endif
+#ifdef DOS
+        char filename[GAME_PATH_LEN];
+        struct stat stat_buf;
+        memset( &stat_buf, 0, sizeof(struct stat) );
 #endif
 	int pos = game_data->pos;
 	char *substring;
@@ -95,6 +105,13 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 				strcat(filename, ep->d_name);
 				stat(filename, &stat_buf);
 				if (S_ISREG(stat_buf.st_mode) != 0){
+#endif
+#ifdef DOS
+                                strcpy(filename, fullpath);
+                                strcat(fullpath, DIRSEP);
+                                strcat(filename, ep->d_name);
+                                stat(filename, &stat_buf);
+                                if (S_ISREG(stat_buf.st_mode) != 0){
 #endif
 					// A readme file
 					if ((strcmp(ep->d_name, DEFAULT_README_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_README_NAME_U) == 0)){
@@ -200,6 +217,10 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 	struct stat stat_buf;
 	memset(&stat_buf, 0, sizeof(struct stat));
 #endif
+#ifdef DOS
+        struct stat stat_buf;
+        memset(&stat_buf, 0, sizeof(struct stat));
+#endif
 	
 	log_debug(log, "scangames: Scanning for folders: [%s]\n", gamepath);
 	dir = opendir(gamepath);
@@ -220,6 +241,10 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 #ifdef AMIGAOS
 				stat(gamepath, &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode) != 0){
+#endif
+#ifdef DOS
+                                stat(gamepath, &stat_buf);
+                                if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif
 					// This should really only increment the game_data items counter if it successfully 
 					// adds at least a folder image, a readme file, or an executable.

@@ -1,7 +1,12 @@
+#ifdef USE_ALLEGRO
+#define ALLEGRO_STATICLINK
+#include <allegro.h>
+#endif
 
 #include "logging.h"
 #include "menu.h"
 #include "font.h"
+#include "gfx.h"
 
 // Copies a bitmap (specified by a source window overlay), to a destination bitmap (with a destination window overlay) 
 int gfxBlitBMP(
@@ -49,7 +54,7 @@ char* gfxGetError(){
 int gfxInit(FILE *log){
 	int r = 0;
 	
-	r = install_allegro(SYSTEM_AUTODETECT, &errno, atexit);
+	//r = install_allegro(SYSTEM_AUTODETECT, &errno, atexit);
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (gfxInit)\t Unable to intialise Allegro library: Error %d", __FILE__, __LINE__, r);
 		return r;
