@@ -7,9 +7,11 @@
 #include <gem.h>
 
 // Include our logging functions
-#include "logging.h"
+#include "../misc/logging.h"
+#include "../menu.h"
+#include "../misc/font.h"
 #include "gfx.h"
-#include "image.h"
+#include "../image/image.h"
 
 // ================================================================
 //

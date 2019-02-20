@@ -7,7 +7,7 @@ APP_LIB = -lSDL
 APP_INCLUDE =          
 
 # Compiler flags
-override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -O3 $(APP_INCLUDE) -DUSE_SDL -DPOSIX -DDIR_SEP=$(DIR_SEP) -DGAMEDIR=$(GAMEDIR) -DCSV_FILE=$(CSV_FILE)
+override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable -O3 $(APP_INCLUDE) -DUSE_SDL -DLINUX -DPOSIX
 LINK_CFLAGS = -Wall
 APP_LDFLAGS = $(APP_LIB)
 

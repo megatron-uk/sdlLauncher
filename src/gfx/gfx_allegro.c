@@ -2,9 +2,9 @@
 #include <allegro.h>
 #endif
 
-#include "logging.h"
-#include "menu.h"
-#include "font.h"
+#include "../misc/logging.h"
+#include "../menu.h"
+#include "../misc/font.h"
 #include "gfx.h"
 
 

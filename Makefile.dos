@@ -12,13 +12,9 @@ override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable \
 	-fgnu89-inline \
 	-O3 $(APP_INCLUDE) \
 	-DDOS \
-	-DALLEGRO_STATICLINK \
+	-DPOSIX \
 	-DUSE_ALLEGRO \
-	-DDIR_SEP=$(DIR_SEP) \
-	-DGAMEDIR=$(GAMEDIR) \
-	-DCSV_FILE=$(CSV_FILE) \
-	-DALLEGRO_NO_COMPATIBILITY \
-	-DSTATICLINK=1
+	-DALLEGRO_NO_COMPATIBILITY
 LINK_CFLAGS = -Wall -Wno-unused-function
 APP_LDFLAGS = $(APP_LIB)
 

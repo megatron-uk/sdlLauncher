@@ -7,14 +7,18 @@
 #include "menu.h"
 
 // Standard application functions
-#include "logging.h"
-#include "errors.h"
-#include "gfx.h"
-#include "input.h"
-#include "bmp2text.h"
-#include "gamedata.h"
-#include "csvlib.h"
+#include "misc/logging.h"
+#include "misc/errors.h"
+#include "gfx/gfx.h"
+#include "input/input.h"
+#include "image/bmp2text.h"
+#include "data/gamedata.h"
+#include "data/csvlib.h"
+#include "data/config.h"
 #include "menulib.h"
+
+// Global namespace configuration object
+struct config_object menu_cfg;
 
 // Main menu runtime
 int main(int argc, char* argv[]){
@@ -25,6 +29,8 @@ int main(int argc, char* argv[]){
 	struct WINDOW_STATE window_state;	// Global window state tracking
 	
 	int r = 0;					// return codes
+	int r_tmp;
+	int i;
 	bool quit = 0;				// exit
 	FILE *log;					// Log file
 	
@@ -32,6 +38,9 @@ int main(int argc, char* argv[]){
 
 	log_info(log, "[%s:%d]\t: (main)\t: Menu tool running\n", __FILE__, __LINE__);
 	log_info(log, "[%s:%d]\t: (main)\t: -----------------\n", __FILE__, __LINE__);
+	
+	// Load config file data
+	config(log, &menu_cfg);
 	
 	// Load driver and set up video mode
 	gfxInit(log);
@@ -65,7 +74,14 @@ int main(int argc, char* argv[]){
 	// or just allow the user to select those options themselves.
 	
 	// Option 1. Get initial list of games in a directory (slow)
-	r = scangames(log, GAMEDIR, &game_data);
+	for (i=0; i<menu_cfg.gamedir_count; i++){
+		r_tmp = scangames(log, menu_cfg.gamedirs[i], &game_data);
+		r += r_tmp;
+	}
+	// Sort list
+	if (r > 0){
+		sortgames(&game_data);
+	}
 	
 	// Option 2. Load CSV data
 	// csv = fopen();
@@ -77,10 +93,10 @@ int main(int argc, char* argv[]){
 	//window_state.browser_window.select_pos = -1;
 	
 	if (r < 0){
-		window_state.browser_window.select_pos = 0;
+		window_state.browser_window.select_pos = -1;
 		menuInfoboxPrint(&display, &window_state, log, ERROR_GAMEDIR_OPEN);	
 	} else {
-		window_state.browser_window.select_pos = -1;
+		window_state.browser_window.select_pos = 0;
 		menuInfoboxPrint(&display, &window_state, log, INFO_GAMEDIR_SUCCESS);	
 	}
 	gfxFlip(log, &display);

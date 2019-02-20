@@ -6,11 +6,6 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-#ifdef DOS
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
-
 #ifdef AMIGAOS
 #include <glob.h>
 #include <sys/stat.h>
@@ -22,8 +17,15 @@
 #include <sys/stat.h>
 #endif
 
-#include "menu.h"
-#include "logging.h"
+#include "../menu.h"
+#include "../misc/logging.h"
+
+// ==============================================
+//
+// This probably needs splitting into game data
+// finders that are distinct to each platform...
+//
+// ==============================================
 
 // Sets the gamedata object
 int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *game_data){
@@ -40,11 +42,6 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	char filename[GAME_PATH_LEN];
 	struct stat stat_buf;
 	memset( &stat_buf, 0, sizeof(struct stat) );
-#endif
-#ifdef DOS
-        char filename[GAME_PATH_LEN];
-        struct stat stat_buf;
-        memset( &stat_buf, 0, sizeof(struct stat) );
 #endif
 	int pos = game_data->pos;
 	char *substring;
@@ -68,8 +65,20 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 	// Set game name and directory name to be the subfolder name we scraped
 	// If we decide to load this via csv at a later date, we can always alter 'name'
 	// but directory must stay as-is.
-	strcpy(game_data->game_data_items[pos].name, gamename);
-	strcpy(game_data->game_data_items[pos].directory, gamename);
+	
+	if (strlen(gamename) <= GAME_NAME_LEN){
+		strcpy(game_data->game_data_items[pos].name, gamename);
+	} else {
+		log_error(log, "[%s:%d]\t: (set_gamedata)\t: Game name too long [%s] Max %d chars\n", __FILE__, __LINE__, gamename, GAME_NAME_LEN);
+		return -1;
+	}
+	
+	if (strlen(gamename) <= GAME_FILE_LEN){
+		strcpy(game_data->game_data_items[pos].directory, gamename);
+	} else {
+		log_error(log, "[%s:%d]\t: (set_gamedata)\t: Game filename too long [%s] Max %d chars\n", __FILE__, __LINE__, gamename, GAME_FILE_LEN);
+		return -1;
+	}
 		
 	// Set full pathname = gamepath + directory_seperator + directory name
 	memset(fullpath, '\0', sizeof(fullpath));
@@ -91,7 +100,6 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 				//log_debug(log, "%s found: %s\n", gamename, ep->d_name);
 #ifdef POSIX
 				if (ep->d_type == DT_REG){
-					//log_debug(log, "Regular file %s\n", ep->d_name);
 #endif
 #ifdef TOS
 				strcpy(filename, fullpath);
@@ -107,13 +115,8 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 				stat(filename, &stat_buf);
 				if (S_ISREG(stat_buf.st_mode) != 0){
 #endif
-#ifdef DOS
-                                strcpy(filename, fullpath);
-                                strcat(fullpath, DIRSEP);
-                                strcat(filename, ep->d_name);
-                                stat(filename, &stat_buf);
-                                if (S_ISREG(stat_buf.st_mode) != 0){
-#endif
+					//log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Regular file %s\n", ep->d_name);
+					
 					// A readme file
 					if ((strcmp(ep->d_name, DEFAULT_README_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_README_NAME_U) == 0)){
 						log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Default readme [%s]\n", __FILE__, __LINE__, ep->d_name);
@@ -208,6 +211,7 @@ int get_gamedata(FILE *log, char *gamename, struct GAME_DATA *game_data){
 // Returns a list of game directories available in the defined gamepath folder
 int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 	
+	int r = 0;
 	DIR *dir;
 	struct dirent *ep;
 #ifdef TOS
@@ -217,12 +221,7 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 #ifdef AMIGAOS
 	struct stat stat_buf;
 	memset(&stat_buf, 0, sizeof(struct stat));
-#endif
-#ifdef DOS
-        struct stat stat_buf;
-        memset(&stat_buf, 0, sizeof(struct stat));
-#endif
-	
+#endif	
 	log_debug(log, "[%s:%d]\t: (scangames)\t: Scanning for folders: [%s]\n", __FILE__, __LINE__, gamepath);
 	dir = opendir(gamepath);
 	
@@ -243,14 +242,10 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 				stat(gamepath, &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode) != 0){
 #endif
-#ifdef DOS
-                                stat(gamepath, &stat_buf);
-                                if (S_ISDIR(stat_buf.st_mode) != 0){
-#endif
 					// This should really only increment the game_data items counter if it successfully 
 					// adds at least a folder image, a readme file, or an executable.
 					log_debug(log, "[%s:%d]\t: (scangames)\t: Adding dir: [%s @ game_id %d]\n", __FILE__, __LINE__, ep->d_name, game_data->items);
-					set_gamedata(log, gamepath, ep->d_name, game_data);
+					r = set_gamedata(log, gamepath, ep->d_name, game_data);
 					
 					// Check if an item was find and only increment these counters in that case
 					game_data->pos++;

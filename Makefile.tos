@@ -14,9 +14,6 @@ APP_INCLUDE = -I/usr/m68k-atari-mint/sys-root/usr/include
 override CFLAGS += -Wall -Wno-unused-function -Wno-unused-variable \
 	-Os $(APP_INCLUDE) \
 	-DTOS \
-	-DDIR_SEP=$(DIR_SEP) \
-	-DGAMEDIR=$(GAMEDIR) \
-	-DCSV_FILE=$(CSV_FILE) \
 	-DUSE_BIG_ENDIAN
 LINK_CFLAGS = -Wall -Wno-unused-function
 APP_LDFLAGS = $(APP_LIB)
@@ -45,7 +42,7 @@ include Makefile.common
 ximgview.tos: ximgview.o
 	@echo
 	@echo Linking test application....
-	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos src/ximgview.o $(APP_LDFLAGS)
+	$(CC) $(LINK_CFLAGS) -g -o bin/vdi.tos build/ximgview.o $(APP_LDFLAGS)
 	@echo
 	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/vdi.tos
@@ -55,5 +52,5 @@ ximgview.o: src/ximgview.c
 	@echo ===================================
 	@echo Building Atari ST test VDI application
 	@echo
-	$(CC) $(CFLAGS) -g -c src/ximgview.c -o src/$@
+	$(CC) $(CFLAGS) -g -c src/ximgview.c -o build/$@
 	

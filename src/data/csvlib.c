@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "menu.h"
+#include "../menu.h"
 
 char *strtok_single(char *str, char const *delims){
 	static char *src = NULL;

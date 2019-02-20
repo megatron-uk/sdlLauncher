@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "menu.h"
-#include "font.h"
-#include "gfx.h"
-#include "logging.h"
+#include "../menu.h"
+#include "../misc/font.h"
+#include "../gfx/gfx.h"
+#include "../misc/logging.h"
 
 // Load the defined font bitmap into a SDL surface.
 int loadfont(FILE *log, struct agnostic_bitmap *bmp, bool inverse){

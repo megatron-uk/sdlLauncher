@@ -5,14 +5,14 @@
 #include <time.h>
 
 // Our application headers 
-#include "menu.h"
-#include "logging.h"
+#include "../menu.h"
+#include "../misc/logging.h"
 
 #ifdef USE_GEM
-#include "ataric2p_s.h"
-#include "gfx.h"
-#include "image.h"
-#include "qdbmp.h"
+#include "../gfx/ataric2p_s.h"
+#include "../gfx/gfx.h"
+#include "../image/image.h"
+#include "../image/qdbmp.h"
 
 // Print the contents of a MFDB block
 void imagePrintBitmap(FILE *log, struct agnostic_bitmap *bmp){

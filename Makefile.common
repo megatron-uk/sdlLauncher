@@ -1,8 +1,8 @@
 
 ifeq ($(USE_GEM), 1)
-OBJFILES = src/logging.o src/input.o src/image.o src/qdbmp.o src/ataric2p.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o src/menu.o
+OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/gamedata.o build/menu.o build/ataric2p.o 
 else
-OBJFILES = src/menu.o src/logging.o src/input.o src/image.o src/qdbmp.o src/gfx.o src/bmp2text.o src/csvlib.o src/gamedata.o
+OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/gamedata.o build/menu.o
 endif
 
 
@@ -15,37 +15,43 @@ $(EXE):  $(OBJFILES)
 	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/$(EXE)
 	
-menu.o: src/menu.c
-	$(CC) -g -c -o src/$@
+build/menu.o: src/menu.c
+	$(CC) $(CFLAGS) -g -c $< -o build/menu.o
 	
-bmp2text.o: src/bmp2text.c
-	$(CC) -g -c -o src/$@
+build/bmp2text.o: src/image/bmp2text.c
+	$(CC) $(CFLAGS) -g -c $< -o build/bmp2text.o
 
-gamedata.o: src/gamedata.c
-	$(CC) -g -c -o src/$@
+build/gamedata.o: src/data/gamedata.c
+	$(CC) $(CFLAGS) -g -c $< -o build/gamedata.o
 
-csvlib.o: src/csvlib.c
-	$(CC) -g -c -o src/$@
+build/csvlib.o: src/data/csvlib.c
+	$(CC) $(CFLAGS) -g -c $< -o build/csvlib.o
+
+build/ini.o: src/data/ini.c
+	$(CC) $(CFLAGS) -g -c $< -o build/ini.o
+
+build/config.o: src/data/config.c
+	$(CC) $(CFLAGS) -g -c $< -o build/config.o
 	
-gfx.o: src/gfx.c
-	$(CC) -g -c -o src/$@
+build/gfx.o: src/gfx/gfx.c
+	$(CC) $(CFLAGS) -g -c $< -o build/gfx.o
 
-input.o: src/input.c
-	$(CC) -g -c -o src/$@
+build/input.o: src/input/input.c
+	$(CC) $(CFLAGS) -g -c $< -o build/input.o
 	
-logging.o: src/logging.c
-	$(CC) -g -c -o src/$@
+build/logging.o: src/misc/logging.c
+	$(CC) $(CFLAGS) -g -c $< -o build/logging.o
 	
-image.o: src/image.c
-	$(CC) -g -c -o src/$@
+build/image.o: src/image/image.c
+	$(CC) $(CFLAGS) -g -c $< -o build/image.o
 
-qdbmp.o: src/qdbmp.c
-	$(CC) -g -c -o src/$@
+build/qdbmp.o: src/image/qdbmp.c
+	$(CC) $(CFLAGS) -g -c $< -o build/qdbmp.o
 	
 ifeq ($(USE_GEM), 1)
-ataric2p.o: src/ataric2p.S
-	$(CC) -g -c -o src/$@
+build/ataric2p.o: src/gfx/ataric2p.S
+	$(CC) $(CFLAGS) -g -c $< -o build/ataric2p.o
 endif
 	
 clean:
-	rm -f src/*.o src/*.a $(EXE) bin/$(EXE) bin/core core
+	rm -f build/*.o bin/$(EXE)

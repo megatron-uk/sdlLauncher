@@ -1,5 +1,4 @@
 #!/bin/bash
 
 make -f Makefile.common clean
-#make -f Makefile.amiga GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' USE_LOGGING=1 && > MENU.LOG
-make -f Makefile.amiga GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' && > MENU.LOG
+make -f Makefile.amiga && > MENU.LOG

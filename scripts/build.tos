@@ -1,5 +1,9 @@
 #!/bin/bash
 
 make -f Makefile.common clean
-make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' USE_GEM=1 LOGGING=1 && > MENU.LOG
-#make -f Makefile.tos GAMEDIR='\"./GAMES\"' DIR_SEP='\"/\"' CSV_FILE='\"MENU.CSV\"' USE_GEM=1 && > MENU.LOG
+
+# GEM version
+make -f Makefile.tos USE_GEM=1 LOGGING=1 && > MENU.LOG
+
+# SDL version
+#make -f Makefile.tos USE_SDL=1 LOGGING=1 && > MENU.LOG
