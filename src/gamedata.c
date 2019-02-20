@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <dirent.h>
 #include <sys/types.h>
@@ -115,7 +116,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 #endif
 					// A readme file
 					if ((strcmp(ep->d_name, DEFAULT_README_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_README_NAME_U) == 0)){
-						log_debug(log, "set_gamedata: Default readme [%s]\n", ep->d_name);
+						log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Default readme [%s]\n", __FILE__, __LINE__, ep->d_name);
 						game_data->game_data_items[pos].has_readme = 1;
 						memset(game_data->game_data_items[pos].readme_1, '\0', sizeof(game_data->game_data_items[pos].readme_1));
 						strcpy(game_data->game_data_items[pos].readme_1, ep->d_name);
@@ -123,7 +124,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 					
 					// A folder bitmap
 					if ((strcmp(ep->d_name, DEFAULT_BMP_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_BMP_NAME_U) == 0)){
-						log_debug(log, "set_gamedata: Folder bitmap [%s]\n", ep->d_name);
+						log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Folder bitmap [%s]\n", __FILE__, __LINE__, ep->d_name);
 						game_data->game_data_items[pos].has_bitmap = 1;
 						memset(game_data->game_data_items[pos].bitmap, '\0', sizeof(game_data->game_data_items[pos].bitmap));
 						strcpy(game_data->game_data_items[pos].bitmap, ep->d_name);
@@ -131,7 +132,7 @@ int set_gamedata(FILE *log, char *gamepath, char *gamename, struct GAME_DATA *ga
 					
 					// An exe file
 					if ((strcmp(ep->d_name, DEFAULT_EXE_NAME) == 0) || (strcmp(ep->d_name, DEFAULT_EXE_NAME_U) == 0)){
-						log_debug(log, "set_gamedata: Default exe [%s]\n", ep->d_name);
+						log_debug(log, "[%s:%d]\t: (set_gamedata)\t: Default exe [%s]\n", __FILE__, __LINE__, ep->d_name);
 						game_data->game_data_items[pos].has_binary = 1;
 						memset(game_data->game_data_items[pos].binary_1, '\0', sizeof(game_data->game_data_items[pos].binary_1));
 						strcpy(game_data->game_data_items[pos].binary_1, ep->d_name);
@@ -222,7 +223,7 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
         memset(&stat_buf, 0, sizeof(struct stat));
 #endif
 	
-	log_debug(log, "scangames: Scanning for folders: [%s]\n", gamepath);
+	log_debug(log, "[%s:%d]\t: (scangames)\t: Scanning for folders: [%s]\n", __FILE__, __LINE__, gamepath);
 	dir = opendir(gamepath);
 	
 	if (dir != NULL){
@@ -248,7 +249,7 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 #endif
 					// This should really only increment the game_data items counter if it successfully 
 					// adds at least a folder image, a readme file, or an executable.
-					log_debug(log, "scangames: Adding dir: [%s @ game_id %d]\n", ep->d_name, game_data->items);
+					log_debug(log, "[%s:%d]\t: (scangames)\t: Adding dir: [%s @ game_id %d]\n", __FILE__, __LINE__, ep->d_name, game_data->items);
 					set_gamedata(log, gamepath, ep->d_name, game_data);
 					
 					// Check if an item was find and only increment these counters in that case
@@ -259,7 +260,7 @@ int scangames(FILE *log, char *gamepath, struct GAME_DATA *game_data){
 		}
 		closedir(dir);
 	} else {
-		log_warn(log, "scangames: Error - Unable to open directory\n");
+		log_warn(log, "[%s:%d]\t: (scangames)\t: Error - Unable to open directory [%s]\n", __FILE__, __LINE__, gamepath);
 		return -1;
 	}
 	return game_data->items;

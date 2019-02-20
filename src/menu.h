@@ -17,7 +17,12 @@
 #define DEFAULT_README_NAME_U "README.TXT"
 
 // The directory seperator for this plaform
+#ifdef DOS
+#define DIRSEP "\\"
+#define GAMEDIR "C:\\GAMES"
+#else
 #define DIRSEP DIR_SEP
+#endif
 
 // Maximum string lengths
 #define GAME_NAME_LEN 32

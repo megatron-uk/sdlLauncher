@@ -126,7 +126,7 @@ int gfxBlitBMP(
 // Draw a box at the given coordinates in a given colour
 int gfxDrawBox(
 	FILE *log, 
-	struct agnostic_bitmap *screen,
+	struct agnostic_bitmap *display,
 	int x,
 	int y,
 	int w,
@@ -193,7 +193,7 @@ int gfxDrawBox(
 }
 
 // Update the buffers to refresh gem_screen contents
-void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
+void gfxFlip(FILE *log, struct agnostic_bitmap *display){
 }
 
 // Free bitplane pixels from memory
@@ -418,7 +418,7 @@ int gfxQuit(FILE *log){
 }
 
 // Set gem_screen mode
-int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp){
+int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int screen_h, int screen_bpp){
 	
 	short char_w, char_h, cell_w, cell_h;
 	short hin, vin, hout, vout;

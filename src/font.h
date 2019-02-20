@@ -1,9 +1,14 @@
 #pragma once
 #include <stdio.h>
 
-// Define the lookup table for the characters in a 6x8 bitmap font
+// Define the lookup table for the characters in the 6x8 bitmap font
+#ifdef DOS
+#define FONT_BITMAP "ASSETS\\white.bmp"		 // Standard font bitmap
+#define FONT_BITMAP_REV "ASSETS\\black.bmp"	// Inverted bitmap
+#else
 #define FONT_BITMAP "ASSETS/white.bmp"		 // Standard font bitmap
 #define FONT_BITMAP_REV "ASSETS/black.bmp"	// Inverted bitmap
+#endif
 
 typedef struct CHAR_SYM {
 	char sym;			// The alphanumeric symbol that this bitmap represents

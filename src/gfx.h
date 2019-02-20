@@ -5,7 +5,7 @@
 #endif
 
 #ifdef USE_ALLEGRO
-#include <allegro/gfx.h>
+#include <allegro.h>
 #endif
 
 #ifdef USE_GEM
@@ -78,7 +78,8 @@ typedef struct agnostic_colours {
 // Structure to hold a bitmap object
 typedef struct agnostic_bitmap {
 #ifdef USE_ALLEGRO
-	BITMAP *bmp;		// Allegro bitmap structure - only accessed by gfx_allegro.c
+	BITMAP *bmp;		// Allegro backbuffer bitmap structure - only accessed by gfx_allegro.c
+	PALETTE pal;	// Pallette for 8bit bitmaps
 #endif
 #ifdef USE_GEM
 	gem_bitmap *bmp;	// GEM bitmap structure - only accessed by gfx_vdi.c
@@ -112,13 +113,13 @@ typedef struct agnostic_window {
 // ======================================
 
 // Draws and fills a rectangular box
-int gfxDrawBox(FILE *log, struct agnostic_bitmap *screen, int x, int y, int w, int h, struct agnostic_colours *border, struct agnostic_colours *fill, int border_px, int shadow_px);
+int gfxDrawBox(FILE *log, struct agnostic_bitmap *display, int x, int y, int w, int h, struct agnostic_colours *border, struct agnostic_colours *fill, int border_px, int shadow_px);
 
 // Blit a (partial) bitmap from one area to another - either SDL or Allegro
 int gfxBlitBMP(FILE *log, struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst); 
 
 // Update the display buffer
-void gfxFlip(FILE *log, struct agnostic_bitmap *screen);
+void gfxFlip(FILE *log, struct agnostic_bitmap *display);
 
 // Unload a bitmap from memory
 void gfxFreeBMP(FILE *log, struct agnostic_bitmap *bmp);
@@ -137,7 +138,7 @@ int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp);
 int gfxQuit(FILE *log);
 
 // Initialise the display
-int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp);
+int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int screen_h, int screen_bpp);
 
 // Print text
 int gfxText2BMP(struct agnostic_bitmap *display, struct agnostic_bitmap *font_normal, struct agnostic_bitmap *font_reverse,	FILE *log, char *text, int x, int y, bool inverse);

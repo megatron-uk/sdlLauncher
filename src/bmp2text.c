@@ -13,14 +13,14 @@ int loadfont(FILE *log, struct agnostic_bitmap *bmp, bool inverse){
 	
 	// Load font bitmap
 	if (inverse == 1){
-		log_info(log, "[loadfont]\t: Loading reverse font [%s]\n", FONT_BITMAP_REV);
+		log_info(log, "[%s:%d]\t: (loadfont)\t: Loading reverse font [%s]\n", __FILE__, __LINE__, FONT_BITMAP_REV);
 		r = gfxLoadFont(log, FONT_BITMAP_REV, (agnostic_bitmap *)bmp);
 	} else {
-		log_info(log, "[loadfont]\t: Loading normal font [%s]\n", FONT_BITMAP);
+		log_info(log, "[%s:%d]\t: (loadfont)\t: Loading normal font [%s]\n", __FILE__, __LINE__, FONT_BITMAP);
 		r = gfxLoadFont(log, FONT_BITMAP, (agnostic_bitmap *)bmp);
 	}
 	if (r == -1){
-		log_error(log, "[loadfont]\t: Error loading bitmap\n");
+		log_error(log, "[%s:%d]\t: (loadfont)\t: Error loading font\n", __FILE__, __LINE__);
 		return -1;
 	} else {
 		return 0;

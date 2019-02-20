@@ -146,12 +146,18 @@ int menuRefilterBrowser(FILE *log, struct GAME_DATA *game_data, struct WINDOW_ST
 	log_debug(log, "menuRefilterBrowser: Category ID [%d]\n", window_state->category_window.cat_selected);
 	if (window_state->category_window.cat_selected == CATEGORY_ALL){
 		// Show all items
-		log_debug(log, "menuRefilterBrowser: Show all entries\n");	
-		window_state->browser_window.select_pos = 0;
-		window_state->browser_window.start_pos = 0;
-		window_state->browser_window.start_pos_filtered = 0;		
+		log_debug(log, "menuRefilterBrowser: Show all entries\n");			
 		window_state->browser_window.end_pos = game_data->items;
 		window_state->browser_window.end_pos_filtered = game_data->items;
+		if (game_data->items > 0){
+			window_state->browser_window.select_pos = 0;
+			window_state->browser_window.start_pos = 0;
+			window_state->browser_window.start_pos_filtered = 0;
+		} else {
+			window_state->browser_window.select_pos = -1;
+			window_state->browser_window.start_pos = -1;
+			window_state->browser_window.start_pos_filtered = -1;
+		}
 		
 	} else if (window_state->category_window.cat_selected == CATEGORY_FAV){
 		// Show only favourite items

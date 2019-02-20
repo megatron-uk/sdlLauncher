@@ -5,7 +5,6 @@
 #endif
 
 #ifdef USE_ALLEGRO
-#define ALLEGRO_STATICLINK
 #include <allegro.h>
 #endif
 
@@ -73,14 +72,16 @@ typedef int input_event_type;
 #endif
 
 #ifdef USE_ALLEGRO
-#define EVENT_QUIT 	"quit"
-#define EVENT_KEYDOWN "keypressed"
+#define EVENT_QUIT 	0
+#define EVENT_KEYDOWN 1
+#define EVENT_JOYSTICK 2
+#define EVENT_MOUSE 3
 #define KEY_q 		KEY_Q
 #define KEY_c 		KEY_C
 #define KEY_RETURN	KEY_ENTER
 #define KEY_ESCAPE	KEY_ESC
 typedef int keypress;
-typedef int input_event_type;
+typedef char input_event_type;
 #endif
 
 // Platform/library agnostic event handler data structure
@@ -112,6 +113,10 @@ typedef struct agnostic_event {
 	short ev_kbd_special;
 	short ev_keycode;
 	short ev_clicks;
+#endif
+#ifdef USE_ALLEGRO
+	int event;
+	int key;
 #endif
 } agnostic_event;
 

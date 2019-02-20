@@ -20,7 +20,7 @@
 int main(int argc, char* argv[]){
 	
 	struct agnostic_event event;			// Input event data
-	struct agnostic_bitmap screen;			// Our display screen bitmap
+	struct agnostic_bitmap display;			// Our display screen bitmap
 	struct GAME_DATA game_data;			// Global game data list
 	struct WINDOW_STATE window_state;	// Global window state tracking
 	
@@ -32,18 +32,18 @@ int main(int argc, char* argv[]){
 
 	log_info(log, "[%s:%d]\t: (main)\t: Menu tool running\n", __FILE__, __LINE__);
 	log_info(log, "[%s:%d]\t: (main)\t: -----------------\n", __FILE__, __LINE__);
-
+	
+	// Load driver and set up video mode
+	gfxInit(log);
+	
 	// Init game data
 	menuInitGamedata(log, &game_data);
 	
 	// Init window data
 	menuInitWindowstate(log, &window_state);
 	
-	// Load driver and set up video mode
-	gfxInit(log);
-	
 	// Set screen.bmp mode for the screen
-	r = gfxSetMode(log, &screen, MENU_SCREEN_W, MENU_SCREEN_H, MENU_SCREEN_BPP);
+	r = gfxSetMode(log, &display, MENU_SCREEN_W, MENU_SCREEN_H, MENU_SCREEN_BPP);
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (main)\t: Unable to initialise video driver!\n");
 		log_error(log, "[%s:%d]\t: (main)\t: Application closing\n", __FILE__, __LINE__);
@@ -53,12 +53,12 @@ int main(int argc, char* argv[]){
 	}
 	
 	// Init all windows
-	menuInfoInit(&screen, log);
-	menuCategoryInit(&screen, log);
-	menuGamecoverInit(&screen, log);
-	menuBrowserInit(&screen, log);
-	menuInfoboxPrint(&screen, &window_state, log, INFO_GAMEDIR_WAIT);
-	gfxFlip(log, &screen);
+	menuInfoInit(&display, log);
+	menuCategoryInit(&display, log);
+	menuGamecoverInit(&display, log);
+	menuBrowserInit(&display, log);
+	menuInfoboxPrint(&display, &window_state, log, INFO_GAMEDIR_WAIT);
+	gfxFlip(log, &display);
 	
 	// This is where we need to decide if we are going to
 	// scan the games directory, load in a pre-built CSV file
@@ -66,7 +66,6 @@ int main(int argc, char* argv[]){
 	
 	// Option 1. Get initial list of games in a directory (slow)
 	r = scangames(log, GAMEDIR, &game_data);
-	window_state.browser_window.select_pos = 0;
 	
 	// Option 2. Load CSV data
 	// csv = fopen();
@@ -76,22 +75,23 @@ int main(int argc, char* argv[]){
 	
 	// Option 3. Do nothing
 	//window_state.browser_window.select_pos = -1;
-	//r = 0;
 	
 	if (r < 0){
-		menuInfoboxPrint(&screen, &window_state, log, ERROR_GAMEDIR_OPEN);	
+		window_state.browser_window.select_pos = 0;
+		menuInfoboxPrint(&display, &window_state, log, ERROR_GAMEDIR_OPEN);	
 	} else {
-		menuInfoboxPrint(&screen, &window_state, log, INFO_GAMEDIR_SUCCESS);	
+		window_state.browser_window.select_pos = -1;
+		menuInfoboxPrint(&display, &window_state, log, INFO_GAMEDIR_SUCCESS);	
 	}
-	gfxFlip(log, &screen);
+	gfxFlip(log, &display);
 	
 	// Fill the browser window once
-	menuBrowserPopulate(&screen, log, &game_data, &window_state);
-	menuGamecoverPopulate(&screen, log, &game_data, &window_state); // Disable until all backend methods can show graphics
-	menuCategoryPopulate(&screen, log, &game_data, &window_state);
-	menuInfoPopulate(&screen, log, &game_data, &window_state);
-	menuHelpTextPopulate(log, &screen, &window_state);
-	gfxFlip(log, &screen);
+	menuBrowserPopulate(&display, log, &game_data, &window_state);
+	menuGamecoverPopulate(&display, log, &game_data, &window_state);
+	menuCategoryPopulate(&display, log, &game_data, &window_state);
+	menuInfoPopulate(&display, log, &game_data, &window_state);
+	menuHelpTextPopulate(log, &display, &window_state);
+	gfxFlip(log, &display);
 	
 	// Main loop looking for user input
 	log_debug(log, "[%s:%d]\t: (main)\t: Entering event loop\n", __FILE__, __LINE__);
@@ -110,7 +110,9 @@ int main(int argc, char* argv[]){
 		
 		// Check for keypresses
 		if (inputEventCheck(&event, EVENT_KEYDOWN)){
-			//log_debug(log, "[%s:%d]\t: (main)\t: Processing key\n", __FILE__, __LINE__);
+			log_debug(log, "[%s:%d]\t: (main)\t: Processing key\n", __FILE__, __LINE__);
+			
+			// Check the actual key pressed
 			switch(inputEventKeypress(&event)){
 				case KEY_q:
 					// Close textreader if open
@@ -122,57 +124,57 @@ int main(int argc, char* argv[]){
 				case KEY_c:
 					if (window_state.selected_window != W_CONFIG){
 						// Open config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 						window_state.selected_window = W_CONFIG;
 					}
 					break;
 				case KEY_F1:
 					if (window_state.selected_window == W_CONFIG){
 						// Send F1 to config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_F2:
 					if (window_state.selected_window == W_CONFIG){
 						// Send F2 to config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_F3:
 					if (window_state.selected_window == W_CONFIG){
 						// Send F3 to config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_F4:
 					if (window_state.selected_window == W_CONFIG){
 						// Send F4 to config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_F5:
 					if (window_state.selected_window == W_CONFIG){
 						// Send F5 to config window
-						menuToggleConfigWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuConfigPopulate(&screen, log, &game_data, &window_state);
+						menuToggleConfigWindowMode(&display, log, &game_data, &window_state, &event);
+						menuConfigPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_UP: 
 					if (window_state.selected_window == W_BROWSER){
 						// scroll up through browser list
 						menuToggleBrowserWindow(log, &game_data, &window_state, &event);
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state);
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state);
 					} else if (window_state.selected_window == W_INFO){
 						// scroll up between binary/readme lines
-						menuToggleInfoWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
+						menuToggleInfoWindowMode(&display, log, &game_data, &window_state, &event);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
 					} else if (window_state.selected_window == W_TEXT){
 						// scroll up text window
 					} else {
@@ -183,13 +185,13 @@ int main(int argc, char* argv[]){
 					if (window_state.selected_window == W_BROWSER){
 						// scroll down through browser list
 						menuToggleBrowserWindow(log, &game_data, &window_state, &event);
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state); 
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state); 
 					} else if (window_state.selected_window == W_INFO){
 						// scroll down between binary/readme lines
-						menuToggleInfoWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
+						menuToggleInfoWindowMode(&display, log, &game_data, &window_state, &event);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
 					} else if (window_state.selected_window == W_TEXT){
 						// scroll down text window
 					} else {
@@ -200,30 +202,30 @@ int main(int argc, char* argv[]){
 					if (window_state.selected_window == W_BROWSER){
 						// Toggle between game categories
 						menuToggleCategory(log, &game_data, &window_state, &event);
-						menuCategoryPopulate(&screen, log, &game_data, &window_state);
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state);
+						menuCategoryPopulate(&display, log, &game_data, &window_state);
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state);
 						
 					} else if (window_state.selected_window == W_INFO){
 						// Scroll left between binary/readme lines
-						menuToggleInfoWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
+						menuToggleInfoWindowMode(&display, log, &game_data, &window_state, &event);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_RIGHT:
 					if (window_state.selected_window == W_BROWSER){
 						// Toggle between game categories
 						menuToggleCategory(log, &game_data, &window_state, &event);
-						menuCategoryPopulate(&screen, log, &game_data, &window_state);
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state);
+						menuCategoryPopulate(&display, log, &game_data, &window_state);
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state);
 						
 					} else if (window_state.selected_window == W_INFO){
 						// Scroll right between binary/readme lines
-						menuToggleInfoWindowMode(&screen, log, &game_data, &window_state, &event);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
+						menuToggleInfoWindowMode(&display, log, &game_data, &window_state, &event);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
 					}
 					break;
 				case KEY_TAB:
@@ -235,16 +237,16 @@ int main(int argc, char* argv[]){
 				case KEY_RETURN:
 					// Choose highlighted option of info window
 					if (window_state.selected_window == W_INFO){
-						menuToggleInfoWindowMode(&screen, log, &game_data, &window_state, &event);
+						menuToggleInfoWindowMode(&display, log, &game_data, &window_state, &event);
 					}
 					break;
 				case KEY_ESCAPE:
 					// Close text reader from info window
 					if (window_state.selected_window == W_TEXT){
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuCategoryPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state);
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuCategoryPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state);
 						window_state.selected_window = W_INFO;
 					}
 					
@@ -252,10 +254,10 @@ int main(int argc, char* argv[]){
 					if (window_state.selected_window == W_CONFIG){
 						// Disable any config mode
 						window_state.config_window.config_option_selected = OPTION_NONE;
-						menuBrowserPopulate(&screen, log, &game_data, &window_state);
-						menuCategoryPopulate(&screen, log, &game_data, &window_state);
-						menuInfoPopulate(&screen, log, &game_data, &window_state);
-						menuGamecoverPopulate(&screen, log, &game_data, &window_state);
+						menuBrowserPopulate(&display, log, &game_data, &window_state);
+						menuCategoryPopulate(&display, log, &game_data, &window_state);
+						menuInfoPopulate(&display, log, &game_data, &window_state);
+						menuGamecoverPopulate(&display, log, &game_data, &window_state);
 						window_state.selected_window = W_BROWSER;
 					}
 					break;
@@ -263,8 +265,8 @@ int main(int argc, char* argv[]){
 					break;
 			}
 			// Refresh all windows
-			menuHelpTextPopulate(log, &screen, &window_state);
-			gfxFlip(log, &screen);			
+			menuHelpTextPopulate(log, &display, &window_state);
+			gfxFlip(log, &display);			
 			inputSleep();
 			
 			// Flush any log message
@@ -274,7 +276,7 @@ int main(int argc, char* argv[]){
 		}
 	}	
 	// Tidy up gfx driver before closing
-	gfxFreeBMP(log, &screen);
+	gfxFreeBMP(log, &display);
 	gfxQuit(log);
 	
 	log_info(log, "[%s:%d]\t: (main)\t: Application closing\n", __FILE__, __LINE__);

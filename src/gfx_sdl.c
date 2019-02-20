@@ -27,7 +27,7 @@ int gfxBlitBMP(
 // Draw a box at the given coordinates in a given colour
 int gfxDrawBox(
 	FILE *log, 
-	struct agnostic_bitmap *screen,
+	struct agnostic_bitmap *display,
 	int x,
 	int y,
 	int w,
@@ -46,7 +46,7 @@ int gfxDrawBox(
 		box.window.y = y + shadow_px;
 		box.window.w = w;
 		box.window.h = h;
-		r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
+		r = SDL_FillRect(display->bmp, &box.window, SDL_MapRGB(display->bmp->format, border->r, border->g, border->b));
 		if (r != 0){
 			log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 			return -1;
@@ -57,7 +57,7 @@ int gfxDrawBox(
 	box.window.y = y;
 	box.window.w = w;
 	box.window.h = h;
-	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, border->r, border->g, border->b));
+	r = SDL_FillRect(display->bmp, &box.window, SDL_MapRGB(display->bmp->format, border->r, border->g, border->b));
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Perimeter Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
@@ -68,7 +68,7 @@ int gfxDrawBox(
 	box.window.y = y + border_px;
 	box.window.w = w - (border_px + 1);
 	box.window.h = h - (border_px + 1);
-	r = SDL_FillRect(screen->bmp, &box.window, SDL_MapRGB(screen->bmp->format, fill->r, fill->g, fill->b));
+	r = SDL_FillRect(display->bmp, &box.window, SDL_MapRGB(display->bmp->format, fill->r, fill->g, fill->b));
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (gfxDrawBox)\t: Fill Error: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
@@ -78,8 +78,8 @@ int gfxDrawBox(
 }
 
 // Update the buffers to refresh screen contents
-void gfxFlip(FILE *log, struct agnostic_bitmap *screen){
-	SDL_Flip(screen->bmp);
+void gfxFlip(FILE *log, struct agnostic_bitmap *display){
+	SDL_Flip(display->bmp);
 }
 
 // Free a bitmap from memory
@@ -136,18 +136,18 @@ int gfxQuit(FILE *log){
 }
 
 // Set screen mode
-int gfxSetMode(FILE *log, struct agnostic_bitmap *screen, int screen_w, int screen_h, int screen_bpp){
+int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int screen_h, int screen_bpp){
 	
 	char vdriver[33];
 	
-	screen->bmp = SDL_SetVideoMode(screen_w, screen_h, screen_bpp, SDL_HWSURFACE);
-	if (screen->bmp == NULL){
+	display->bmp = SDL_SetVideoMode(screen_w, screen_h, screen_bpp, SDL_HWSURFACE);
+	if (display->bmp == NULL){
 		// Error in screen init
 		log_error(log, "[%s:%d]\t: (gfxSetMode)\t: Error setting screen mode: %s\n", __FILE__, __LINE__, SDL_GetError());
 		return -1;
 	} else {
 		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Driver %s\n", __FILE__, __LINE__, SDL_VideoDriverName(vdriver, 32));
-		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Mode %dx%dx%dbpp\n", __FILE__, __LINE__, screen->bmp->w, screen->bmp->h, screen->bmp->format->BitsPerPixel);
+		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Mode %dx%dx%dbpp\n", __FILE__, __LINE__, display->bmp->w, display->bmp->h, display->bmp->format->BitsPerPixel);
 		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: HW Surfaces? (%d)\n", __FILE__, __LINE__, SDL_GetVideoSurface()->flags & SDL_HWSURFACE);	
 		return 0;
 	}

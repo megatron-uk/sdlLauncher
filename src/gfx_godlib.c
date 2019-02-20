@@ -17,7 +17,7 @@ int blitSurface(
 
 // Draw a box at the given coordinates in a given colour
 int drawBox(
-	struct agnostic_bitmap *screen, 
+	struct agnostic_bitmap *display, 
 	struct agnostic_window *window, 
 	struct agnostic_colours *rgb
 ){
@@ -26,7 +26,7 @@ int drawBox(
 }
 
 // Update the buffers to refresh screen contents
-void flip(struct agnostic_bitmap *screen){
+void flip(struct agnostic_bitmap *display){
 
 }
 

@@ -32,9 +32,11 @@ sdlLauncher was developed on x86 Linux, and is intended to be run on the followi
  
  * Atari TOS: ST(E) / Mega ST(E) -  *TT and Falcon should also work*
  
- * Amiga OS: Amiga 1200/4000 - *SDL for Amiga works on machines with AGA chipset or RTG, but not OCS or ECS*, requires OS 3.x.
+ * Amiga OS: Amiga 1200/4000 - *Not yet implemented*.
  
- * Risc OS: Risc OS 3.6 minimum - for example A7000 and Risc PC,  *but this target is not yet implemented*
+ * IBM PC/MS-DOS: Requires i386 cpu - *runs in 32bit protected mode*
+ 
+ * Risc OS: Risc OS 3.6 minimum -  *Not yet implemented*
 
 ### Pre-requisites
 
@@ -113,6 +115,17 @@ A successful build will generate a binary named `menu.amiga` which can be run fr
 ----
 
 ### Atari ST / TOS
+
+The Atari ST target has two graphics options:
+
+ * SDL
+ * GEM
+ 
+ The SDL target works the same as all other platforms and has no reliance on the GEM desktop. It is, however, *slow*, since all graphics are translated from PC/chunky to Atari/planar formats.
+ 
+ The GEM target is faster, but requires that the images for game covers be converted to Atari .IMG format in advance.
+
+Either option can be built at compile time by setting the USE_GEM or USE_SDL compiler flags.
 
 Compiling for the Atari ST / TOS m68k target is supported using standard GNU cross-compiler toolchains.
 

@@ -27,6 +27,8 @@ override CFLAGS += -DUSE_LOGGING -DLOGGING
 override LINK_CFLAGS += -DUSE_LOGGING -DLOGGING
 endif
 
+STACKMOD = file
+
 # What our application is named
 EXE = menu_dos.exe
 
