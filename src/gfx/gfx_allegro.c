@@ -139,24 +139,51 @@ int gfxInit(FILE *log){
 	}
 }
 
+void gfxSetPalette(){
+
+	RGB rgb;
+	int i;
+	
+	// Set reserved colours in global palette
+	rgb.r = 0;
+	rgb.g = 0;
+	rgb.b = 0;
+	set_color(PAL_BLACK, &rgb);
+	colour_reservation_table[PAL_BLACK] = 1;
+	rgb.r = 63;
+	rgb.g = 63;
+	rgb.b = 63;
+	set_color(PAL_WHITE, &rgb);
+	colour_reservation_table[PAL_WHITE] = 1;
+	
+	// Palette entries 0-RESERVED_COLOURS cannot be changed
+	for (i=0; i<RESERVED_COLOURS; i++){
+		colour_reservation_table[i] = 1;	
+	}
+	// Palette entries RESERVED_COLOURS-256 can be remapped
+	for (i=RESERVED_COLOURS; i<256; i++){
+		colour_reservation_table[i] = 0;	
+	}
+	set_palette_range(global_palette, 0, RESERVED_COLOURS, 1);
+}
+
+
 // Load a bitmap file from disk into a in-memory structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
+	
+	int i;
 	
 	// Word of warning - bitmaps loaded by Allegro must check the 'Do not encode colorspace information'
 	// option if they have been edited by GIMP.
 	
 	if (MENU_SCREEN_BPP == 8){
-		set_color_conversion(COLORCONV_TOTAL|COLORCONV_DITHER|COLORCONV_KEEP_TRANS);
-		bmp->bmp = load_bitmap(filename, bmp->pal);
-		
-		// Save foreground, shadow and fill colours
-		//default_fg_rgb;
-		//default_bg_rgb;
-		//default_shadow_rgb;
-		
-		set_palette_range(bmp->pal, 2, 255, 0);
+		set_color_conversion(COLORCONV_NONE|COLORCONV_KEEP_TRANS);
+		bmp->bmp = load_bitmap(filename, NULL);
+		i = generate_optimized_palette(bmp->bmp, bmp->pal, colour_reservation_table);
+		log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Generated %d unique colour entries\n", __FILE__, __LINE__, i);
+		gfxSetPalette();
+		set_palette_range(bmp->pal, RESERVED_COLOURS, 255, 1); // Generate a palette of colours, excluding those we've reserved for UI elements
 		//set_palette(bmp->pal);
-		//set_palette(default_palette);
 	} else {
 		bmp->bmp = load_bitmap(filename, NULL);
 	}
@@ -172,10 +199,15 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 // Load a font bitmap from disk into a bitmap structure
 int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
+	int pal_table[256];
+	
 	if (MENU_SCREEN_BPP == 8){
-		set_color_conversion(COLORCONV_TOTAL|COLORCONV_DITHER|COLORCONV_KEEP_TRANS);
-		bmp->bmp = load_bitmap(filename, bmp->pal);
-		set_palette_range(bmp->pal, 0, 2, 0);
+		set_color_conversion(COLORCONV_TOTAL|COLORCONV_KEEP_TRANS);
+		bmp->bmp = load_bitmap(filename, NULL);
+		
+		// Load reserved colours
+		//generate_optimized_palette(bmp->bmp, bmp->pal, colour_reservation_table);
+		//set_palette_range(bmp->pal, 0, RESERVED_COLOURS, 1); 
 	} else {
 		bmp->bmp = load_bitmap(filename, NULL);
 	}
@@ -197,6 +229,8 @@ int gfxQuit(FILE *log){
 // Set screen mode
 int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int screen_h, int screen_bpp){
 	int r  = 0;
+	RGB rgb;
+	int i;
 	
 	// Set bpp
 	set_color_depth(MENU_SCREEN_BPP);
@@ -212,6 +246,9 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int scr
 		// Create screen sized buffer
 		display->bmp = create_bitmap(MENU_SCREEN_W, MENU_SCREEN_H);
 		clear_bitmap(display->bmp);
+		
+		gfxSetPalette();
+		
 		log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Ready to go!\n", __FILE__, __LINE__);
 		return r;
 	}

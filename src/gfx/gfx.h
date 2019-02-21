@@ -106,6 +106,15 @@ typedef struct agnostic_window {
 #endif
 } agnostic_window;
 
+// Allegro has a single global palette with some reserved colours that
+// all bitmap palettes have to use.
+#ifdef USE_ALLEGRO
+static PALETTE global_palette;
+static char colour_reservation_table[256];
+#define PAL_BLACK 0
+#define PAL_WHITE 1
+#endif
+
 // ======================================
 //
 // Function prototypes

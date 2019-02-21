@@ -24,6 +24,14 @@
 // Name of config file
 #define INI_FILE "MENU.INI"
 
+// Colours to save for UI use
+#ifdef USE_GEM
+#define RESERVED_COLOURS 2
+#endif
+#ifdef USE_SDL
+#define RESERVED_COLOURS 2
+#endif
+
 // Maximum string lengths
 #define GAME_NAME_LEN 32
 #define GAME_PATH_LEN 128
