@@ -146,8 +146,17 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	// option if they have been edited by GIMP.
 	
 	if (MENU_SCREEN_BPP == 8){
-		//set_color_conversion(COLORCONV_REDUCE_TO_256);
+		set_color_conversion(COLORCONV_TOTAL|COLORCONV_DITHER|COLORCONV_KEEP_TRANS);
 		bmp->bmp = load_bitmap(filename, bmp->pal);
+		
+		// Save foreground, shadow and fill colours
+		//default_fg_rgb;
+		//default_bg_rgb;
+		//default_shadow_rgb;
+		
+		set_palette_range(bmp->pal, 2, 255, 0);
+		//set_palette(bmp->pal);
+		//set_palette(default_palette);
 	} else {
 		bmp->bmp = load_bitmap(filename, NULL);
 	}
@@ -162,7 +171,21 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 
 // Load a font bitmap from disk into a bitmap structure
 int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
-	return gfxLoadBMP(log, filename, bmp);
+	
+	if (MENU_SCREEN_BPP == 8){
+		set_color_conversion(COLORCONV_TOTAL|COLORCONV_DITHER|COLORCONV_KEEP_TRANS);
+		bmp->bmp = load_bitmap(filename, bmp->pal);
+		set_palette_range(bmp->pal, 0, 2, 0);
+	} else {
+		bmp->bmp = load_bitmap(filename, NULL);
+	}
+	if (!bmp->bmp){
+		log_error(log, "[%s:%d]\t: (gfxLoadFont)\t: Unable to load bitmap image: Error %s [errno %d]\n", __FILE__, __LINE__, allegro_error, errno);
+		return -1;
+	} else {
+		log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Loaded bitmap image %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
+	}
+	return 0;
 }
 
 // Unload driver
