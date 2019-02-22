@@ -9,48 +9,48 @@ endif
 $(EXE):  $(OBJFILES)
 	@echo ""
 	@echo Linking....
-	$(CC) $(LINK_CFLAGS) -g -o bin/$(EXE) $(OBJFILES) $(APP_LDFLAGS)
+	$(CC) $(LINK_CFLAGS) -o bin/$(EXE) $(OBJFILES) $(APP_LDFLAGS)
 	#$(STRIP) --strip-all bin/$(EXE)
 	@echo
 	@echo Increasing stack size of binary....
 	$(STACKMOD) bin/$(EXE)
 	
 build/menu.o: src/menu.c
-	$(CC) $(CFLAGS) -g -c $< -o build/menu.o
+	$(CC) $(CFLAGS) -c $< -o build/menu.o
 	
 build/bmp2text.o: src/image/bmp2text.c
-	$(CC) $(CFLAGS) -g -c $< -o build/bmp2text.o
+	$(CC) $(CFLAGS) -c $< -o build/bmp2text.o
 
 build/gamedata.o: src/data/gamedata.c
-	$(CC) $(CFLAGS) -g -c $< -o build/gamedata.o
+	$(CC) $(CFLAGS) -c $< -o build/gamedata.o
 
 build/csvlib.o: src/data/csvlib.c
-	$(CC) $(CFLAGS) -g -c $< -o build/csvlib.o
+	$(CC) $(CFLAGS) -c $< -o build/csvlib.o
 
 build/ini.o: src/data/ini.c
-	$(CC) $(CFLAGS) -g -c $< -o build/ini.o
+	$(CC) $(CFLAGS) -c $< -o build/ini.o
 
 build/config.o: src/data/config.c
-	$(CC) $(CFLAGS) -g -c $< -o build/config.o
+	$(CC) $(CFLAGS) -c $< -o build/config.o
 	
 build/gfx.o: src/gfx/gfx.c
-	$(CC) $(CFLAGS) -g -c $< -o build/gfx.o
+	$(CC) $(CFLAGS) -c $< -o build/gfx.o
 
 build/input.o: src/input/input.c
-	$(CC) $(CFLAGS) -g -c $< -o build/input.o
+	$(CC) $(CFLAGS) -c $< -o build/input.o
 	
 build/logging.o: src/misc/logging.c
-	$(CC) $(CFLAGS) -g -c $< -o build/logging.o
+	$(CC) $(CFLAGS) -c $< -o build/logging.o
 	
 build/image.o: src/image/image.c
-	$(CC) $(CFLAGS) -g -c $< -o build/image.o
+	$(CC) $(CFLAGS) -c $< -o build/image.o
 
 build/qdbmp.o: src/image/qdbmp.c
-	$(CC) $(CFLAGS) -g -c $< -o build/qdbmp.o
+	$(CC) $(CFLAGS) -c $< -o build/qdbmp.o
 	
 ifeq ($(USE_GEM), 1)
 build/ataric2p.o: src/gfx/ataric2p.S
-	$(CC) $(CFLAGS) -g -c $< -o build/ataric2p.o
+	$(CC) $(CFLAGS) -c $< -o build/ataric2p.o
 endif
 	
 clean:

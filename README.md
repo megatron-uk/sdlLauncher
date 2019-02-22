@@ -55,9 +55,13 @@ The core functionality of scraping a list of games from one or more directories,
 
 sdlLauncher is self-contained and builds a static binary, other than the `ASSETS` folder which contains images and icons and should be placed where your binary runs from, there are *no* external dependencies to run the application.
 
-### Building from Source
+----
 
-[Building the application](BUILDING.md) - Instructions on how to build the application from source for all supported targets.
+#### More Information
+
+ * [Building the application](BUILDING.md) - Instructions on how to build the application from source for all supported targets.
+
+ * [To-do list](TODO.md) - Status of the various ports and development roadmad.
 
 ----
 

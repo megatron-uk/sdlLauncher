@@ -82,33 +82,41 @@ int gfxDrawBox(
 	int shadow_px
 ){
 	int r = 0;	// Return code
-	int fill_colour = 0;
-	int border_colour = 0;
+	RGB rgb;
 	
-	// Map RGB to allegro integer colours
-	border_colour = makecol(border->r, border->g, border->b);
-	fill_colour = makecol(fill->r, fill->g, fill->b);
+	//gfxSetPal(log);
 	
 	// Are we drawing a drop shadow?
 	if (shadow_px > 0){
-		rectfill(display->bmp, x+shadow_px, y+shadow_px, x+w + shadow_px, y+h + shadow_px, border_colour);
+		get_color(PAL_GREY, &rgb);
+		//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_GREY, rgb.r, rgb.g, rgb.b);
+		rectfill(display->bmp, x+shadow_px, y+shadow_px, x+w + shadow_px, y+h + shadow_px, makecol(rgb.r, rgb.g, rgb.b));
 	}
 	
 	// Border
-	rectfill(display->bmp, x, y, x+w, y+h, border_colour);
+	get_color(PAL_WHITE, &rgb);
+	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Border using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_WHITE, rgb.r, rgb.g, rgb.b);
+	rectfill(display->bmp, x, y, x+w, y+h, makecol(rgb.r, rgb.g, rgb.b));
 
 	// Fill
-	rectfill(display->bmp, x+border_px, y+border_px, x + (w - (border_px)), y + (h - (border_px)), fill_colour);
+	get_color(PAL_BLACK, &rgb);
+	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Fill using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_BLACK, rgb.r, rgb.g, rgb.b);
+	rectfill(display->bmp, x+border_px, y+border_px, x + (w - (border_px)), y + (h - (border_px)), makecol(rgb.r, rgb.g, rgb.b));
 	
 	return r;
 }
 
 // Update the buffers to refresh display contents
 void gfxFlip(FILE *log, struct agnostic_bitmap *display){
+	
+	// Ensure reserved colours have not be overwritten
+	gfxSetPal(log, 0);
+	
 	// Flip buffer to screen
 	blit(display->bmp, screen, 0, 0, 0, 0, MENU_SCREEN_W, MENU_SCREEN_H);
+	
 	// Clear buffer
-	// clear_bitmap(display->bmp);
+	//clear_bitmap(display->bmp);
 }
 
 // Free a bitmap from memory
@@ -139,32 +147,42 @@ int gfxInit(FILE *log){
 	}
 }
 
-void gfxSetPalette(){
+void gfxSetPal(FILE *log, bool full_init){
 
 	RGB rgb;
 	int i;
+	int colour;
+	
+	get_palette(global_palette);
 	
 	// Set reserved colours in global palette
 	rgb.r = 0;
 	rgb.g = 0;
 	rgb.b = 0;
 	set_color(PAL_BLACK, &rgb);
-	colour_reservation_table[PAL_BLACK] = 1;
-	rgb.r = 63;
-	rgb.g = 63;
-	rgb.b = 63;
+	colour_reservation_table[PAL_BLACK] = -1;
+	rgb.r = 255;
+	rgb.g = 255;
+	rgb.b = 255;
 	set_color(PAL_WHITE, &rgb);
-	colour_reservation_table[PAL_WHITE] = 1;
+	colour_reservation_table[PAL_WHITE] = -1;
+	rgb.r = 64;
+	rgb.g = 64;
+	rgb.b = 64;
+	set_color(PAL_GREY, &rgb);
+	colour_reservation_table[PAL_GREY] = -1;
 	
-	// Palette entries 0-RESERVED_COLOURS cannot be changed
-	for (i=0; i<RESERVED_COLOURS; i++){
-		colour_reservation_table[i] = 1;	
+	if (full_init){
+		// Palette entries 0-RESERVED_COLOURS cannot be changed
+		for (i=0; i<RESERVED_COLOURS; i++){
+			colour_reservation_table[i] = 1;	
+		}
+		// Palette entries RESERVED_COLOURS-256 can be remapped
+		for (i=RESERVED_COLOURS; i<255; i++){
+			colour_reservation_table[i] = 0;	
+		}
 	}
-	// Palette entries RESERVED_COLOURS-256 can be remapped
-	for (i=RESERVED_COLOURS; i<256; i++){
-		colour_reservation_table[i] = 0;	
-	}
-	set_palette_range(global_palette, 0, RESERVED_COLOURS, 1);
+	
 }
 
 
@@ -175,23 +193,36 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
 	// Word of warning - bitmaps loaded by Allegro must check the 'Do not encode colorspace information'
 	// option if they have been edited by GIMP.
-	
+	// If converted by Imagemagick, they must have had the bmpv3 header set: -define bmp:format=bmp3
 	if (MENU_SCREEN_BPP == 8){
-		set_color_conversion(COLORCONV_NONE|COLORCONV_KEEP_TRANS);
-		bmp->bmp = load_bitmap(filename, NULL);
-		i = generate_optimized_palette(bmp->bmp, bmp->pal, colour_reservation_table);
-		log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Generated %d unique colour entries\n", __FILE__, __LINE__, i);
-		gfxSetPalette();
-		set_palette_range(bmp->pal, RESERVED_COLOURS, 255, 1); // Generate a palette of colours, excluding those we've reserved for UI elements
-		//set_palette(bmp->pal);
-	} else {
-		bmp->bmp = load_bitmap(filename, NULL);
+		set_color_conversion(COLORCONV_MOST|COLORCONV_KEEP_TRANS);
 	}
-	if (!bmp->bmp){
+	bmp->bmp = load_bmp(filename, NULL);
+	if (bmp->bmp == NULL){
+		// Image wasnt loaded
 		log_error(log, "[%s:%d]\t: (gfxLoadBMP)\t: Unable to load bitmap image: Error %s [errno %d]\n", __FILE__, __LINE__, allegro_error, errno);
 		return -1;
 	} else {
-		log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Loaded bitmap image %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
+		// Image loaded
+		log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Image is %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
+		if (MENU_SCREEN_BPP == 8){
+			switch (bitmap_color_depth(bmp->bmp)){
+				case 8:
+					log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Image is 8bpp, not generating palette\n", __FILE__, __LINE__);
+					break;
+				default:
+					log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Image is true colour, generating palette\n", __FILE__, __LINE__);
+					i = generate_optimized_palette(bmp->bmp, bmp->pal, colour_reservation_table);
+					log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Generated %d unique colour entries\n", __FILE__, __LINE__, i);
+					
+					set_palette_range(global_palette, 0, RESERVED_COLOURS, 0);
+					set_palette_range(bmp->pal, RESERVED_COLOURS, 255, 0); // Generate a palette of colours, excluding those we've reserved for UI elements					
+					log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Palette loaded [%d-255]\n", __FILE__, __LINE__, RESERVED_COLOURS);
+					break;
+			}
+		} else {
+			log_debug(log, "[%s:%d]\t: (gfxLoadBMP)\t: Screen is not 8bpp, not generating palette\n", __FILE__, __LINE__);	
+		}
 	}
 	return 0;
 }
@@ -199,23 +230,44 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 // Load a font bitmap from disk into a bitmap structure
 int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
-	int pal_table[256];
+	PALETTE pal;
+	int i;
+	int pix;
 	
 	if (MENU_SCREEN_BPP == 8){
-		set_color_conversion(COLORCONV_TOTAL|COLORCONV_KEEP_TRANS);
-		bmp->bmp = load_bitmap(filename, NULL);
-		
-		// Load reserved colours
-		//generate_optimized_palette(bmp->bmp, bmp->pal, colour_reservation_table);
-		//set_palette_range(bmp->pal, 0, RESERVED_COLOURS, 1); 
-	} else {
-		bmp->bmp = load_bitmap(filename, NULL);
+		set_color_conversion(COLORCONV_MOST|COLORCONV_KEEP_TRANS);
 	}
+	bmp->bmp = load_bitmap(filename, pal);
 	if (!bmp->bmp){
-		log_error(log, "[%s:%d]\t: (gfxLoadFont)\t: Unable to load bitmap image: Error %s [errno %d]\n", __FILE__, __LINE__, allegro_error, errno);
+		// Image wasnt loaded
+		log_error(log, "[%s:%d]\t: (gfxLoadFont)\t: Unable to load font bitmap: Error %s [errno %d]\n", __FILE__, __LINE__, allegro_error, errno);
 		return -1;
 	} else {
-		log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Loaded bitmap image %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
+		// Image was loaded
+		log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font bitmap is %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
+		if (MENU_SCREEN_BPP == 8){
+			switch (bitmap_color_depth(bmp->bmp)){
+				case 8:
+					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font is 8bpp, not generating palette\n", __FILE__, __LINE__);
+					// Get top left pixel colour
+					pix = getpixel(bmp->bmp, 0, 0);
+					if (pix == 0){
+						// Pixel is black, so this is a white font	
+					} else {
+						// Pixel is non-black, so this is a black font
+					}
+					//set_palette_range(global_palette, 0, RESERVED_COLOURS, 0); 
+					break;
+				default:
+					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font is true colour, generating palette\n", __FILE__, __LINE__);				
+					i = generate_optimized_palette(bmp->bmp, global_palette, colour_reservation_table);
+					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Generated %d unique colour entries\n", __FILE__, __LINE__, i);
+					set_palette_range(global_palette, 0, RESERVED_COLOURS, 0); 
+					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Palette loaded [3-%d]\n", __FILE__, __LINE__, i);
+			}
+		} else {
+			log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Screen is not 8bpp, not generating palette\n", __FILE__, __LINE__);	
+		}
 	}
 	return 0;
 }
@@ -235,7 +287,7 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int scr
 	// Set bpp
 	set_color_depth(MENU_SCREEN_BPP);
 	// Set res
-	r = set_gfx_mode(GFX_AUTODETECT, MENU_SCREEN_W, MENU_SCREEN_H, 0, 0);
+	r = set_gfx_mode(GFX_VGA, MENU_SCREEN_W, MENU_SCREEN_H, 0, 0);
 	if (r != 0){
 		log_error(log, "[%s:%d]\t: (gfxSetMode)\t: Unable to set Allegro screen mode %dx%dx%dbpp: Error %d\n", __FILE__, __LINE__, MENU_SCREEN_W, MENU_SCREEN_H, MENU_SCREEN_BPP, r);
 		allegro_exit();
@@ -247,7 +299,7 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int scr
 		display->bmp = create_bitmap(MENU_SCREEN_W, MENU_SCREEN_H);
 		clear_bitmap(display->bmp);
 		
-		gfxSetPalette();
+		gfxSetPal(log, 1);
 		
 		log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Ready to go!\n", __FILE__, __LINE__);
 		return r;

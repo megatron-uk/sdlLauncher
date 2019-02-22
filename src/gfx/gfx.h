@@ -110,9 +110,10 @@ typedef struct agnostic_window {
 // all bitmap palettes have to use.
 #ifdef USE_ALLEGRO
 static PALETTE global_palette;
-static char colour_reservation_table[256];
-#define PAL_BLACK 0
-#define PAL_WHITE 1
+static signed char colour_reservation_table[256];
+#define PAL_BLACK 0	// UI colours - fill
+#define PAL_WHITE 1 // UI colours - border
+#define PAL_GREY 2 // UI colours - drop shadow
 #endif
 
 // ======================================
