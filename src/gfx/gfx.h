@@ -111,9 +111,12 @@ typedef struct agnostic_window {
 #ifdef USE_ALLEGRO
 static PALETTE global_palette;
 static signed char colour_reservation_table[256];
+static signed char font_colour_reservation_table[256];
 #define PAL_BLACK 0	// UI colours - fill
 #define PAL_WHITE 1 // UI colours - border
 #define PAL_GREY 2 // UI colours - drop shadow
+#define PAL_DARK_GREY 3 // UI colours - drop shadow
+#define PAL_LIGHT_GREY 4 // UI colours - drop shadow
 #endif
 
 // ======================================

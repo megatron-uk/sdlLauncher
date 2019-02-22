@@ -41,6 +41,58 @@ void gfxInfo(FILE *log){
 	log_debug(log, "[%s:%d]\t: (gfxInfo)\t: ------------ \n", __FILE__, __LINE__);
 }
 
+void gfxSetPal(FILE *log, bool full_init){
+
+	RGB rgb;
+	int i = 0;
+	int colour;
+	
+	get_palette(global_palette);
+	
+	// Set reserved colours in global palette
+	rgb.r = 0;
+	rgb.g = 0;
+	rgb.b = 0;
+	set_color(PAL_BLACK, &rgb);
+	colour_reservation_table[PAL_BLACK] = 1;
+	i++;
+	rgb.r = 255;
+	rgb.g = 255;
+	rgb.b = 255;
+	set_color(PAL_WHITE, &rgb);
+	colour_reservation_table[PAL_WHITE] = 1;
+	i++;
+	rgb.r = 32;
+	rgb.g = 32;
+	rgb.b = 32;
+	set_color(PAL_GREY, &rgb);
+	colour_reservation_table[PAL_GREY] = 1;
+	i++;
+	rgb.r = 64;
+	rgb.g = 64;
+	rgb.b = 64;
+	set_color(PAL_DARK_GREY, &rgb);
+	colour_reservation_table[PAL_DARK_GREY] = 1;
+	i++;
+	rgb.r = 96;
+	rgb.g = 96;
+	rgb.b = 96;
+	set_color(PAL_LIGHT_GREY, &rgb);
+	colour_reservation_table[PAL_LIGHT_GREY] = 1;
+	i++;
+	
+	if (full_init){
+		// Palette entries 0-RESERVED_COLOURS cannot be changed
+		for (i; i<RESERVED_COLOURS; i++){
+			colour_reservation_table[i] = 1;	
+		}
+		// Palette entries RESERVED_COLOURS-256 can be remapped
+		for (i=RESERVED_COLOURS; i<255; i++){
+			colour_reservation_table[i] = 0;	
+		}
+	}	
+}
+
 // ==================== Public methods below ======================
 
 // Copies a bitmap (specified by a source window overlay), to a destination bitmap (with a destination window overlay) 
@@ -52,8 +104,6 @@ int gfxBlitBMP(
 	struct agnostic_window *window_dst
 ){
 	int r = 0;	// Return code
-	
-	//log_debug(log, "blit (%d,%d) -> (%d,%d) %dx%d\n", window_src->window.x, window_src->window.y, window_dst->window.x, window_dst->window.y, window_src->window.w, window_src->window.h);
 	
 	blit(bmp_src->bmp, 
 		bmp_dst->bmp, 
@@ -83,24 +133,21 @@ int gfxDrawBox(
 ){
 	int r = 0;	// Return code
 	RGB rgb;
-	
-	//gfxSetPal(log);
+		
+	gfxSetPal(log, 0);
 	
 	// Are we drawing a drop shadow?
 	if (shadow_px > 0){
-		get_color(PAL_GREY, &rgb);
-		//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Shadow using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_GREY, rgb.r, rgb.g, rgb.b);
+		get_color(PAL_DARK_GREY, &rgb);
 		rectfill(display->bmp, x+shadow_px, y+shadow_px, x+w + shadow_px, y+h + shadow_px, makecol(rgb.r, rgb.g, rgb.b));
 	}
 	
 	// Border
-	get_color(PAL_WHITE, &rgb);
-	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Border using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_WHITE, rgb.r, rgb.g, rgb.b);
+	get_color(PAL_LIGHT_GREY, &rgb);
 	rectfill(display->bmp, x, y, x+w, y+h, makecol(rgb.r, rgb.g, rgb.b));
 
 	// Fill
 	get_color(PAL_BLACK, &rgb);
-	//log_debug(log, "[%s:%d]\t: (gfxDrawBox)\t: Fill using palette entry %d [%d,%d,%d]\n", __FILE__, __LINE__, PAL_BLACK, rgb.r, rgb.g, rgb.b);
 	rectfill(display->bmp, x+border_px, y+border_px, x + (w - (border_px)), y + (h - (border_px)), makecol(rgb.r, rgb.g, rgb.b));
 	
 	return r;
@@ -147,45 +194,6 @@ int gfxInit(FILE *log){
 	}
 }
 
-void gfxSetPal(FILE *log, bool full_init){
-
-	RGB rgb;
-	int i;
-	int colour;
-	
-	get_palette(global_palette);
-	
-	// Set reserved colours in global palette
-	rgb.r = 0;
-	rgb.g = 0;
-	rgb.b = 0;
-	set_color(PAL_BLACK, &rgb);
-	colour_reservation_table[PAL_BLACK] = -1;
-	rgb.r = 255;
-	rgb.g = 255;
-	rgb.b = 255;
-	set_color(PAL_WHITE, &rgb);
-	colour_reservation_table[PAL_WHITE] = -1;
-	rgb.r = 64;
-	rgb.g = 64;
-	rgb.b = 64;
-	set_color(PAL_GREY, &rgb);
-	colour_reservation_table[PAL_GREY] = -1;
-	
-	if (full_init){
-		// Palette entries 0-RESERVED_COLOURS cannot be changed
-		for (i=0; i<RESERVED_COLOURS; i++){
-			colour_reservation_table[i] = 1;	
-		}
-		// Palette entries RESERVED_COLOURS-256 can be remapped
-		for (i=RESERVED_COLOURS; i<255; i++){
-			colour_reservation_table[i] = 0;	
-		}
-	}
-	
-}
-
-
 // Load a bitmap file from disk into a in-memory structure
 int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
@@ -231,13 +239,10 @@ int gfxLoadBMP(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	
 	PALETTE pal;
-	int i;
-	int pix;
-	
 	if (MENU_SCREEN_BPP == 8){
 		set_color_conversion(COLORCONV_MOST|COLORCONV_KEEP_TRANS);
 	}
-	bmp->bmp = load_bitmap(filename, pal);
+	bmp->bmp = load_bitmap(filename, NULL);
 	if (!bmp->bmp){
 		// Image wasnt loaded
 		log_error(log, "[%s:%d]\t: (gfxLoadFont)\t: Unable to load font bitmap: Error %s [errno %d]\n", __FILE__, __LINE__, allegro_error, errno);
@@ -245,29 +250,6 @@ int gfxLoadFont(FILE *log, char *filename, struct agnostic_bitmap *bmp){
 	} else {
 		// Image was loaded
 		log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font bitmap is %dx%d\n", __FILE__, __LINE__, bmp->bmp->w, bmp->bmp->h);
-		if (MENU_SCREEN_BPP == 8){
-			switch (bitmap_color_depth(bmp->bmp)){
-				case 8:
-					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font is 8bpp, not generating palette\n", __FILE__, __LINE__);
-					// Get top left pixel colour
-					pix = getpixel(bmp->bmp, 0, 0);
-					if (pix == 0){
-						// Pixel is black, so this is a white font	
-					} else {
-						// Pixel is non-black, so this is a black font
-					}
-					//set_palette_range(global_palette, 0, RESERVED_COLOURS, 0); 
-					break;
-				default:
-					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Font is true colour, generating palette\n", __FILE__, __LINE__);				
-					i = generate_optimized_palette(bmp->bmp, global_palette, colour_reservation_table);
-					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Generated %d unique colour entries\n", __FILE__, __LINE__, i);
-					set_palette_range(global_palette, 0, RESERVED_COLOURS, 0); 
-					log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Palette loaded [3-%d]\n", __FILE__, __LINE__, i);
-			}
-		} else {
-			log_debug(log, "[%s:%d]\t: (gfxLoadFont)\t: Screen is not 8bpp, not generating palette\n", __FILE__, __LINE__);	
-		}
 	}
 	return 0;
 }
@@ -295,10 +277,12 @@ int gfxSetMode(FILE *log, struct agnostic_bitmap *display, int screen_w, int scr
 	} else {
 		log_info(log, "[%s:%d]\t: (gfxSetMode)\t: Allegro graphics mode set to %dx%dx%dbpp\n", __FILE__, __LINE__, MENU_SCREEN_W, MENU_SCREEN_H, MENU_SCREEN_BPP);
 		log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Creating backbuffer\n", __FILE__, __LINE__);
+		
 		// Create screen sized buffer
 		display->bmp = create_bitmap(MENU_SCREEN_W, MENU_SCREEN_H);
 		clear_bitmap(display->bmp);
 		
+		// Set global reserved palette entries (our black, white, grey, UI element colours)
 		gfxSetPal(log, 1);
 		
 		log_debug(log, "[%s:%d]\t: (gfxSetMode)\t: Ready to go!\n", __FILE__, __LINE__);
