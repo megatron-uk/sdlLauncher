@@ -25,9 +25,30 @@
 #define INI_FILE "MENU.INI"
 
 // Colours to save for UI use
-#ifdef USE_ALLEGRO
-#define RESERVED_COLOURS 8
-#endif
+#define RESERVED_COLOURS 32
+
+// Mac number of game directories to scan for sub-folders
+#define MAX_GAMEDIRS 99
+
+// Max number of games
+#define GAME_DATA_MAX 250
+
+// Screen geometry
+#define MENU_SCREEN_W 320		// Low mode
+#define MENU_SCREEN_H 200
+#define MENU_SCREEN_W_MED 320	// Medum mode
+#define MENU_SCREEN_H_MED 240
+#define MENU_SCREEN_W_HI 640	// High mode
+#define MENU_SCREEN_H_HI 400
+#define MENU_SCREEN_BPP 8 		// Always 256 colour mode
+
+// Size of the game wallpaper we load
+static unsigned const int BMP_W = 180;
+static unsigned const int BMP_H = 135;
+
+// Standard font is 6x8
+static unsigned const int FONT_W = 6;
+static unsigned const int FONT_H = 8;
 
 // Maximum string lengths
 #define GAME_NAME_LEN 32

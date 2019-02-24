@@ -16,5 +16,5 @@ do
 	
 	# This is useful for the MS-DOS / Allegro port
 	# A basic BMP v3 format
-	convert "$JPG" -define bmp:format=bmp3 -resize 180x135 "$d/folder.bmp"
+	convert "$JPG" -define bmp:format=bmp3 -resize 400x300 "$d/folder.bmp"
 done

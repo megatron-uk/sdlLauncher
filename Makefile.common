@@ -1,8 +1,8 @@
 
 ifeq ($(USE_GEM), 1)
-OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/gamedata.o build/menu.o build/ataric2p.o 
+OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/scraper.o build/menu.o build/ataric2p.o 
 else
-OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/gamedata.o build/menu.o
+OBJFILES = build/logging.o build/config.o build/ini.o build/input.o build/image.o build/qdbmp.o build/gfx.o build/bmp2text.o build/csvlib.o build/scraper.o build/menu.o
 endif
 
 
@@ -21,8 +21,8 @@ build/menu.o: src/menu.c
 build/bmp2text.o: src/image/bmp2text.c
 	$(CC) $(CFLAGS) -c $< -o build/bmp2text.o
 
-build/gamedata.o: src/data/gamedata.c
-	$(CC) $(CFLAGS) -c $< -o build/gamedata.o
+build/scraper.o: src/scraper/scraper.c
+	$(CC) $(CFLAGS) -c $< -o build/scraper.o
 
 build/csvlib.o: src/data/csvlib.c
 	$(CC) $(CFLAGS) -c $< -o build/csvlib.o

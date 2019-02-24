@@ -32,6 +32,29 @@
 #define RESERVED_COLOURS 2
 #endif
 
+// Mac number of game directories to scan for sub-folders
+#define MAX_GAMEDIRS 99
+
+// Max number of games
+#define GAME_DATA_MAX 250
+
+// Screen geometry
+#define MENU_SCREEN_W 320
+#define MENU_SCREEN_H 200
+#define MENU_SCREEN_W_MED 320
+#define MENU_SCREEN_H_MED 200
+#define MENU_SCREEN_W_HI 320
+#define MENU_SCREEN_H_HI 200
+#define MENU_SCREEN_BPP 8
+
+// Size of the game wallpaper we load
+static unsigned const int BMP_W = 180;
+static unsigned const int BMP_H = 135;
+
+// Standard font is 6x8
+static unsigned const int FONT_W = 6;
+static unsigned const int FONT_H = 8;
+
 // Maximum string lengths
 #define GAME_NAME_LEN 32
 #define GAME_PATH_LEN 128

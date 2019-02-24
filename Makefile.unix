@@ -19,6 +19,8 @@ endif
 # What our application is named
 EXE = menu
 
+STACKMOD = file
+
 all: $(EXE)
 
 include Makefile.common

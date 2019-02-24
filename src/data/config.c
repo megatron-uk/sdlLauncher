@@ -17,10 +17,14 @@ static int config_handler(void* user, const char* section, const char* name, con
 	
 	#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 	
+	// Path settings
 	if (MATCH("paths", "csv")) {
 		// CSV filename
 		pconfig->csv_filename = strdup(value);
-	} else if (MATCH("paths", "gamedirs")) {
+	}
+	
+	if (MATCH("paths", "gamedirs")) {
+		
 		// Split gamedirs string on comma...
 		// c:\games1,c:\adventure,d:\fps
 		strncpy(buf, value, strlen(value));
@@ -31,11 +35,51 @@ static int config_handler(void* user, const char* section, const char* name, con
 			i++;
 		}
 		pconfig->gamedir_count = i;
-		
-	} else {
-		return 0;  // unknown section/name, error
 	}
+	
+	// Video settings
+	if (MATCH("video", "mode")){
+		
+		// Check video mode (certain platforms only)
+		if (strcmp(value, "low") == 0){
+			pconfig->menu_screen_w = MENU_SCREEN_W;
+			pconfig->menu_screen_h = MENU_SCREEN_H;
+		} else if (strcmp(value, "med") == 0){
+			pconfig->menu_screen_w = MENU_SCREEN_W_MED;
+			pconfig->menu_screen_h = MENU_SCREEN_H_MED;
+		} else if (strcmp(value, "high") == 0){
+			pconfig->menu_screen_w = MENU_SCREEN_W_HI;
+			pconfig->menu_screen_h = MENU_SCREEN_H_HI;
+		} else {
+			pconfig->menu_screen_w = MENU_SCREEN_W;
+			pconfig->menu_screen_h = MENU_SCREEN_H;
+		}
+		
+		// Recalculate bitmap sizes
+		pconfig->bmp_w = (pconfig->menu_screen_w / 5) * 3;
+		pconfig->bmp_h = (pconfig->menu_screen_h / 4) * 3;
+	}
+	
 	return 1;
+}
+
+// Load default config values
+int config_defaults(FILE* log, struct config_object *cfg){
+	
+	// Paths gamedirs
+	cfg->gamedirs[0] = GAMEDIR;
+	cfg->gamedir_count = 1;
+	
+	// Paths csv
+	cfg->csv_filename = CSV_FILE;
+	
+	// Video mode
+	cfg->menu_screen_w = MENU_SCREEN_W;
+	cfg->menu_screen_h = MENU_SCREEN_H;
+	
+	// Recalculate bitmap sizes
+	cfg->bmp_w = (cfg->menu_screen_w / 5) * 3;
+	cfg->bmp_h = (cfg->menu_screen_h / 4) * 3;
 }
 
 // Parse config data from ini file, or load from defaults
@@ -43,16 +87,13 @@ int config(FILE *log, struct config_object *cfg){
 
 	int r = 0;
 	
+	// Load defaults
+	config_defaults(log, cfg);
+	
+	// Load values from config file
 	r = ini_parse(INI_FILE, config_handler, cfg);
 	if (r < 0){
 		log_warn(log, "[%s:%d]\t: (config)\t: Configuration file not found - using defaults\n", __FILE__, __LINE__);
-	
-		// CSV file
-		cfg->csv_filename = CSV_FILE;
-	
-		// Game dirs
-		cfg->gamedirs[0] = GAMEDIR;	
-		cfg->gamedir_count = 1;
 		return r;
 	} else {	
 		log_info(log, "[%s:%d]\t: (config)\t: Configuration file loaded\n", __FILE__, __LINE__);

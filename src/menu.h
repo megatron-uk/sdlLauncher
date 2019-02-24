@@ -12,93 +12,6 @@
 #include "platforms/msdos.h"
 #endif
 
-// Mac number of game directories to scan for sub-folders
-#define MAX_GAMEDIRS 99
-
-// Max number of games
-#define GAME_DATA_MAX 250
-
-// Screen geometry
-#define MENU_SCREEN_W 320
-#define MENU_SCREEN_H 200
-#define MENU_SCREEN_BPP 8
-
-// Size of the game wallpaper we load
-static unsigned const int BMP_W = 180;
-static unsigned const int BMP_H = 135;
-
-// Standard font is 6x8
-static unsigned const int FONT_W = 6;
-static unsigned const int FONT_H = 8;
-
-// A structure to hold window coordinates
-typedef struct COORDS{
-	int x;
-	int y;
-	int w;
-	int h;
-} COORDS;
-
-// Browser window coordinates
-static struct COORDS BROWSER_COORDS(){
-	COORDS coords;
-	coords.x = 0;
-	coords.y = 0;
-	coords.w = (MENU_SCREEN_W - BMP_W);
-	coords.h = (BMP_H + 2);
-	return coords;
-}
-
-// Letter browser window coordinates
-static struct COORDS ALPHABET_COORDS(){
-	COORDS coords;
-	coords.x = 0;
-	coords.y = BMP_H + 1;
-	coords.w = MENU_SCREEN_W;
-	coords.h = FONT_H + 3;
-	return coords;
-}
-
-// Info window coordinates
-static struct COORDS INFO_COORDS(){
-	COORDS coords;
-	coords.x = 0;
-	coords.y = (BMP_H + FONT_H + 3);
-	coords.w = MENU_SCREEN_W;
-	coords.h = (MENU_SCREEN_H - (BMP_H + 3) - (FONT_H));
-	return coords;
-}
-
-// Game bitmap window coordinates
-static struct COORDS GAMECOVER_COORDS(){
-	COORDS coords;
-	coords.x = (MENU_SCREEN_W - (BMP_W + 2));
-	coords.y = 0;
-	coords.w = (BMP_W + 2);
-	coords.h = (BMP_H + 2);
-	return coords;
-}
-
-// Text reader window coordinates
-static struct COORDS READER_COORDS(){
-	COORDS coords;
-	coords.x = 20;
-	coords.y = 20;
-	coords.w = (MENU_SCREEN_W - 40);
-	coords.h = (MENU_SCREEN_H - 40);
-	return coords;
-}
-
-// Config menu window coordinates
-static struct COORDS CONFIG_COORDS(){
-	COORDS coords;
-	coords.x = 80;
-	coords.y = 20;
-	coords.w = (MENU_SCREEN_W - 160);
-	coords.h = (MENU_SCREEN_H - 40);
-	return coords;
-}
-
 // Structure which holds data on the category chooser UI element
 typedef struct CATEGORY_WINDOW_DATA {
 	int cat_selected;	// Index to the category UI element selected
@@ -208,3 +121,49 @@ typedef struct GAME_DATA {
 
 // Number of games that can be listed
 // This creates an array of N * game_data structs.
+
+// A structure to hold window coordinates
+typedef struct COORDS{
+	int x;
+	int y;
+	int w;
+	int h;
+} COORDS;
+
+
+// Configuration data structure
+typedef struct config_object {
+	
+	// Filename section
+	char *csv_filename;
+	char *gamedirs[MAX_GAMEDIRS];
+	int gamedir_count;
+	
+	// Video stuff
+	int menu_screen_w;
+	int menu_screen_h;
+	int menu_screen_bpp;
+	int bmp_w;
+	int bmp_h;
+	
+} config_object;
+
+struct config_object menu_cfg;
+
+// Browser window coordinates
+static struct COORDS BROWSER_COORDS(struct config_object cfg);
+
+// Letter browser window coordinates
+static struct COORDS ALPHABET_COORDS(struct config_object cfg);
+
+// Info window coordinates
+static struct COORDS INFO_COORDS(struct config_object cfg);
+
+// Game bitmap window coordinates
+static struct COORDS GAMECOVER_COORDS(struct config_object cfg);
+
+// Text reader window coordinates
+static struct COORDS READER_COORDS(struct config_object cfg);
+
+// Config menu window coordinates
+static struct COORDS CONFIG_COORDS(struct config_object cfg);

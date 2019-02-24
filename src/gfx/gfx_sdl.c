@@ -13,7 +13,8 @@ int gfxBlitBMP(
 	struct agnostic_bitmap *bmp_src, 
 	struct agnostic_window *window_src, 
 	struct agnostic_bitmap *bmp_dst, 
-	struct agnostic_window *window_dst
+	struct agnostic_window *window_dst,
+	bool scale
 ){
 	int r = 0;	// Return code
 	r = SDL_BlitSurface(bmp_src->bmp, &window_src->window, bmp_dst->bmp, &window_dst->window);
@@ -194,9 +195,9 @@ int gfxText2BMP(
 					dest.window.w = FONT_W;
 					dest.window.h = FONT_H;
 					if (inverse){
-						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest, 0);
 					} else {
-						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+						r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest, 0);
 					}
 					if ( r != 0){
 						log_error(log, "[text2BMP]\t: Blit Error\n");
@@ -217,9 +218,9 @@ int gfxText2BMP(
 				dest.window.w = FONT_W;
 				dest.window.h = FONT_H;
 				if (inverse){
-					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest);
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_reverse, &src, display, &dest, 0);
 				} else {
-					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest);
+					r = gfxBlitBMP(log, (agnostic_bitmap *)&font_normal, &src, display, &dest, 0);
 				}
 				if ( r != 0){
 					log_error(log, "[text2BMP]\t: Blit Error\n");

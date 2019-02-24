@@ -93,7 +93,8 @@ int gfxBlitBMP(
 	struct agnostic_bitmap *bmp_src, 
 	struct agnostic_window *window_src, 
 	struct agnostic_bitmap *bmp_dst, 
-	struct agnostic_window *window_dst
+	struct agnostic_window *window_dst,
+	bool scale
 ){
 	int r = 0;	// Return code
 	unsigned short pxyarray[8];

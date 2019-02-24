@@ -79,7 +79,7 @@ typedef struct agnostic_colours {
 typedef struct agnostic_bitmap {
 #ifdef USE_ALLEGRO
 	BITMAP *bmp;		// Allegro backbuffer bitmap structure - only accessed by gfx_allegro.c
-	PALETTE pal;	// Pallette for 8bit bitmaps
+	PALETTE pal;		// Pallette for 8bit bitmaps
 #endif
 #ifdef USE_GEM
 	gem_bitmap *bmp;	// GEM bitmap structure - only accessed by gfx_vdi.c
@@ -112,11 +112,11 @@ typedef struct agnostic_window {
 static PALETTE global_palette;
 static signed char colour_reservation_table[256];
 static signed char font_colour_reservation_table[256];
-#define PAL_BLACK 0	// UI colours - fill
-#define PAL_WHITE 1 // UI colours - border
-#define PAL_GREY 2 // UI colours - drop shadow
-#define PAL_DARK_GREY 3 // UI colours - drop shadow
-#define PAL_LIGHT_GREY 4 // UI colours - drop shadow
+#define PAL_BLACK 1	// UI colours - fill
+#define PAL_WHITE 2 // UI colours - border
+#define PAL_GREY 3 // UI colours - drop shadow
+#define PAL_DARK_GREY 4 // UI colours - drop shadow
+#define PAL_LIGHT_GREY 5 // UI colours - drop shadow
 #endif
 
 // ======================================
@@ -129,7 +129,7 @@ static signed char font_colour_reservation_table[256];
 int gfxDrawBox(FILE *log, struct agnostic_bitmap *display, int x, int y, int w, int h, struct agnostic_colours *border, struct agnostic_colours *fill, int border_px, int shadow_px);
 
 // Blit a (partial) bitmap from one area to another - either SDL or Allegro
-int gfxBlitBMP(FILE *log, struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst); 
+int gfxBlitBMP(FILE *log, struct agnostic_bitmap *bmp_src, struct agnostic_window *window_src, struct agnostic_bitmap *bmp_dst, struct agnostic_window *window_dst, bool scale); 
 
 // Update the display buffer
 void gfxFlip(FILE *log, struct agnostic_bitmap *display);
